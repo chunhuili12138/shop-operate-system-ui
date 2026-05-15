@@ -1,0 +1,451 @@
+/* ================================================================
+   列表页统一布局 — 4pt/8pt 网格 · 科技极简 · 数据密集后台
+   L2-Standard · v2.0
+   ================================================================ */
+
+/* ---- 设计令牌映射 ---- */
+:root {
+  --ad-page-bg: #f5f7fa;
+  --ad-surface: #fff;
+  --ad-border: #e8eaef;
+  --ad-table-header-bg: #f7f8fa;
+  --ad-table-hover: #f2f5fe;
+  --ad-table-stripe: rgba(0, 0, 0, 0.012);
+  --ad-text-secondary: #909399;
+  --ad-text-disabled: #c0c4cc;
+  --ad-tag-success-bg: #edf7f2;
+  --ad-tag-success-text: #3b9463;
+  --ad-tag-danger-bg: #fdf1f0;
+  --ad-tag-danger-text: #d54941;
+  --ad-tag-warning-bg: #fef7e8;
+  --ad-tag-warning-text: #cc8922;
+  --ad-tag-info-bg: #eff4fc;
+  --ad-tag-info-text: #4e7fbf;
+  --ad-dialog-xs: 400px;
+  --ad-dialog-sm: 480px;
+  --ad-dialog-md: 560px;
+  --ad-dialog-lg: 720px;
+  --ad-dialog-xl: 880px;
+}
+
+/* ---- 父容器弹性填充 ---- */
+.main-content:has(> .page-container) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+/* ================================================================
+   页面容器：16px 呼吸感间距，gap 8px 严格 4pt 对齐
+   ================================================================ */
+.page-container {
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px 16px 8px;
+  box-sizing: border-box;
+  background: var(--ad-page-bg);
+  gap: 8px;
+}
+
+/* ---- 横向双栏布局（如字典管理）---- */
+.page-container.page-split {
+  flex-direction: row;
+
+  > .page-split-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  > .page-split-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+/* ================================================================
+   搜索/筛选合并区（卡片样式）
+   ================================================================ */
+.page-header {
+  flex-shrink: 0;
+  padding: 12px 16px;
+  background: var(--ad-surface);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--ad-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  transition: box-shadow var(--duration-normal, 200ms) var(--ease-out);
+
+  &:hover {
+    box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.06), 0 2px 3px -1px rgba(0, 0, 0, 0.04);
+  }
+
+  .el-form {
+    margin-bottom: 8px;
+  }
+
+  .el-form-item {
+    margin-bottom: 0;
+    margin-right: 12px;
+  }
+
+  .el-form-item__label {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+  }
+
+  .el-input,
+  .el-select {
+    --el-input-border-radius: 6px;
+  }
+}
+
+/* 搜索区按钮行：左操作 / 右查询 */
+.page-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+/* 纯操作区无搜索时压紧 */
+.page-header-actions--compact {
+  padding: 0;
+}
+
+/* ================================================================
+   表格专区（卡片包裹）— 核心重构
+   视觉降噪：去除 border + stripe，仅保留极细分隔线
+   ================================================================ */
+.page-table {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--ad-surface);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--ad-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+
+  /* CSS 高度填充：替代 useTableHeight JS 计算 */
+  display: flex;
+  flex-direction: column;
+
+  .el-table {
+    flex: 1;
+    min-height: 0;
+    border: none;
+    --el-table-border-color: transparent;
+    --el-table-header-bg-color: var(--ad-table-header-bg);
+    --el-table-row-hover-bg-color: var(--ad-table-hover);
+    --el-table-tr-bg-color: transparent;
+
+    &::before {
+      display: none;
+    }
+
+    /* 表头：14px 加粗不放大，底部分隔线极细 */
+    th.el-table__cell {
+      background-color: var(--ad-table-header-bg);
+      font-weight: 600;
+      font-size: 14px;
+      color: #303133;
+      border-bottom: 1px solid var(--ad-border);
+      padding: 10px 0;
+      transition: background-color var(--duration-fast, 150ms) var(--ease-out);
+    }
+
+    /* 单元格：14px，行高 1.5，分隔线极细半透明 */
+    td.el-table__cell {
+      font-size: 14px;
+      line-height: 1.5;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      padding: 8px 0;
+    }
+
+    /* 行 hover：微弱底色变化 + 平滑过渡，防止布局抖动 */
+    .el-table__body tr {
+      transition: background-color var(--duration-fast, 150ms) var(--ease-out);
+
+      &:hover > td {
+        background-color: var(--ad-table-hover);
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    /* striped 行：极浅底色替代边框 */
+    .el-table__body tr.el-table__row--striped td {
+      background-color: var(--ad-table-stripe);
+    }
+  }
+
+  /* ---- 启用 border 模式（旧页面兼容）---- */
+  &.page-table--bordered .el-table {
+    --el-table-border-color: var(--ad-border);
+
+    td.el-table__cell {
+      border-bottom: 1px solid var(--ad-border);
+    }
+  }
+}
+
+/* ---- 表格空状态 ---- */
+.page-table .el-table__empty-block {
+  min-height: 80px;
+}
+
+.page-table .el-table__empty-text {
+  color: var(--ad-text-secondary);
+  line-height: 80px;
+}
+
+/* ---- 表格内标签：统一圆角 4px，无边框，降低视觉噪音 ---- */
+.page-table {
+  .el-tag {
+    border: none;
+    font-weight: 500;
+    font-size: 12px;
+    border-radius: 4px;
+    padding: 0 6px;
+    height: 22px;
+    line-height: 22px;
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+
+    &.el-tag--success {
+      background-color: var(--ad-tag-success-bg);
+      color: var(--ad-tag-success-text);
+    }
+
+    &.el-tag--danger {
+      background-color: var(--ad-tag-danger-bg);
+      color: var(--ad-tag-danger-text);
+    }
+
+    &.el-tag--warning {
+      background-color: var(--ad-tag-warning-bg);
+      color: var(--ad-tag-warning-text);
+    }
+
+    &.el-tag--info {
+      background-color: var(--ad-tag-info-bg);
+      color: var(--ad-tag-info-text);
+    }
+  }
+}
+
+/* ---- 操作列按钮：统一过渡动效 ---- */
+.page-table {
+  .el-button--primary.is-link,
+  .el-button--danger.is-link,
+  .el-button--warning.is-link,
+  .el-button--success.is-link,
+  .el-button--info.is-link {
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  /* link 按钮组间距 */
+  .el-button + .el-button {
+    margin-left: 6px;
+  }
+}
+
+/* ================================================================
+   分页区：紧跟表格，8px 间距
+   ================================================================ */
+.page-pagination {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--ad-surface);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--ad-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* ================================================================
+   预警/提示卡片
+   ================================================================ */
+.page-warn {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: var(--ad-surface);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--ad-border);
+  border-left: 4px solid var(--el-color-danger);
+  cursor: pointer;
+  transition: border-color var(--duration-fast, 150ms) var(--ease-out);
+
+  &:hover {
+    border-left-color: var(--el-color-danger-light-3);
+  }
+}
+
+/* ================================================================
+   Dialog / Drawer 统一标准
+   ================================================================ */
+.page-container {
+
+  /* 弹窗内表单标签 */
+  .el-dialog .el-form-item__label,
+  .el-drawer .el-form-item__label {
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .el-dialog__header {
+    padding: 20px 20px 12px;
+  }
+
+  .el-dialog__body {
+    padding: 16px 20px;
+  }
+
+  .el-dialog__footer {
+    padding: 12px 20px 20px;
+  }
+
+  /* 标准化 Dialog 宽度 */
+  .dialog-xs { --el-dialog-width: var(--ad-dialog-xs, 400px); }
+  .dialog-sm { --el-dialog-width: var(--ad-dialog-sm, 480px); }
+  .dialog-md { --el-dialog-width: var(--ad-dialog-md, 560px); }
+  .dialog-lg { --el-dialog-width: var(--ad-dialog-lg, 720px); }
+  .dialog-xl { --el-dialog-width: var(--ad-dialog-xl, 880px); }
+}
+
+/* ================================================================
+   筛选区 Select 统一样式
+   ================================================================ */
+.page-header .el-select {
+  --el-select-border-color-hover: var(--el-color-primary);
+  --el-select-input-focus-border-color: var(--el-color-primary);
+}
+
+/* ================================================================
+   Tabs 内嵌表格适配（如 finance/commission）
+   ================================================================ */
+.page-container {
+  > .el-tabs {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    > .el-tabs__header {
+      flex-shrink: 0;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    > .el-tabs__content {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+
+      > .el-tab-pane {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        > .el-button {
+          flex-shrink: 0;
+          margin-bottom: 8px;
+          align-self: flex-start;
+        }
+
+        > .page-table {
+          flex: 1;
+          min-height: 0;
+        }
+
+        > .page-pagination {
+          flex-shrink: 0;
+        }
+      }
+    }
+  }
+}
+
+/* ================================================================
+   Element Plus 全局覆盖：降级高饱和状态色
+   ================================================================ */
+@layer overrides {
+  .el-button--primary {
+    --el-button-hover-bg-color: var(--el-color-primary-light-3);
+    --el-button-active-bg-color: var(--el-color-primary);
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  .el-button--default {
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  /* success 按钮仅用于"完成/确认"等正向操作，不用于"新增" */
+  .el-button--success {
+    --el-button-hover-bg-color: var(--el-color-success-light-3);
+    --el-button-active-bg-color: var(--el-color-success);
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  .el-button--warning {
+    --el-button-hover-bg-color: var(--el-color-warning-light-3);
+    --el-button-active-bg-color: var(--el-color-warning);
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  .el-button--danger {
+    --el-button-hover-bg-color: var(--el-color-danger-light-3);
+    --el-button-active-bg-color: var(--el-color-danger);
+    transition: all var(--duration-fast, 150ms) var(--ease-out);
+  }
+
+  .el-button--info {
+    --el-button-hover-bg-color: var(--el-color-info-light-3);
+    --el-button-active-bg-color: var(--el-color-info);
+  }
+}
+
+/* ================================================================
+   响应式：窄屏压缩间距
+   ================================================================ */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .page-header {
+    padding: 8px 12px;
+  }
+
+  .page-header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-pagination {
+    padding: 6px 12px;
+    justify-content: center;
+  }
+}

@@ -1,0 +1,111 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@custom-variant dark (&:is(.dark *));
+
+/* ===== Design Tokens — 系统级 CSS 变量桥接 Tailwind ===== */
+@theme {
+  --color-bg_color: var(--el-bg-color);
+  --color-primary: var(--el-color-primary);
+  --color-primary-light: var(--el-color-primary-light-5);
+  --color-text_color_primary: var(--el-text-color-primary);
+  --color-text_color_regular: var(--el-text-color-regular);
+
+  /* 页面容器背景 */
+  --color-page-bg: var(--ad-page-bg, #f5f7fa);
+  /* 卡片/面板表面背景 */
+  --color-surface: var(--ad-surface, #fff);
+  /* 边框色 */
+  --color-border: var(--ad-border, #e8eaef);
+  /* 表头背景 */
+  --color-table-header: var(--ad-table-header-bg, #f6f7fa);
+  /* 表格行 hover */
+  --color-table-hover: var(--ad-table-hover, #f0f4ff);
+  /* 次要文字 */
+  --color-text-secondary: var(--ad-text-secondary, #909399);
+  /* 禁用文字 */
+  --color-text-disabled: var(--ad-text-disabled, #c0c4cc);
+  /* 标签色 */
+  --color-tag-success-bg: var(--ad-tag-success-bg, #edf7f2);
+  --color-tag-success-text: var(--ad-tag-success-text, #3b9463);
+  --color-tag-danger-bg: var(--ad-tag-danger-bg, #fdf1f0);
+  --color-tag-danger-text: var(--ad-tag-danger-text, #d54941);
+  --color-tag-warning-bg: var(--ad-tag-warning-bg, #fef7e8);
+  --color-tag-warning-text: var(--ad-tag-warning-text, #cc8922);
+  --color-tag-info-bg: var(--ad-tag-info-bg, #eff4fc);
+  --color-tag-info-text: var(--ad-tag-info-text, #4e7fbf);
+
+  /* 统计卡颜色（替代硬编码 hex） */
+  --color-stat-blue: #409eff;
+  --color-stat-green: #67c23a;
+  --color-stat-orange: #e6a23c;
+  --color-stat-red: #f56c6c;
+
+  /* 圆角系统 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 阴影系统 */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-popover: 0 4px 12px 0 rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+
+  /* 过渡动效 */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+}
+
+/* Tailwind v4 border-color 兼容 */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+/* ===== 通用布局工具类 ===== */
+
+/* 居中弹性盒 */
+@utility flex-c {
+  @apply flex justify-center items-center;
+}
+
+@utility flex-ac {
+  @apply flex justify-around items-center;
+}
+
+@utility flex-bc {
+  @apply flex justify-between items-center;
+}
+
+@utility navbar-bg-hover {
+  @apply dark:text-white dark:hover:bg-[#242424]!;
+}
+
+/* 页面级工具类 */
+@utility page-card {
+  background: var(--ad-surface);
+  border-radius: var(--radius-md, 8px);
+  border: 1px solid var(--ad-border);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+}
+
+/* 次要文字降噪 */
+@utility text-dim {
+  color: var(--ad-text-secondary, #909399);
+}
+
+/* 过渡通用 */
+@utility trans-fast {
+  transition: all var(--duration-fast, 150ms) var(--ease-out);
+}
+
+@utility trans-normal {
+  transition: all var(--duration-normal, 200ms) var(--ease-out);
+}

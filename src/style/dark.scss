@@ -1,0 +1,227 @@
+@use "element-plus/theme-chalk/src/dark/css-vars.scss" as *;
+
+/* 整体暗色风格适配 */
+html.dark {
+  $border-style: #303030;
+  $color-white: #fff;
+
+  /* 自定义深色背景颜色 */
+  // --el-bg-color: #020409;
+
+  /* 常用border-color 需要时可取用 */
+  --pure-border-color: rgb(253 253 253 / 12%);
+
+  /* switch关闭状态下的color 需要时可取用 */
+  --pure-switch-off-color: #ffffff3f;
+
+  /* ---- 页面布局设计令牌暗色覆盖 ---- */
+  --ad-page-bg: #0d1117;
+  --ad-surface: #161b22;
+  --ad-border: #30363d;
+  --ad-table-header-bg: #1a1f29;
+  --ad-table-hover: #1d2330;
+  --ad-table-stripe: rgba(255, 255, 255, 0.02);
+  --ad-text-secondary: #8b949e;
+  --ad-text-disabled: #484f58;
+  --ad-tag-success-bg: rgba(63, 185, 80, 0.14);
+  --ad-tag-success-text: #56d364;
+  --ad-tag-danger-bg: rgba(248, 81, 73, 0.14);
+  --ad-tag-danger-text: #f16a4d;
+  --ad-tag-warning-bg: rgba(210, 153, 34, 0.14);
+  --ad-tag-warning-text: #d8a840;
+  --ad-tag-info-bg: rgba(88, 166, 255, 0.14);
+  --ad-tag-info-text: #79c0ff;
+
+  .navbar,
+  .tags-view,
+  .contextmenu,
+  .sidebar-container,
+  .horizontal-header,
+  .sidebar-logo-container,
+  .horizontal-header .el-sub-menu__title,
+  .horizontal-header .submenu-title-noDropdown {
+    background: var(--el-bg-color) !important;
+  }
+
+  .app-main,
+  .app-main-nofixed-header {
+    background: #020409 !important;
+  }
+
+  /* 标签页 */
+  .tags-view {
+    .arrow-left,
+    .arrow-right {
+      border-right: 1px solid $border-style;
+      box-shadow: none;
+    }
+
+    .arrow-right {
+      border-left: 1px solid $border-style;
+    }
+
+    .scroll-item {
+      .el-icon-close {
+        &:hover {
+          color: rgb(255 255 255 / 85%) !important;
+          background-color: rgb(255 255 255 / 12%);
+        }
+      }
+
+      .chrome-tab {
+        .tag-title {
+          color: #666;
+        }
+
+        &:hover {
+          .chrome-tab__bg {
+            color: #333;
+          }
+
+          .tag-title {
+            color: #adadad;
+          }
+        }
+      }
+    }
+  }
+
+  /* 系统配置面板 */
+  .right-panel-items {
+    .el-divider__text {
+      --el-bg-color: var(--el-bg-color);
+    }
+
+    .el-divider--horizontal {
+      border-top: none;
+    }
+  }
+
+  /* ---- 列表页表格暗色适配 ---- */
+  .page-table {
+    .el-table {
+      td.el-table__cell {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+
+      th.el-table__cell {
+        color: #e6edf3;
+        border-bottom-color: var(--ad-border);
+      }
+
+      .el-table__body tr.el-table__row--striped td {
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+    }
+
+    .el-tag {
+      &.el-tag--success {
+        background-color: rgba(63, 185, 80, 0.14);
+        color: #56d364;
+      }
+
+      &.el-tag--danger {
+        background-color: rgba(248, 81, 73, 0.14);
+        color: #f16a4d;
+      }
+
+      &.el-tag--warning {
+        background-color: rgba(210, 153, 34, 0.14);
+        color: #d8a840;
+      }
+
+      &.el-tag--info {
+        background-color: rgba(88, 166, 255, 0.14);
+        color: #79c0ff;
+      }
+    }
+  }
+
+  .el-card {
+    --el-card-bg-color: var(--el-bg-color);
+  }
+
+  .el-backtop {
+    --el-backtop-bg-color: rgb(72 72 78);
+    --el-backtop-hover-bg-color: var(--el-color-primary);
+
+    transition: background-color 0.25s cubic-bezier(0.7, 0.3, 0.1, 1);
+  }
+
+  .el-dropdown-menu__item:not(.is-disabled):hover {
+    background: transparent;
+  }
+
+  /* 全局覆盖element-plus的el-dialog、el-drawer、el-message-box、el-notification组件右上角关闭图标的样式，表现更鲜明 */
+  .el-icon {
+    &.el-dialog__close,
+    &.el-drawer__close,
+    &.el-message-box__close,
+    &.el-notification__closeBtn {
+      &:hover {
+        color: rgb(255 255 255 / 85%) !important;
+        background-color: rgb(255 255 255 / 12%);
+
+        .pure-dialog-svg {
+          color: rgb(255 255 255 / 85%) !important;
+        }
+      }
+    }
+  }
+
+  /* 克隆并自定义 ElMessage 样式，不会影响 ElMessage 原本样式，在 src/utils/message.ts 中调用自定义样式 ElMessage 方法即可，整体浅色风格在 src/style/element-plus.scss 文件进行了适配 */
+  .pure-message {
+    background-color: rgb(36 37 37) !important;
+    background-image: initial !important;
+    box-shadow:
+      rgb(13 13 13 / 12%) 0 3px 6px -4px,
+      rgb(13 13 13 / 8%) 0 6px 16px 0,
+      rgb(13 13 13 / 5%) 0 9px 28px 8px !important;
+
+    & .el-message__content {
+      color: $color-white !important;
+      pointer-events: all !important;
+      background-image: initial !important;
+    }
+
+    & .el-message__closeBtn {
+      &:hover {
+        color: rgb(255 255 255 / 85%);
+        background-color: rgb(255 255 255 / 12%);
+      }
+    }
+  }
+
+  /* 自定义菜单搜索样式 */
+  .pure-search-dialog {
+    .el-dialog__footer {
+      box-shadow:
+        0 -1px 0 0 #555a64,
+        0 -3px 6px 0 rgb(69 98 155 / 12%);
+    }
+
+    .search-footer {
+      .search-footer-item {
+        color: rgb(235 235 235 / 60%);
+
+        .icon {
+          box-shadow: none;
+        }
+      }
+    }
+  }
+
+  /* ReSegmented 组件 */
+  .pure-segmented {
+    color: rgb(255 255 255 / 65%);
+    background-color: #000;
+
+    .pure-segmented-item-selected {
+      background-color: #1f1f1f;
+    }
+
+    .pure-segmented-item-disabled {
+      color: rgb(255 255 255 / 25%);
+    }
+  }
+}
