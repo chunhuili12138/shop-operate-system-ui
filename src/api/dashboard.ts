@@ -1,35 +1,93 @@
 import { http } from "@/utils/http";
 
-// Dashboard今日数据响应
+export interface ExpiringSeat {
+  id: number;
+  tenant_name: string;
+  tenant_id: number;
+  end_date: string;
+  remaining_days: number;
+}
+
+export interface TrendItem {
+  period: string;
+  total?: number;
+  count?: number;
+}
+
+export interface PlatformOverview {
+  totalTenants: number;
+  activeTenants: number;
+  bannedTenants: number;
+  newTenantsThisMonth: number;
+  totalShops: number;
+  activeShops: number;
+  newShopsThisMonth: number;
+  activeSeats: number;
+  expiredSeats: number;
+  totalRevenue: number;
+  revenueThisMonth: number;
+  revenueThisYear: number;
+  totalRefund: number;
+  refundThisMonth: number;
+  seatUtilization: number;
+  tenantsWithoutShops: number;
+  totalCustomers: number;
+}
+
+export interface ExpiringData {
+  within7Days: number;
+  within30Days: number;
+  within60Days: number;
+  list: ExpiringSeat[];
+}
+
+export interface TrendData {
+  revenue: TrendItem[];
+  tenants: TrendItem[];
+  shops: TrendItem[];
+}
+
+export interface SubscriptionDistribution {
+  monthlyCount: number;
+  yearlyCount: number;
+  monthlyRevenue: number;
+  yearlyRevenue: number;
+}
+
+export interface TopTenant {
+  name: string;
+  revenue: number;
+  tenant_id: number;
+}
+
+export interface PlatformDashboardData {
+  overview: PlatformOverview;
+  expiring: ExpiringData;
+  trends: TrendData;
+  distribution: SubscriptionDistribution;
+  topTenants: TopTenant[];
+}
+
+export interface ShopDashboardData {
+  todaySales?: number;
+  todayOrders?: number;
+  todayCheckins?: number;
+  todayNewCustomers?: number;
+}
+
 export interface DashboardTodayResult {
   success: boolean;
   code: number;
   msg: string;
-  data: {
-    totalTenants?: number;
-    totalShops?: number;
-    activeSeats?: number;
-    newTenantsThisMonth?: number;
-    todaySales?: number;
-    todayOrders?: number;
-    todayCheckins?: number;
-    todayNewCustomers?: number;
-    expiringSoon?: Array<{
-      id: number;
-      tenant_name: string;
-      end_date: string;
-    }>;
-  };
+  data: PlatformDashboardData | ShopDashboardData;
   timestamp: number;
 }
 
-// 日快照查询参数
 export interface DailySnapshotQueryParams {
   page?: number;
   size?: number;
 }
 
-// 日快照列表响应
 export interface DailySnapshotListResult {
   success: boolean;
   code: number;
@@ -48,12 +106,10 @@ export interface DailySnapshotListResult {
   timestamp: number;
 }
 
-/** 获取Dashboard今日数据 */
 export const getDashboardToday = () => {
   return http.request<DashboardTodayResult>("get", "/dashboard/today");
 };
 
-/** 获取日快照列表 */
 export const getDailySnapshots = (params?: DailySnapshotQueryParams) => {
   return http.request<DailySnapshotListResult>("get", "/dailySnapshots", {
     params
