@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import {
   getArticleList,
   getArticleCategories,
@@ -18,7 +19,7 @@ const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
 const loadCats=async()=>{const r=await getArticleCategories();r?.success&&(cats.value = r.data||[])};
 const save=async()=>{const r=E.value?await updateArticle(F):await addArticle(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
 const toggle=(id:number,pub:number)=>{publishArticle({articleId:id,isPublished:pub?0:1}).then((r)=>{r?.success?(message("已操作",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})})};
-const doDelete=async(id:number)=>{await import("element-plus").then(m=>m.ElMessageBox.confirm("确认删除？","提示"));const r=await deleteArticle(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
+const doDelete=async(id:number)=>{await ElMessageBox.confirm("确认删除？","提示");const r=await deleteArticle(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
 onMounted(()=>{load();loadCats()});
 </script>
 <template>

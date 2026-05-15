@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import {
   getMaterialList,
   addMaterial,
@@ -15,7 +16,7 @@ const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
 const openAdd=()=>{E.value=false;Object.assign(F,{materialId:null,name:"",sku:"",category:"",unit:"个",type:1,minStock:null,remark:""});D.value=true};
 const openEdit=(r:any)=>{E.value=true;Object.assign(F,{materialId:r.id,name:r.name,sku:r.sku,category:r.category,unit:r.unit,type:r.type,minStock:r.min_stock,remark:r.remark});D.value=true};
 const save=async()=>{const r=E.value?await updateMaterial(F):await addMaterial(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
-const del=async(id:number)=>{await import("element-plus").then(m=>m.ElMessageBox.confirm("确认删除？","提示"));const r=await deleteMaterial(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
+const del=async(id:number)=>{await ElMessageBox.confirm("确认删除？","提示");const r=await deleteMaterial(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
 onMounted(load);
 </script>
 <template>

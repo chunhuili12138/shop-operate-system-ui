@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import {
   getCommissionRules,
   addCommissionRule,
@@ -90,9 +91,7 @@ const saveRule = async () => {
 };
 
 const generateSettlement = async () => {
-  const { value } = await import("element-plus").then(m =>
-    m.ElMessageBox.prompt("输入结算周期（如 2026-05）", "生成结算")
-  );
+  const { value } = await ElMessageBox.prompt("输入结算周期（如 2026-05）", "生成结算");
   if (value) {
     const r = await generateSettlement({ settlementPeriod: value });
     if (r?.success) {

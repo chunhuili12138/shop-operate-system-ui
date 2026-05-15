@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import { ElMessageBox } from "element-plus";
 import {
   getShopList,
   getShopInfo,
@@ -78,9 +79,7 @@ const toggle = async (id: number, status: number) => {
 };
 
 const doDelete = async (id: number) => {
-  await import("element-plus").then(m =>
-    m.ElMessageBox.confirm("确认删除？", "提示")
-  );
+  await ElMessageBox.confirm("确认删除？", "提示");
   const r = await deleteShop(id);
   if (r?.success) {
     message("已删除", { type: "success" });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import {
   getPurchaseOrderList,
   getSupplierList,
@@ -21,7 +22,7 @@ const addItem=()=>F.items.push({materialId:"",quantity:1,unitPrice:"0"});
 const save=async()=>{const r=await addPurchaseOrder({...F,items:JSON.stringify(F.items)});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
 const updateStatus=async(id:number,st:number)=>{const r=await updatePurchaseOrderStatus({orderId:id,status:st});r?.success?(message("已更新",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
 const openItems=async(id:number)=>{const r=await getPurchaseOrderItems(id);r?.success&&(itemsList.value = r.data||[]);itemsVis.value=true};
-const payOrder=async(id:number)=>{const{v}=await import("element-plus").then(m=>m.ElMessageBox.prompt("输入付款金额","付款"));if(v){const r=await payPurchaseOrder({orderId:id,amount:v,paymentMethod:"cash",paidAt:new Date().toISOString().split("T")[0]});r?.success?(message("已付款",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})}};
+const payOrder=async(id:number)=>{const{value}=await ElMessageBox.prompt("输入付款金额","付款");if(value){const r=await payPurchaseOrder({orderId:id,amount:value,paymentMethod:"cash",paidAt:new Date().toISOString().split("T")[0]});r?.success?(message("已付款",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})}};
 onMounted(load);
 </script>
 <template>

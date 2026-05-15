@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import { ElMessageBox } from "element-plus";
 import {
   getStaffList,
   addStaff,
@@ -149,9 +150,7 @@ const openResetPwd = (staffId: number) => {
 
 const doResetPwd = async () => {
   if (!pwdStaffId.value) return;
-  const { value } = await import("element-plus").then(m =>
-    m.ElMessageBox.prompt("请输入新密码", "重置密码")
-  );
+  const { value } = await ElMessageBox.prompt("请输入新密码", "重置密码");
   if (value) {
     const res = await resetStaffPassword({
       staffId: pwdStaffId.value,
@@ -168,9 +167,7 @@ const doResetPwd = async () => {
 };
 
 const doDelete = async (staffId: number) => {
-  await import("element-plus").then(m =>
-    m.ElMessageBox.confirm("确认删除？", "提示")
-  );
+  await ElMessageBox.confirm("确认删除？", "提示");
   const res = await deleteStaff(staffId);
   if (res?.success) {
     message("已删除", { type: "success" });

@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive, watch } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance, FormRules } from "element-plus";
+import { ElMessageBox } from "element-plus";
 import {
   getDictList,
   addDict,
@@ -107,9 +108,7 @@ const save = async () => {
 };
 
 const doDelete = async (id: number) => {
-  await import("element-plus").then(m =>
-    m.ElMessageBox.confirm("确认删除?", "提示")
-  );
+  await ElMessageBox.confirm("确认删除?", "提示");
   const r = await deleteDict(id);
   if (r?.success) {
     message("已删除", { type: "success" });

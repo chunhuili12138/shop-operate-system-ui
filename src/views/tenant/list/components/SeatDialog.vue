@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import { getSeatList, addSeat, renewSeat, deleteSeat } from "@/api/tenant";
 import { getDictData } from "@/api/system";
 
@@ -92,9 +93,7 @@ const doSeatRenew = async () => {
 };
 
 const doSeatDel = async (id: number) => {
-  await import("element-plus").then(m =>
-    m.ElMessageBox.confirm("确认删除？", "提示")
-  );
+  await ElMessageBox.confirm("确认删除？", "提示");
   const r = await deleteSeat(id);
   if (r?.success) {
     message("已删除", { type: "success" });

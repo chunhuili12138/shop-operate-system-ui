@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import {
   getExpenseList,
   getExpenseCategories,
@@ -26,7 +27,7 @@ onMounted(()=>{load();loadCats()});
       <el-table-column prop="expense_date" label="日期"/><el-table-column prop="remark" label="备注"/>
       <el-table-column label="操作" width="150" fixed="right"><template #default="{row}">
         <el-button link type="primary" @click="D=true;E=true;Object.assign(F,{expenseId:row.id,categoryId:row.category_id,amount:row.amount,paymentMethod:row.payment_method,expenseDate:String(row.expense_date),remark:row.remark})">编辑</el-button>
-        <el-button link type="danger" @click="async()=>{await import('element-plus').then(m=>m.ElMessageBox.confirm('确认删除？','提示'));const r=await deleteExpense(row.id);r?.success?(message('已删除',{type:'success'}),load()):message(r?.msg||'失败',{type:'warning'})}">删除</el-button>
+        <el-button link type="danger" @click="async()=>{await ElMessageBox.confirm('确认删除？','提示');const r=await deleteExpense(row.id);r?.success?(message('已删除',{type:'success'}),load()):message(r?.msg||'失败',{type:'warning'})}">删除</el-button>
       </template></el-table-column>
     </el-table></div>
     <el-pagination v-model:current-page="P" v-model:page-size="S" :total="t" :page-sizes="[10,20,50,100]" layout="total, sizes, prev, pager, next, jumper" @size-change="onSizeChange" @current-change="load" class="page-pagination"/>

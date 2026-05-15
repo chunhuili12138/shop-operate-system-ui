@@ -1,7 +1,8 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 
 defineOptions({ name: "TradePurchase" });
 
@@ -94,9 +95,7 @@ const save = async () => {
 };
 
 const refund = async (id: number) => {
-  const { value } = await import("element-plus").then(m =>
-    m.ElMessageBox.prompt("请输入退款原因", "申请退款")
-  );
+  const { value } = await ElMessageBox.prompt("请输入退款原因", "申请退款");
   if (value) {
     const r: any = await http.post("/purchasesRefundsApply", {
       data: { purchaseId: id, reason: value }
