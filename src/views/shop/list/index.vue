@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
-import type { FormInstance } from "element-plus";
 import { ElMessageBox } from "element-plus";
 import {
   getShopList,
   getShopInfo,
-  addShop,
-  updateShop,
   updateShopStatus,
   deleteShop
 } from "@/api/shop";
-import { getUnboundSeats, getTenantList } from "@/api/tenant";
+import { getTenantList } from "@/api/tenant";
+import ShopFormDialog from "./components/ShopFormDialog.vue";
+
 defineOptions({ name: "ShopList" });
 
 const tableData = ref([]);
@@ -24,19 +23,8 @@ const query = reactive({ keyword: "", status: "" as any, ownerStaffId: "" });
 
 const dialogVisible = ref(false);
 const isEdit = ref(false);
-const formRef = ref<FormInstance>();
+const currentShopData = ref(null);
 
-const form = reactive({
-  shopsId: null as number | null,
-  name: "",
-  address: "",
-  contactPhone: "",
-  maxCapacity: 20,
-  description: "",
-  seatId: ""
-});
-
-const seatOptions = ref([] as any[]);
 const tenantOptions = ref([] as any[]);
 
 const load = async () => {
@@ -96,49 +84,24 @@ const doDelete = async (id: number) => {
   }
 };
 
-const openAdd = async () => {
+const openAdd = () => {
   isEdit.value = false;
-  Object.assign(form, {
-    shopsId: null,
-    name: "",
-    address: "",
-    contactPhone: "",
-    maxCapacity: 20,
-    description: "",
-    seatId: ""
-  });
-  const r = await getUnboundSeats();
-  if (r?.success) seatOptions.value = r.data || [];
+  currentShopData.value = null;
   dialogVisible.value = true;
 };
 
 const openEdit = async (id: number) => {
   const r = await getShopInfo(id);
   if (r?.success) {
-    const d = r.data;
-    Object.assign(form, {
-      shopsId: d.id,
-      name: d.name,
-      address: d.address,
-      contactPhone: d.contact_phone,
-      maxCapacity: d.max_capacity,
-      description: d.description,
-      seatId: ""
-    });
+    currentShopData.value = r.data;
     isEdit.value = true;
     dialogVisible.value = true;
   }
 };
 
-const save = async () => {
-  const r = isEdit.value ? await updateShop(form) : await addShop(form);
-  if (r?.success) {
-    message("保存成功", { type: "success" });
-    dialogVisible.value = false;
-    load();
-  } else {
-    message(r?.msg || "失败", { type: "warning" });
-  }
+// 表单提交成功回调
+const handleFormSuccess = () => {
+  load();
 };
 
 const loadTenants = async () => {
@@ -267,63 +230,11 @@ onMounted(() => {
     />
 
     <!-- 表单弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="isEdit ? '编辑店铺' : '新增店铺'"
-      width="520px"
-      class="dialog-md"
-      :close-on-click-modal="false"
-    >
-      <el-form ref="formRef" :model="form" label-width="100px">
-        <el-form-item label="店铺名称" required>
-          <el-input v-model="form.name" placeholder="请输入店铺名称" />
-        </el-form-item>
-        <el-form-item v-if="!isEdit" label="关联席位" required>
-          <el-select
-            v-model="form.seatId"
-            placeholder="请选择席位"
-            style="width: 100%"
-            filterable
-          >
-            <el-option
-              v-for="s in seatOptions"
-              :key="s.id"
-              :label="`${s.seat_no} (${s.staff_name})`"
-              :value="s.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="最大容量">
-          <el-input-number
-            v-model="form.maxCapacity"
-            :min="1"
-            placeholder="不限"
-          />
-        </el-form-item>
-        <el-form-item label="联系电话">
-          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
-        </el-form-item>
-        <el-form-item label="地址">
-          <el-input
-            v-model="form.address"
-            type="textarea"
-            :rows="2"
-            placeholder="请输入地址"
-          />
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input
-            v-model="form.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入店铺描述"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
-      </template>
-    </el-dialog>
+    <ShopFormDialog
+      v-model:visible="dialogVisible"
+      :is-edit="isEdit"
+      :shop-data="currentShopData"
+      @success="handleFormSuccess"
+    />
   </div>
 </template>

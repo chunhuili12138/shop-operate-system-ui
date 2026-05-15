@@ -270,8 +270,8 @@ defineExpose({
               <el-option
                 v-for="pm in paymentMethods"
                 :key="pm.dict_key"
-                :label="pm.dict_label"
-                :value="pm.dict_value"
+                :label="pm.dict_value"
+                :value="pm.dict_label"
               />
             </el-select>
           </el-form-item>
