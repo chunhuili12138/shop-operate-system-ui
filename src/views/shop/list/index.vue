@@ -11,7 +11,7 @@ import {
   updateShopStatus,
   deleteShop
 } from "@/api/shop";
-import { getUnboundSeats } from "@/api/tenant";
+import { getUnboundSeats, getTenantList } from "@/api/tenant";
 defineOptions({ name: "ShopList" });
 
 const tableData = ref([]);
@@ -20,7 +20,7 @@ const page = ref(1);
 const size = ref(20);
 const total = ref(0);
 
-const query = reactive({ keyword: "", status: "" as any });
+const query = reactive({ keyword: "", status: "" as any, ownerStaffId: "" });
 
 const dialogVisible = ref(false);
 const isEdit = ref(false);
@@ -37,6 +37,7 @@ const form = reactive({
 });
 
 const seatOptions = ref([] as any[]);
+const tenantOptions = ref([] as any[]);
 
 const load = async () => {
   loading.value = true;
@@ -58,6 +59,7 @@ const load = async () => {
 const reset = () => {
   query.keyword = "";
   query.status = "";
+  query.ownerStaffId = "";
   page.value = 1;
   load();
 };
@@ -69,6 +71,8 @@ const onSizeChange = (s: number) => {
 };
 
 const toggle = async (id: number, status: number) => {
+  const actionText = status === 1 ? "设为休息" : "设为营业";
+  await ElMessageBox.confirm(`确认${actionText}？`, "提示");
   const r = await updateShopStatus({
     shopsId: id,
     status: status ? 0 : 1
@@ -137,7 +141,19 @@ const save = async () => {
   }
 };
 
-onMounted(load);
+const loadTenants = async () => {
+  try {
+    const r = await getTenantList({ page: 1, size: 999 });
+    if (r?.success) tenantOptions.value = r.data.list || [];
+  } catch (error) {
+    console.error("加载商户列表失败:", error);
+  }
+};
+
+onMounted(() => {
+  load();
+  loadTenants();
+});
 </script>
 
 <template>
@@ -153,6 +169,22 @@ onMounted(load);
             style="width: 180px"
             @keyup.enter="load"
           />
+        </el-form-item>
+        <el-form-item label="所属商户">
+          <el-select
+            v-model="query.ownerStaffId"
+            clearable
+            placeholder="全部"
+            filterable
+            style="width: 160px"
+          >
+            <el-option
+              v-for="t in tenantOptions"
+              :key="t.id"
+              :label="t.name"
+              :value="t.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="营业状态">
           <el-select

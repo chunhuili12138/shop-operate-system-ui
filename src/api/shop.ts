@@ -7,6 +7,7 @@ export interface ShopQueryParams {
   size?: number;
   keyword?: string;
   status?: number | string;
+  ownerStaffId?: number | string;
 }
 
 // 店铺列表响应
