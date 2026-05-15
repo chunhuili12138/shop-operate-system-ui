@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { getTransactionList } from "@/api/tenant";
+import { getDictData } from "@/api/system";
 
 const props = defineProps<{
   visible: boolean;
@@ -10,6 +11,21 @@ const props = defineProps<{
 const emit = defineEmits(["update:visible"]);
 
 const txList = ref([]);
+const paymentMethods = ref([] as any[]);
+
+const loadPaymentMethods = async () => {
+  try {
+    const r = await getDictData({ dictCode: "payment_method" });
+    if (r?.success) paymentMethods.value = r.data || [];
+  } catch {
+    /* ignore */
+  }
+};
+
+const getPaymentMethodLabel = (value: string) => {
+  const item = paymentMethods.value.find(pm => pm.dict_label === value);
+  return item ? item.dict_value : value;
+};
 
 const openTx = async () => {
   const r = await getTransactionList(props.staffId);
@@ -19,6 +35,10 @@ const openTx = async () => {
 const handleClose = () => {
   emit("update:visible", false);
 };
+
+onMounted(() => {
+  loadPaymentMethods();
+});
 
 defineExpose({
   openTx
@@ -36,7 +56,11 @@ defineExpose({
     >
       <el-table :data="txList" style="width: 100%">
         <el-table-column prop="amount" label="金额" />
-        <el-table-column prop="payment_method" label="支付方式" />
+        <el-table-column label="支付方式">
+          <template #default="{ row }">
+            {{ getPaymentMethodLabel(row.payment_method) }}
+          </template>
+        </el-table-column>
         <el-table-column label="类型">
           <template #default="{ row }">
             {{ row.subscription_type === 1 ? "月付" : "年付" }}

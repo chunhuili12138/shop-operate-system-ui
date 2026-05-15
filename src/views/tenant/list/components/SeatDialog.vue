@@ -138,12 +138,12 @@ defineExpose({
       <el-table :data="seats" style="width: 100%">
         <el-table-column prop="start_date" label="生效" width="120">
           <template #default="{ row }">
-            {{ row.start_date ? row.start_date.split(' ')[0] : '-' }}
+            {{ row.start_date ? row.start_date.split(" ")[0] : "-" }}
           </template>
         </el-table-column>
         <el-table-column prop="end_date" label="到期" width="120">
           <template #default="{ row }">
-            {{ row.end_date ? row.end_date.split(' ')[0] : '-' }}
+            {{ row.end_date ? row.end_date.split(" ")[0] : "-" }}
           </template>
         </el-table-column>
         <el-table-column label="状态" width="80" align="center">
