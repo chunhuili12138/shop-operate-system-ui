@@ -93,10 +93,28 @@ export interface SeatListResult {
   msg: string;
   data: Array<{
     id: number;
+    seat_no: string;
     start_date: string;
     end_date: string;
     status: number;
     shop_names: string;
+  }>;
+  timestamp: number;
+}
+
+// 未绑定店铺的席位
+export interface UnboundSeatResult {
+  success: boolean;
+  code: number;
+  msg: string;
+  data: Array<{
+    id: number;
+    seat_no: string;
+    staff_id: number;
+    staff_name: string;
+    start_date: string;
+    end_date: string;
+    status: number;
   }>;
   timestamp: number;
 }
@@ -123,6 +141,13 @@ export interface SeatRenewParams {
 export const getSeatList = (staffId: number) => {
   return http.request<SeatListResult>("get", "/admin/tenants/seatList", { 
     params: { staffId } 
+  });
+};
+
+/** 获取未绑定店铺的席位 */
+export const getUnboundSeats = (staffId?: number) => {
+  return http.request<UnboundSeatResult>("get", "/admin/tenants/unboundSeats", { 
+    params: staffId ? { staffId } : {} 
   });
 };
 

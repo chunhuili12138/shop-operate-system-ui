@@ -11,6 +11,7 @@ import {
   updateShopStatus,
   deleteShop
 } from "@/api/shop";
+import { getUnboundSeats } from "@/api/tenant";
 defineOptions({ name: "ShopList" });
 
 const tableData = ref([]);
@@ -34,6 +35,8 @@ const form = reactive({
   description: "",
   seatId: ""
 });
+
+const seatOptions = ref([] as any[]);
 
 const load = async () => {
   loading.value = true;
@@ -89,7 +92,7 @@ const doDelete = async (id: number) => {
   }
 };
 
-const openAdd = () => {
+const openAdd = async () => {
   isEdit.value = false;
   Object.assign(form, {
     shopsId: null,
@@ -100,6 +103,8 @@ const openAdd = () => {
     description: "",
     seatId: ""
   });
+  const r = await getUnboundSeats();
+  if (r?.success) seatOptions.value = r.data || [];
   dialogVisible.value = true;
 };
 
@@ -244,8 +249,15 @@ onMounted(load);
         <el-form-item label="店铺名称" required>
           <el-input v-model="form.name" placeholder="请输入店铺名称" />
         </el-form-item>
-        <el-form-item v-if="!isEdit" label="关联席位">
-          <el-input v-model="form.seatId" placeholder="席位ID" />
+        <el-form-item v-if="!isEdit" label="关联席位" required>
+          <el-select v-model="form.seatId" placeholder="请选择席位" style="width:100%">
+            <el-option
+              v-for="s in seatOptions"
+              :key="s.id"
+              :label="`${s.seat_no} (${s.staff_name})`"
+              :value="s.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="form.address" placeholder="请输入地址" />

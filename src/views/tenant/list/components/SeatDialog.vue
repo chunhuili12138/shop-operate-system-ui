@@ -135,6 +135,7 @@ defineExpose({
         </div>
       </template>
       <el-table :data="seats" style="width: 100%">
+        <el-table-column prop="seat_no" label="席位号" width="130" />
         <el-table-column prop="start_date" label="生效" width="120">
           <template #default="{ row }">
             {{ row.start_date ? row.start_date.split(" ")[0] : "-" }}
