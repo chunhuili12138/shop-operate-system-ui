@@ -199,6 +199,7 @@ onMounted(() => {
       <el-table v-loading="loading" :data="tableData" style="width: 100%">
         <el-table-column prop="name" label="商户名称" min-width="120" />
         <el-table-column prop="phone" label="手机号" width="130" />
+        <el-table-column prop="username" label="用户名" width="150" />
         <el-table-column label="席位数" width="120">
           <template #default="{ row }">
             {{ row.used_seats || 0 }} / {{ row.max_seats || 0 }}

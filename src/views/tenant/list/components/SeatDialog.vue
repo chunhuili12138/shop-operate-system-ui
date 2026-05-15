@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { message } from "@/utils/message";
 import { getSeatList, addSeat, renewSeat, deleteSeat } from "@/api/tenant";
 import { getDictData } from "@/api/system";
@@ -52,7 +52,7 @@ const openSeatAdd = () => {
     staffId: props.staffId,
     subscriptionType: 1,
     subscriptionNum: 1,
-    amount: "",
+    amount: 0,
     paymentMethod: ""
   });
   seatAddDialog.value = true;
@@ -74,7 +74,7 @@ const openSeatRenew = (row: any) => {
     seatId: row.id,
     subscriptionType: 1,
     subscriptionNum: 1,
-    amount: "",
+    amount: 0,
     paymentMethod: ""
   });
   seatRenewDialog.value = true;
@@ -108,6 +108,10 @@ const handleClose = () => {
   emit("update:visible", false);
 };
 
+onMounted(() => {
+  loadPaymentMethods();
+});
+
 defineExpose({
   openSeat
 });
@@ -132,8 +136,16 @@ defineExpose({
         </div>
       </template>
       <el-table :data="seats" style="width: 100%">
-        <el-table-column prop="start_date" label="生效" width="120" />
-        <el-table-column prop="end_date" label="到期" width="120" />
+        <el-table-column prop="start_date" label="生效" width="120">
+          <template #default="{ row }">
+            {{ row.start_date ? row.start_date.split(' ')[0] : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="end_date" label="到期" width="120">
+          <template #default="{ row }">
+            {{ row.end_date ? row.end_date.split(' ')[0] : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
@@ -254,8 +266,8 @@ defineExpose({
               <el-option
                 v-for="pm in paymentMethods"
                 :key="pm.dict_key"
-                :label="pm.dict_value"
-                :value="pm.dict_label"
+                :label="pm.dict_label"
+                :value="pm.dict_value"
               />
             </el-select>
           </el-form-item>
