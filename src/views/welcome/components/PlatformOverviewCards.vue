@@ -126,7 +126,7 @@ const formatPercent = (v: number) => `${(v * 100).toFixed(1)}%`;
       <el-col :xs="12" :sm="8" :md="4">
         <StatCard
           label="席位使用率"
-          :value="overview?.seatUtilization || 0"
+          :value="(overview?.seatUtilization || 0) * 100"
           suffix="%"
           icon="📐"
           gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"

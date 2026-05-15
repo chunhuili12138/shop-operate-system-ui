@@ -16,6 +16,7 @@ defineOptions({ name: "Welcome" });
 
 const loading = ref(true);
 const isSuper = useUserStoreHook().superAdmin;
+const isPlatform = ref(isSuper.value);
 
 const platformData = ref<PlatformDashboardData | null>(null);
 const shopStats = ref<ShopDashboardData>({});
@@ -57,9 +58,11 @@ const load = async () => {
   try {
     const r: any = await http.get("/dashboard/today");
     if (r?.success) {
-      if (isSuper.value) {
+      if (r.data?.overview) {
+        isPlatform.value = true;
         platformData.value = r.data as PlatformDashboardData;
       } else {
+        isPlatform.value = false;
         shopStats.value = (r.data as ShopDashboardData) || {};
       }
     }
@@ -76,12 +79,12 @@ onMounted(load);
     <div class="welcome-header">
       <h1 class="welcome-title">运营管理系统</h1>
       <p class="welcome-subtitle">
-        {{ isSuper ? "平台数据总览" : "店铺数据中心" }}
+        {{ isPlatform ? "平台数据总览" : "店铺数据中心" }}
       </p>
     </div>
 
     <!-- 超管首页 -->
-    <template v-if="isSuper">
+    <template v-if="isPlatform">
       <PlatformOverviewCards
         :overview="platformData?.overview"
         :top-tenants="platformData?.topTenants"
@@ -90,7 +93,7 @@ onMounted(load);
 
       <el-row :gutter="16" class="chart-section">
         <el-col :xs="24" :lg="16">
-          <el-card shadow="hover" class="chart-card" v-loading="loading">
+          <el-card v-loading="loading" shadow="hover" class="chart-card">
             <template #header>
               <div class="card-header">
                 <span class="header-icon">📈</span>
@@ -104,7 +107,7 @@ onMounted(load);
           </el-card>
         </el-col>
         <el-col :xs="24" :lg="8">
-          <el-card shadow="hover" class="chart-card" v-loading="loading">
+          <el-card v-loading="loading" shadow="hover" class="chart-card">
             <template #header>
               <div class="card-header">
                 <span class="header-icon">🎯</span>
@@ -126,7 +129,7 @@ onMounted(load);
 
       <el-row :gutter="16" class="chart-section">
         <el-col :xs="24" :md="12">
-          <el-card shadow="hover" class="chart-card" v-loading="loading">
+          <el-card v-loading="loading" shadow="hover" class="chart-card">
             <template #header>
               <div class="card-header">
                 <span class="header-icon">🏢</span>
@@ -140,7 +143,7 @@ onMounted(load);
           </el-card>
         </el-col>
         <el-col :xs="24" :md="12">
-          <el-card shadow="hover" class="chart-card" v-loading="loading">
+          <el-card v-loading="loading" shadow="hover" class="chart-card">
             <template #header>
               <div class="card-header">
                 <span class="header-icon">🏪</span>
@@ -192,12 +195,7 @@ onMounted(load);
     <!-- 店铺首页 -->
     <template v-else>
       <el-row :gutter="16" class="stats-row mb-6">
-        <el-col
-          v-for="card in shopCards"
-          :key="card.key"
-          :xs="12"
-          :sm="6"
-        >
+        <el-col v-for="card in shopCards" :key="card.key" :xs="12" :sm="6">
           <StatCard
             :label="card.label"
             :value="shopStats[card.key] ?? '-'"
