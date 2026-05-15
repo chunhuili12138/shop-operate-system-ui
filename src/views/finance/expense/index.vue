@@ -1,12 +1,21 @@
-﻿<script setup lang="ts">
-import { ref, onMounted, reactive } from "vue"; import { http } from "@/utils/http"; import { message } from "@/utils/message";
+<script setup lang="ts">
+import { ref, onMounted, reactive } from "vue";
+import { http } from "@/utils/http";
+import { message } from "@/utils/message";
+import {
+  getExpenseList,
+  getExpenseCategories,
+  addExpense,
+  updateExpense,
+  deleteExpense
+} from "@/api/finance";
 defineOptions({name:"FinanceExpense"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0);
 const D=ref(false),E=ref(false),cats=ref([]),F=reactive({expenseId:null,categoryId:"",amount:"",paymentMethod:"",expenseDate:"",remark:""});
-const load=async()=>{L.value=true;try{const r:any=await http.get("/expenses",{params:{page:P.value,size:S.value}});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
+const load=async()=>{L.value=true;try{const r=await getExpenseList({page:P.value,size:S.value});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
 const reset=()=>{P.value=1;load()};
 const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
-const loadCats=async()=>{const r:any=await http.get("/expenseCategories");r?.success&&(cats.value = r.data||[])};
-const save=async()=>{const url=E.value?"/expensesUpdate":"/expensesAdd";const r:any=await http.request(E.value?"put":"post",url,{data:F});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
+const loadCats=async()=>{const r=await getExpenseCategories();r?.success&&(cats.value = r.data||[])};
+const save=async()=>{const r=E.value?await updateExpense(F):await addExpense(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
 onMounted(()=>{load();loadCats()});
 </script>
 <template>
@@ -17,7 +26,7 @@ onMounted(()=>{load();loadCats()});
       <el-table-column prop="expense_date" label="日期"/><el-table-column prop="remark" label="备注"/>
       <el-table-column label="操作" width="150" fixed="right"><template #default="{row}">
         <el-button link type="primary" @click="D=true;E=true;Object.assign(F,{expenseId:row.id,categoryId:row.category_id,amount:row.amount,paymentMethod:row.payment_method,expenseDate:String(row.expense_date),remark:row.remark})">编辑</el-button>
-        <el-button link type="danger" @click="async()=>{await import('element-plus').then(m=>m.ElMessageBox.confirm('确认删除？','提示'));const r:any=await http.delete('/expensesDelete',{params:{expenseId:row.id}});r?.success?(message('已删除',{type:'success'}),load()):message(r?.msg||'失败',{type:'warning'})}">删除</el-button>
+        <el-button link type="danger" @click="async()=>{await import('element-plus').then(m=>m.ElMessageBox.confirm('确认删除？','提示'));const r=await deleteExpense(row.id);r?.success?(message('已删除',{type:'success'}),load()):message(r?.msg||'失败',{type:'warning'})}">删除</el-button>
       </template></el-table-column>
     </el-table></div>
     <el-pagination v-model:current-page="P" v-model:page-size="S" :total="t" :page-sizes="[10,20,50,100]" layout="total, sizes, prev, pager, next, jumper" @size-change="onSizeChange" @current-change="load" class="page-pagination"/>

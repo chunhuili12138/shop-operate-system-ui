@@ -1,7 +1,13 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getCommissionRules,
+  addCommissionRule,
+  getCommissionSettlements,
+  generateSettlement,
+  paySettlement
+} from "@/api/finance";
 
 defineOptions({ name: "FinanceCommission" });
 
@@ -33,8 +39,9 @@ const ruleForm = reactive({
 const loadRules = async () => {
   rulesLoading.value = true;
   try {
-    const r: any = await http.get("/commissionRules", {
-      params: { page: rulesPage.value, size: rulesSize.value }
+    const r = await getCommissionRules({
+      page: rulesPage.value,
+      size: rulesSize.value
     });
     if (r?.success) {
       rules.value = r.data.list;
@@ -48,8 +55,9 @@ const loadRules = async () => {
 const loadSettlements = async () => {
   settlementsLoading.value = true;
   try {
-    const r: any = await http.get("/commissionSettlements", {
-      params: { page: settlementsPage.value, size: settlementsSize.value }
+    const r = await getCommissionSettlements({
+      page: settlementsPage.value,
+      size: settlementsSize.value
     });
     if (r?.success) {
       settlements.value = r.data.list;
@@ -71,7 +79,7 @@ const openAddRule = () => {
 };
 
 const saveRule = async () => {
-  const r: any = await http.post("/commissionRulesAdd", { data: ruleForm });
+  const r = await addCommissionRule(ruleForm);
   if (r?.success) {
     message("规则已添加", { type: "success" });
     ruleDialog.value = false;
@@ -86,9 +94,7 @@ const generateSettlement = async () => {
     m.ElMessageBox.prompt("输入结算周期（如 2026-05）", "生成结算")
   );
   if (value) {
-    const r: any = await http.post("/commissionSettlementsGenerate", {
-      data: { settlementPeriod: value }
-    });
+    const r = await generateSettlement({ settlementPeriod: value });
     if (r?.success) {
       message("结算已生成", { type: "success" });
       loadSettlements();
@@ -99,9 +105,7 @@ const generateSettlement = async () => {
 };
 
 const paySettlement = async (id: number) => {
-  const r: any = await http.put("/commissionSettlementsPay", {
-    data: { settlementId: id }
-  });
+  const r = await paySettlement({ settlementId: id });
   if (r?.success) {
     message("提成已发放", { type: "success" });
     loadSettlements();

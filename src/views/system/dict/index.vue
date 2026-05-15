@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
 import type { FormInstance, FormRules } from "element-plus";
+import {
+  getDictList,
+  addDict,
+  updateDict,
+  deleteDict
+} from "@/api/system";
 
 defineOptions({ name: "SystemDict" });
 
@@ -31,9 +36,7 @@ const rules: FormRules = {
 };
 
 const loadCodes = async () => {
-  const r: any = await http.get("/system/dict/page", {
-    params: { page: 1, size: 999 }
-  });
+  const r = await getDictList({ page: 1, size: 999 });
   if (r?.success) {
     const codes = new Set<string>();
     r.data.list.forEach((x: any) => codes.add(x.dict_code));
@@ -45,8 +48,10 @@ const loadData = async () => {
   if (!currentCode.value) return;
   loading.value = true;
   try {
-    const r: any = await http.get("/system/dict/page", {
-      params: { page: 1, size: 999, dictCode: currentCode.value }
+    const r = await getDictList({
+      page: 1,
+      size: 999,
+      dictCode: currentCode.value
     });
     if (r?.success) tableData.value = r.data.list;
   } finally {
@@ -87,9 +92,9 @@ const save = async () => {
   await formRef.value.validate(async valid => {
     if (!valid) return;
 
-    const r: any = isEdit.value
-      ? await http.put("/system/dict/update", { data: form })
-      : await http.post("/system/dict/add", { data: form });
+    const r = isEdit.value
+      ? await updateDict(form)
+      : await addDict(form);
     if (r?.success) {
       message("保存成功", { type: "success" });
       dialogVisible.value = false;
@@ -105,7 +110,7 @@ const doDelete = async (id: number) => {
   await import("element-plus").then(m =>
     m.ElMessageBox.confirm("确认删除?", "提示")
   );
-  const r: any = await http.delete(`/system/dict/delete/${id}`);
+  const r = await deleteDict(id);
   if (r?.success) {
     message("已删除", { type: "success" });
     loadData();

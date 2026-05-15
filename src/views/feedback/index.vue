@@ -1,7 +1,11 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getFeedbackList,
+  getFeedbackInfo,
+  replyFeedback
+} from "@/api/feedback";
 
 defineOptions({ name: "Feedback" });
 
@@ -18,8 +22,9 @@ const replyText = ref("");
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/feedbacks/page", {
-      params: { page: page.value, size: size.value }
+    const r = await getFeedbackList({
+      page: page.value,
+      size: size.value
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -37,16 +42,15 @@ const onSizeChange = (s: number) => {
 };
 
 const openDetail = async (id: number) => {
-  const r: any = await http.get("/feedbacks/info", {
-    params: { feedbackId: id }
-  });
+  const r = await getFeedbackInfo(id);
   if (r?.success) detail.value = r.data;
   dialogVisible.value = true;
 };
 
 const reply = async () => {
-  const r: any = await http.put("/feedbacks/reply", {
-    data: { feedbackId: detail.value.id, replyContent: replyText.value }
+  const r = await replyFeedback({
+    feedbackId: detail.value.id,
+    replyContent: replyText.value
   });
   if (r?.success) {
     message("已回复", { type: "success" });

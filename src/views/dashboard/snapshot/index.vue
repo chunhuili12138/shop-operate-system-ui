@@ -1,7 +1,8 @@
-﻿<script setup lang="ts">
-import { ref, onMounted } from "vue"; import { http } from "@/utils/http";
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { getDailySnapshots } from "@/api/dashboard";
 defineOptions({name:"DashboardSnapshot"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0);
-const load=async()=>{L.value=true;try{const r:any=await http.get("/dailySnapshots",{params:{page:P.value,size:S.value}});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
+const load=async()=>{L.value=true;try{const r=await getDailySnapshots({page:P.value,size:S.value});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
 const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
 onMounted(load);
 </script>

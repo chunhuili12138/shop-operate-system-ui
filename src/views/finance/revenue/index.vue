@@ -1,6 +1,6 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { http } from "@/utils/http";
+import { getRevenueList } from "@/api/finance";
 
 defineOptions({ name: "FinanceRevenue" });
 
@@ -13,8 +13,9 @@ const total = ref(0);
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/revenues", {
-      params: { page: page.value, size: size.value }
+    const r = await getRevenueList({
+      page: page.value,
+      size: size.value
     });
     if (r?.success) {
       tableData.value = r.data.list;

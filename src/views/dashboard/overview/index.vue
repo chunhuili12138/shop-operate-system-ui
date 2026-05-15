@@ -1,7 +1,7 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { http } from "@/utils/http";
 import { useUserStoreHook } from "@/store/modules/user";
+import { getDashboardToday } from "@/api/dashboard";
 
 defineOptions({ name: "DashboardOverview" });
 
@@ -41,7 +41,7 @@ const statCards = computed(() =>
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/dashboard/today");
+    const r = await getDashboardToday();
     if (r?.success) data.value = r.data || {};
   } finally {
     loading.value = false;

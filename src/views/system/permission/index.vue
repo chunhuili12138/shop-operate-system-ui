@@ -1,9 +1,9 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { http } from "@/utils/http";
+import { getPermissionList } from "@/api/system";
 defineOptions({ name: "SystemPermission" });
 const treeData = ref([]);
-const loadData = async () => { const r: any = await http.get("/permissions/list"); if (r?.success) treeData.value = r.data; };
+const loadData = async () => { const r = await getPermissionList(); if (r?.success) treeData.value = r.data; };
 onMounted(loadData);
 </script>
 <template>

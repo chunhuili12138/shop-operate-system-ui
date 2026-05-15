@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getNotificationList,
+  markNotificationsRead
+} from "@/api/finance";
 
 defineOptions({ name: "FinanceNotification" });
 
@@ -15,8 +18,9 @@ const unreadCount = ref(0);
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/notifications", {
-      params: { page: page.value, size: size.value }
+    const r = await getNotificationList({
+      page: page.value,
+      size: size.value
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -29,9 +33,7 @@ const load = async () => {
 
 const loadUnreadCount = async () => {
   try {
-    const r: any = await http.get("/notifications", {
-      params: { page: 1, size: 1 }
-    });
+    const r = await getNotificationList({ page: 1, size: 1 });
     if (r?.success) {
       const list = r.data.list || [];
       unreadCount.value = list.filter((v: any) => v.status === 1).length;
@@ -40,8 +42,8 @@ const loadUnreadCount = async () => {
 };
 
 const markAsRead = async (id: string) => {
-  const r: any = await http.put("/notificationsRead", {
-    data: { notificationIds: String(id) }
+  const r = await markNotificationsRead({
+    notificationIds: String(id)
   });
   if (r?.success) {
     message("已标记为已读", { type: "success" });
@@ -60,9 +62,7 @@ const markAllAsRead = async () => {
     message("没有未读通知", { type: "warning" });
     return;
   }
-  const r: any = await http.put("/notificationsRead", {
-    data: { notificationIds: ids }
-  });
+  const r = await markNotificationsRead({ notificationIds: ids });
   if (r?.success) {
     message("全部已读", { type: "success" });
     load();

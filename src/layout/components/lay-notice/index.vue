@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import { noticesData, setNotifications } from "./data";
 import NoticeList from "./components/NoticeList.vue";
 import BellIcon from "~icons/ep/bell";
-import { http } from "@/utils/http";
+import { getNotificationList } from "@/api/finance";
 
 const noticesNum = ref(0);
 const notices = ref(noticesData);
@@ -11,9 +11,7 @@ const activeKey = ref(noticesData[0]?.key);
 
 const fetchNotifications = async () => {
   try {
-    const r: any = await http.get("/notifications", {
-      params: { page: 1, size: 10 }
-    });
+    const r = await getNotificationList({ page: 1, size: 10 });
     if (r?.success && r.data?.list) {
       const items = r.data.list.map((v: any) => ({
         title: v.title,

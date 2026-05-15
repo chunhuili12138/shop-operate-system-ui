@@ -1,8 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import {
+  getStaffList,
+  addStaff,
+  updateStaff,
+  resetStaffPassword,
+  deleteStaff,
+  getRoleList,
+  getShopList
+} from "@/api/system";
 
 defineOptions({ name: "SystemStaff" });
 
@@ -47,8 +55,10 @@ const newPwd = ref("");
 const loadData = async () => {
   loading.value = true;
   try {
-    const res: any = await http.get("/staff/page", {
-      params: { page: page.value, size: size.value, ...query }
+    const res = await getStaffList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (res?.success) {
       tableData.value = res.data.list;
@@ -74,9 +84,9 @@ const onSizeChange = (s: number) => {
 };
 
 const loadOptions = async () => {
-  const [r, s]: any = await Promise.all([
-    http.get("/roles/list"),
-    http.get("/shops/page", { params: { page: 1, size: 999, status: 1 } })
+  const [r, s] = await Promise.all([
+    getRoleList(),
+    getShopList({ page: 1, size: 999, status: 1 })
   ]);
   if (r?.success) roles.value = r.data;
   if (s?.success) shops.value = s.data.list;
@@ -119,9 +129,9 @@ const openEdit = (row: any) => {
 const save = async () => {
   if (!formRef.value) return;
   await formRef.value.validate();
-  const url = isEdit.value ? "/staff/update" : "/staff/add";
-  const method = isEdit.value ? "put" : "post";
-  const res: any = await http.request(method, url, { data: form });
+  const res = isEdit.value 
+    ? await updateStaff(form)
+    : await addStaff(form);
   if (res?.success) {
     message("操作成功", { type: "success" });
     dialogVisible.value = false;
@@ -143,8 +153,9 @@ const doResetPwd = async () => {
     m.ElMessageBox.prompt("请输入新密码", "重置密码")
   );
   if (value) {
-    const res: any = await http.put("/staff/password", {
-      data: { staffId: pwdStaffId.value, newPassword: value }
+    const res = await resetStaffPassword({
+      staffId: pwdStaffId.value,
+      newPassword: value
     });
     if (res?.success) {
       message("密码已重置", { type: "success" });
@@ -160,9 +171,7 @@ const doDelete = async (staffId: number) => {
   await import("element-plus").then(m =>
     m.ElMessageBox.confirm("确认删除？", "提示")
   );
-  const res: any = await http.delete("/staff/delete", {
-    params: { staffId }
-  });
+  const res = await deleteStaff(staffId);
   if (res?.success) {
     message("已删除", { type: "success" });
     loadData();

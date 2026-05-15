@@ -1,7 +1,14 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getCouponList,
+  addCoupon,
+  updateCoupon,
+  updateCouponStatus,
+  getCouponUsages,
+  grantCoupon
+} from "@/api/marketing";
 
 defineOptions({ name: "MktCoupon" });
 
@@ -34,8 +41,10 @@ const grantIds = ref("");
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/coupons", {
-      params: { page: page.value, size: size.value, ...query }
+    const r = await getCouponList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -87,9 +96,9 @@ const openEdit = (row: any) => {
 };
 
 const save = async () => {
-  const url = isEdit.value ? "/couponsUpdate" : "/couponsAdd";
-  const method = isEdit.value ? "put" : "post";
-  const r: any = await http.request(method, url, { data: form });
+  const r = isEdit.value 
+    ? await updateCoupon(form)
+    : await addCoupon(form);
   if (r?.success) {
     message("保存成功", { type: "success" });
     dialogVisible.value = false;
@@ -100,11 +109,8 @@ const save = async () => {
 };
 
 const toggle = (id: number, active: number) => {
-  http
-    .put("/couponsStatus", {
-      data: { couponId: id, isActive: active ? 0 : 1 }
-    })
-    .then((r: any) => {
+  updateCouponStatus({ couponId: id, isActive: active ? 0 : 1 })
+    .then((r) => {
       if (r?.success) {
         message("已切换", { type: "success" });
         load();
@@ -115,8 +121,10 @@ const toggle = (id: number, active: number) => {
 };
 
 const openUsage = async (id: number) => {
-  const r: any = await http.get("/couponUsages", {
-    params: { couponId: id, page: 1, size: 50 }
+  const r = await getCouponUsages({
+    couponId: id,
+    page: 1,
+    size: 50
   });
   if (r?.success) usageList.value = r.data.list;
   usageDialog.value = true;
@@ -130,8 +138,9 @@ const openGrant = (id: number) => {
 
 const doGrant = async () => {
   if (!grantIds.value) return;
-  const r: any = await http.post("/couponUsagesGrant", {
-    data: { couponId: grantCouponId.value, customerIds: grantIds.value }
+  const r = await grantCoupon({
+    couponId: grantCouponId.value,
+    customerIds: grantIds.value
   });
   if (r?.success) {
     message("已发放", { type: "success" });

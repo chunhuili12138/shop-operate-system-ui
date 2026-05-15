@@ -1,7 +1,13 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getPackageList,
+  addPackage,
+  updatePackage,
+  updatePackageStatus,
+  getPackageBom
+} from "@/api/package";
 
 defineOptions({ name: "PackageList" });
 
@@ -32,8 +38,10 @@ const form = reactive({
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/packages/page", {
-      params: { page: page.value, size: size.value, ...query }
+    const r = await getPackageList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -89,11 +97,9 @@ const openEdit = (row: any) => {
 };
 
 const save = async () => {
-  const url = isEdit.value ? "/packages/update" : "/packages/add";
-  const method = isEdit.value ? "put" : "post";
-  const r: any = await http.request(method, url, {
-    data: { ...form, bom: JSON.stringify(form.bom) }
-  });
+  const r = isEdit.value 
+    ? await updatePackage({ ...form, bom: JSON.stringify(form.bom) })
+    : await addPackage({ ...form, bom: JSON.stringify(form.bom) });
   if (r?.success) {
     message("保存成功", { type: "success" });
     dialogVisible.value = false;
@@ -104,8 +110,9 @@ const save = async () => {
 };
 
 const toggle = async (id: number, status: number) => {
-  const r: any = await http.put("/packages/status", {
-    data: { packageId: id, isActive: status ? 0 : 1 }
+  const r = await updatePackageStatus({
+    packageId: id,
+    isActive: status ? 0 : 1
   });
   if (r?.success) {
     message("已切换", { type: "success" });
@@ -116,9 +123,7 @@ const toggle = async (id: number, status: number) => {
 };
 
 const openBom = async (id: number) => {
-  const r: any = await http.get("/packages/bom", {
-    params: { packagesId: id }
-  });
+  const r = await getPackageBom(id);
   if (r?.success) bomList.value = r.data || [];
   bomDialog.value = true;
 };

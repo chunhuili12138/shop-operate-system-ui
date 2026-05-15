@@ -1,10 +1,15 @@
-﻿<script setup lang="ts">
-import { ref, onMounted, reactive } from "vue"; import { http } from "@/utils/http"; import { message } from "@/utils/message";
+<script setup lang="ts">
+import { ref, onMounted, reactive } from "vue";
+import { message } from "@/utils/message";
+import {
+  getInvoiceList,
+  addInvoice
+} from "@/api/finance";
 defineOptions({name:"FinanceInvoice"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0);
 const D=ref(false),F=reactive({referenceType:"purchase",referenceId:"",invoiceNumber:"",amount:"",issuedAt:""});
-const load=async()=>{L.value=true;try{const r:any=await http.get("/invoices",{params:{page:P.value,size:S.value}});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
+const load=async()=>{L.value=true;try{const r=await getInvoiceList({page:P.value,size:S.value});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
 const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
-const save=async()=>{const r:any=await http.post("/invoicesAdd",{data:F});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
+const save=async()=>{const r=await addInvoice(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
 onMounted(load);
 </script>
 <template>

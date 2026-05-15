@@ -1,8 +1,14 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import {
+  getRoleList,
+  addRole,
+  updateRole,
+  setRolePermissions,
+  getPermissionList
+} from "@/api/system";
 
 defineOptions({ name: "SystemRole" });
 
@@ -22,7 +28,7 @@ const checkedPerms = ref<number[]>([]);
 const treeRef = ref();
 
 const loadData = async () => {
-  const r: any = await http.get("/roles/list");
+  const r = await getRoleList();
   if (r?.success) tableData.value = r.data;
 };
 
@@ -43,9 +49,9 @@ const openEdit = (row: any) => {
 };
 
 const save = async () => {
-  const method = isEdit.value ? "put" : "post";
-  const url = isEdit.value ? "/roles/update" : "/roles/add";
-  const r: any = await http.request(method, url, { data: form });
+  const r = isEdit.value 
+    ? await updateRole(form)
+    : await addRole(form);
   if (r?.success) {
     message("保存成功", { type: "success" });
     formDialog.value = false;
@@ -57,24 +63,22 @@ const save = async () => {
 
 const openPerms = async (role: any) => {
   currentRole.value = role;
-  const [r1, r2]: any = await Promise.all([
-    http.get("/permissions/list"),
-    http.get("/roles/list")
+  const [r1, r2] = await Promise.all([
+    getPermissionList(),
+    getRoleList()
   ]);
-  if (r1?.success) permTree.value = r1.data.data;
+  if (r1?.success) permTree.value = r1.data;
   if (r2?.success) {
-    const info = r2.data.data.find((x: any) => x.id === role.id);
+    const info = r2.data.find((x: any) => x.id === role.id);
     checkedPerms.value = info?.permissionIds || [];
   }
   permDialog.value = true;
 };
 
 const savePerms = async () => {
-  const r: any = await http.put("/roles/permissions", {
-    data: {
-      roleId: currentRole.value.id,
-      permissionIds: checkedPerms.value.join(",")
-    }
+  const r = await setRolePermissions({
+    roleId: currentRole.value.id,
+    permissionIds: checkedPerms.value.join(",")
   });
   if (r?.success) {
     message("权限已保存", { type: "success" });

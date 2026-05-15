@@ -1,18 +1,27 @@
-﻿<script setup lang="ts">
-import { ref, onMounted, reactive } from "vue"; import { http } from "@/utils/http"; import { message } from "@/utils/message";
+<script setup lang="ts">
+import { ref, onMounted, reactive } from "vue";
+import { message } from "@/utils/message";
+import {
+  getPurchaseOrderList,
+  getSupplierList,
+  addPurchaseOrder,
+  updatePurchaseOrderStatus,
+  getPurchaseOrderItems,
+  payPurchaseOrder
+} from "@/api/inventory";
 defineOptions({name:"InvPurchase"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0),Q=reactive({status:""as any});
 const D=ref(false),suppliers=ref([]),F=reactive({supplierId:"",orderDate:"",type:1,remark:"",items:[]as any[]});
 const itemsVis=ref(false),itemsList=ref([]);
-const load=async()=>{L.value=true;try{const r:any=await http.get("/purchaseOrders",{params:{page:P.value,size:S.value,...Q}});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
+const load=async()=>{L.value=true;try{const r=await getPurchaseOrderList({page:P.value,size:S.value,...Q});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
 const reset=()=>{Q.status="";P.value=1;load()};
 const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
-const loadSup=async()=>{await http.get("/suppliers",{params:{page:1,size:999}}).then((r:any)=>{if(r?.success)suppliers.value=r.data.list})};
+const loadSup=async()=>{const r=await getSupplierList(1,999);if(r?.success)suppliers.value=r.data.list};
 const openAdd=()=>{Object.assign(F,{supplierId:"",orderDate:"",type:1,remark:"",items:[]});loadSup();D.value=true};
 const addItem=()=>F.items.push({materialId:"",quantity:1,unitPrice:"0"});
-const save=async()=>{const r:any=await http.post("/purchaseOrdersAdd",{data:{...F,items:JSON.stringify(F.items)}});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
-const updateStatus=async(id:number,st:number)=>{const r:any=await http.put("/purchaseOrdersStatus",{data:{orderId:id,status:st}});r?.success?(message("已更新",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
-const openItems=async(id:number)=>{const r:any=await http.get("/purchaseOrdersItems",{params:{orderId:id}});r?.success&&(itemsList.value = r.data||[]);itemsVis.value=true};
-const payOrder=async(id:number)=>{const{v}=await import("element-plus").then(m=>m.ElMessageBox.prompt("输入付款金额","付款"));if(v){const r:any=await http.post("/purchaseOrdersPay",{data:{orderId:id,amount:v,paymentMethod:"cash",paidAt:new Date().toISOString().split("T")[0]}});r?.success?(message("已付款",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})}};
+const save=async()=>{const r=await addPurchaseOrder({...F,items:JSON.stringify(F.items)});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
+const updateStatus=async(id:number,st:number)=>{const r=await updatePurchaseOrderStatus({orderId:id,status:st});r?.success?(message("已更新",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
+const openItems=async(id:number)=>{const r=await getPurchaseOrderItems(id);r?.success&&(itemsList.value = r.data||[]);itemsVis.value=true};
+const payOrder=async(id:number)=>{const{v}=await import("element-plus").then(m=>m.ElMessageBox.prompt("输入付款金额","付款"));if(v){const r=await payPurchaseOrder({orderId:id,amount:v,paymentMethod:"cash",paidAt:new Date().toISOString().split("T")[0]});r?.success?(message("已付款",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})}};
 onMounted(load);
 </script>
 <template>

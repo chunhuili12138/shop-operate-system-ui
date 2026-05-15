@@ -1,15 +1,24 @@
-﻿<script setup lang="ts">
-import { ref, onMounted, reactive } from "vue"; import { http } from "@/utils/http"; import { message } from "@/utils/message";
+<script setup lang="ts">
+import { ref, onMounted, reactive } from "vue";
+import { message } from "@/utils/message";
+import {
+  getArticleList,
+  getArticleCategories,
+  addArticle,
+  updateArticle,
+  publishArticle,
+  deleteArticle
+} from "@/api/marketing";
 defineOptions({name:"MktArticle"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0),Q=reactive({keyword:"",isPublished:""as any});
 const D=ref(false),E=ref(false),F=reactive({articleId:null,categoryId:"",title:"",content:"",coverImage:"",contentType:3});
 const cats=ref([]);
-const load=async()=>{L.value=true;try{const r:any=await http.get("/articles",{params:{page:P.value,size:S.value,...Q}});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
+const load=async()=>{L.value=true;try{const r=await getArticleList({page:P.value,size:S.value,...Q});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
 const reset=()=>{Q.keyword="";Q.isPublished="";P.value=1;load()};
 const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
-const loadCats=async()=>{const r:any=await http.get("/articleCategories");r?.success&&(cats.value = r.data||[])};
-const save=async()=>{const url=E.value?"/articlesUpdate":"/articlesAdd";const r:any=await http.request(E.value?"put":"post",url,{data:F});r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
-const toggle=(id:number,pub:number)=>{http.put("/articlesPublish",{data:{articleId:id,isPublished:pub?0:1}}).then((r:any)=>{r?.success?(message("已操作",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})})};
-const doDelete=async(id:number)=>{await import("element-plus").then(m=>m.ElMessageBox.confirm("确认删除？","提示"));const r:any=await http.delete("/articlesDelete",{params:{articleId:id}});r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
+const loadCats=async()=>{const r=await getArticleCategories();r?.success&&(cats.value = r.data||[])};
+const save=async()=>{const r=E.value?await updateArticle(F):await addArticle(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
+const toggle=(id:number,pub:number)=>{publishArticle({articleId:id,isPublished:pub?0:1}).then((r)=>{r?.success?(message("已操作",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})})};
+const doDelete=async(id:number)=>{await import("element-plus").then(m=>m.ElMessageBox.confirm("确认删除？","提示"));const r=await deleteArticle(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
 onMounted(()=>{load();loadCats()});
 </script>
 <template>

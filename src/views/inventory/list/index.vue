@@ -1,7 +1,13 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import {
+  getInventoryList,
+  getInventoryWarnings,
+  inventoryInbound,
+  inventoryOutbound,
+  getInventoryTransactions
+} from "@/api/inventory";
 
 defineOptions({ name: "InvList" });
 
@@ -24,8 +30,10 @@ const txList = ref([]);
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/inventory/page", {
-      params: { page: page.value, size: size.value, ...query }
+    const r = await getInventoryList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -49,7 +57,7 @@ const onSizeChange = (s: number) => {
 };
 
 const loadWarn = async () => {
-  const r: any = await http.get("/inventory/warnings");
+  const r = await getInventoryWarnings();
   if (r?.success) warnList.value = r.data || [];
   warnDialog.value = true;
 };
@@ -63,8 +71,9 @@ const openIo = (type: number, materialId: string) => {
 };
 
 const doIo = async () => {
-  const url = ioType.value === 1 ? "/inventoryInbound" : "/inventoryOutbound";
-  const r: any = await http.post(url, { data: ioForm });
+  const r = ioType.value === 1 
+    ? await inventoryInbound(ioForm)
+    : await inventoryOutbound(ioForm);
   if (r?.success) {
     message("操作成功", { type: "success" });
     ioDialog.value = false;
@@ -75,8 +84,10 @@ const doIo = async () => {
 };
 
 const openTx = async (mid: string) => {
-  const r: any = await http.get("/inventoryTransactions", {
-    params: { materialId: mid, page: 1, size: 50 }
+  const r = await getInventoryTransactions({
+    materialId: mid,
+    page: 1,
+    size: 50
   });
   if (r?.success) txList.value = r.data.list;
   txDialog.value = true;

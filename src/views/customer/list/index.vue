@@ -1,8 +1,18 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import {
+  getCustomerList,
+  addCustomer,
+  updateCustomer,
+  getCustomerInfo,
+  getCustomerWallet,
+  getCustomerPurchases,
+  getCustomerPoints,
+  adjustWallet,
+  adjustPoints
+} from "@/api/customer";
 
 defineOptions({ name: "CustomerList" });
 
@@ -50,8 +60,10 @@ const editForm = reactive({
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/customers/page", {
-      params: { page: page.value, size: size.value, ...query }
+    const r = await getCustomerList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -89,7 +101,7 @@ const openAdd = () => {
 };
 
 const saveAdd = async () => {
-  const r: any = await http.post("/customers/add", { data: addForm });
+  const r = await addCustomer(addForm);
   if (r?.success) {
     message("新增成功", { type: "success" });
     addDialog.value = false;
@@ -113,7 +125,7 @@ const openEdit = (row: any) => {
 };
 
 const saveEdit = async () => {
-  const r: any = await http.put("/customers/update", { data: editForm });
+  const r = await updateCustomer(editForm);
   if (r?.success) {
     message("编辑成功", { type: "success" });
     editDialog.value = false;
@@ -125,15 +137,13 @@ const saveEdit = async () => {
 
 // ---- 详情 ----
 const openDetail = async (id: number) => {
-  const r: any = await http.get("/customers/info", {
-    params: { customersId: id }
-  });
+  const r = await getCustomerInfo(id);
   if (r?.success) {
     detail.value = r.data;
-    const [w, p, pu]: any = await Promise.all([
-      http.get("/customers/wallet", { params: { customersId: id } }),
-      http.get("/customers/purchases", { params: { customersId: id, page: 1, size: 50 } }),
-      http.get("/customers/points", { params: { customersId: id, page: 1, size: 50 } })
+    const [w, p, pu] = await Promise.all([
+      getCustomerWallet(id),
+      getCustomerPurchases(id, 1, 50),
+      getCustomerPoints(id, 1, 50)
     ]);
     if (w?.success) wallet.value = w.data;
     if (p?.success) purchases.value = p.data.list;
@@ -145,8 +155,11 @@ const openDetail = async (id: number) => {
 const adjWallet = (cid: number, type: number) => {
   import("element-plus").then(m =>
     m.ElMessageBox.prompt("输入金额", "钱包调整").then(async ({ value }: any) => {
-      const r: any = await http.post("/customers/walletAdjust", {
-        data: { customersId: cid, type, amount: value, remark: "手动调整" }
+      const r = await adjustWallet({
+        customersId: cid,
+        type,
+        amount: value,
+        remark: "手动调整"
       });
       if (r?.success) {
         message("调整成功", { type: "success" });
@@ -162,8 +175,10 @@ const adjPoints = (cid: number) => {
   import("element-plus").then(m =>
     m.ElMessageBox.prompt("输入积分数量（正数增加，负数扣减）", "积分调整").then(
       async ({ value }: any) => {
-        const r: any = await http.put("/customers/pointsAdjust", {
-          data: { customersId: cid, points: parseInt(value), remark: "手动调整" }
+        const r = await adjustPoints({
+          customersId: cid,
+          points: parseInt(value),
+          remark: "手动调整"
         });
         if (r?.success) {
           message("调整成功", { type: "success" });

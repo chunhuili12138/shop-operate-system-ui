@@ -1,8 +1,15 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
-import { http } from "@/utils/http";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
+import {
+  getShopList,
+  getShopInfo,
+  addShop,
+  updateShop,
+  updateShopStatus,
+  deleteShop
+} from "@/api/shop";
 defineOptions({ name: "ShopList" });
 
 const tableData = ref([]);
@@ -30,8 +37,10 @@ const form = reactive({
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/shops/page", {
-      params: { page: page.value, size: size.value, ...query }
+    const r = await getShopList({
+      page: page.value,
+      size: size.value,
+      ...query
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -56,8 +65,9 @@ const onSizeChange = (s: number) => {
 };
 
 const toggle = async (id: number, status: number) => {
-  const r: any = await http.put("/shops/status", {
-    data: { shopsId: id, status: status ? 0 : 1 }
+  const r = await updateShopStatus({
+    shopsId: id,
+    status: status ? 0 : 1
   });
   if (r?.success) {
     message("已切换", { type: "success" });
@@ -71,9 +81,7 @@ const doDelete = async (id: number) => {
   await import("element-plus").then(m =>
     m.ElMessageBox.confirm("确认删除？", "提示")
   );
-  const r: any = await http.delete("/shops/delete", {
-    params: { shopsId: id }
-  });
+  const r = await deleteShop(id);
   if (r?.success) {
     message("已删除", { type: "success" });
     load();
@@ -97,9 +105,7 @@ const openAdd = () => {
 };
 
 const openEdit = async (id: number) => {
-  const r: any = await http.get("/shops/info", {
-    params: { shopsId: id }
-  });
+  const r = await getShopInfo(id);
   if (r?.success) {
     const d = r.data;
     Object.assign(form, {
@@ -117,11 +123,9 @@ const openEdit = async (id: number) => {
 };
 
 const save = async () => {
-  const url = isEdit.value ? "/shops/update" : "/shops/add";
-  const method = isEdit.value ? "put" : "post";
-  const r: any = await http.request(method, url, {
-    data: form
-  });
+  const r = isEdit.value 
+    ? await updateShop(form)
+    : await addShop(form);
   if (r?.success) {
     message("保存成功", { type: "success" });
     dialogVisible.value = false;
