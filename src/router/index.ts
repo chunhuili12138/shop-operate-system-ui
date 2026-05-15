@@ -199,8 +199,8 @@ router.beforeEach((to: ToRouteType, _from, next) => {
               }
             }
           }
-          if (isAllEmpty(to.name)) router.push(to.fullPath);
-          toCorrectRoute();
+          // 使用 next 而不是 router.push，确保路由守卫正确处理
+          next({ ...to, replace: true });
         });
         return;
       }
