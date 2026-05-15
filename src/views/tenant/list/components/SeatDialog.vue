@@ -30,6 +30,8 @@ const seatRenewForm = reactive({
   amount: 0,
   paymentMethod: ""
 });
+const seatFormRef = ref();
+const seatRenewFormRef = ref();
 
 // 字典
 const paymentMethods = ref([] as any[]);
@@ -60,13 +62,18 @@ const openSeatAdd = () => {
 };
 
 const doSeatAdd = async () => {
-  const r = await addSeat(seatForm);
-  if (r?.success) {
-    message("席位已添加", { type: "success" });
-    seatAddDialog.value = false;
-    openSeat();
-  } else {
-    message(r?.msg || "失败", { type: "warning" });
+  try {
+    await seatFormRef.value.validate();
+    const r = await addSeat(seatForm);
+    if (r?.success) {
+      message("席位已添加", { type: "success" });
+      seatAddDialog.value = false;
+      openSeat();
+    } else {
+      message(r?.msg || "失败", { type: "warning" });
+    }
+  } catch {
+    // 验证失败
   }
 };
 
@@ -82,13 +89,18 @@ const openSeatRenew = (row: any) => {
 };
 
 const doSeatRenew = async () => {
-  const r = await renewSeat(seatRenewForm);
-  if (r?.success) {
-    message("续订成功", { type: "success" });
-    seatRenewDialog.value = false;
-    openSeat();
-  } else {
-    message(r?.msg || "失败", { type: "warning" });
+  try {
+    await seatRenewFormRef.value.validate();
+    const r = await renewSeat(seatRenewForm);
+    if (r?.success) {
+      message("续订成功", { type: "success" });
+      seatRenewDialog.value = false;
+      openSeat();
+    } else {
+      message(r?.msg || "失败", { type: "warning" });
+    }
+  } catch {
+    // 验证失败
   }
 };
 
@@ -184,7 +196,16 @@ defineExpose({
         :close-on-click-modal="false"
         append-to-body
       >
-        <el-form :model="seatForm" label-width="100px">
+        <el-form
+          ref="seatFormRef"
+          :model="seatForm"
+          label-width="100px"
+          :rules="{
+            paymentMethod: [
+              { required: true, message: '请选择支付方式', trigger: 'change' }
+            ]
+          }"
+        >
           <el-form-item label="类型">
             <el-select v-model="seatForm.subscriptionType" style="width: 100%">
               <el-option label="月付" :value="1" />
@@ -192,21 +213,16 @@ defineExpose({
             </el-select>
           </el-form-item>
           <el-form-item label="数量">
-            <el-input-number
-              v-model="seatForm.subscriptionNum"
-              :min="1"
-              style="width: 100%"
-            />
+            <el-input-number v-model="seatForm.subscriptionNum" :min="1" />
           </el-form-item>
           <el-form-item label="金额">
             <el-input-number
               v-model="seatForm.amount"
               :min="0"
               :precision="2"
-              style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="支付方式">
+          <el-form-item label="支付方式" prop="paymentMethod">
             <el-select
               v-model="seatForm.paymentMethod"
               style="width: 100%"
@@ -236,7 +252,16 @@ defineExpose({
         :close-on-click-modal="false"
         append-to-body
       >
-        <el-form :model="seatRenewForm" label-width="100px">
+        <el-form
+          ref="seatRenewFormRef"
+          :model="seatRenewForm"
+          label-width="100px"
+          :rules="{
+            paymentMethod: [
+              { required: true, message: '请选择支付方式', trigger: 'change' }
+            ]
+          }"
+        >
           <el-form-item label="类型">
             <el-select
               v-model="seatRenewForm.subscriptionType"
@@ -247,21 +272,16 @@ defineExpose({
             </el-select>
           </el-form-item>
           <el-form-item label="数量">
-            <el-input-number
-              v-model="seatRenewForm.subscriptionNum"
-              :min="1"
-              style="width: 100%"
-            />
+            <el-input-number v-model="seatRenewForm.subscriptionNum" :min="1" />
           </el-form-item>
           <el-form-item label="金额">
             <el-input-number
               v-model="seatRenewForm.amount"
               :min="0"
               :precision="2"
-              style="width: 100%"
             />
           </el-form-item>
-          <el-form-item label="支付方式">
+          <el-form-item label="支付方式" prop="paymentMethod">
             <el-select
               v-model="seatRenewForm.paymentMethod"
               style="width: 100%"
