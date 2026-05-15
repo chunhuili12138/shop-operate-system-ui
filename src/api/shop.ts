@@ -1,0 +1,91 @@
+import { http } from "@/utils/http";
+import { ApiResult } from "@/types/api";
+
+// 店铺查询参数
+export interface ShopQueryParams {
+  page?: number;
+  size?: number;
+  keyword?: string;
+  status?: number | string;
+}
+
+// 店铺列表响应
+export interface ShopListResult {
+  success: boolean;
+  code: number;
+  msg: string;
+  data: {
+    list: Array<{
+      id: number;
+      name: string;
+      owner_name: string;
+      contact_phone: string;
+      address: string;
+      status: number;
+      created_at: string;
+    }>;
+    total: number;
+  };
+  timestamp: number;
+}
+
+// 店铺信息
+export interface ShopInfo {
+  id: number;
+  name: string;
+  address: string;
+  contact_phone: string;
+  max_capacity: number;
+  description: string;
+}
+
+// 店铺表单参数
+export interface ShopFormParams {
+  shopsId?: number | null;
+  name: string;
+  address: string;
+  contactPhone: string;
+  maxCapacity: number | null;
+  description: string;
+  seatId?: string;
+}
+
+// 店铺状态参数
+export interface ShopStatusParams {
+  shopsId: number;
+  status: number;
+}
+
+/** 获取店铺列表 */
+export const getShopList = (params?: ShopQueryParams) => {
+  return http.request<ShopListResult>("get", "/shops/page", { params });
+};
+
+/** 获取店铺详情 */
+export const getShopInfo = (shopsId: number) => {
+  return http.request<ApiResult>("get", "/shops/info", { 
+    params: { shopsId } 
+  });
+};
+
+/** 新增店铺 */
+export const addShop = (data: ShopFormParams) => {
+  return http.request<ApiResult>("post", "/shops/add", { data });
+};
+
+/** 更新店铺 */
+export const updateShop = (data: ShopFormParams) => {
+  return http.request<ApiResult>("put", "/shops/update", { data });
+};
+
+/** 切换店铺状态 */
+export const updateShopStatus = (data: ShopStatusParams) => {
+  return http.request<ApiResult>("put", "/shops/status", { data });
+};
+
+/** 删除店铺 */
+export const deleteShop = (shopsId: number) => {
+  return http.request<ApiResult>("delete", "/shops/delete", { 
+    params: { shopsId } 
+  });
+};
