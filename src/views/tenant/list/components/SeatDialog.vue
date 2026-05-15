@@ -121,7 +121,7 @@ defineExpose({
     <el-dialog
       :model-value="visible"
       title="席位管理"
-      width="750px"
+      width="800px"
       class="dialog-lg"
       :close-on-click-modal="false"
       @close="handleClose"
@@ -153,7 +153,11 @@ defineExpose({
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="shop_names" label="关联店铺" />
+        <el-table-column prop="shop_names" label="关联店铺">
+          <template #default="{ row }">
+            {{ row.shop_names ? row.shop_names : "-" }}
+          </template>
+        </el-table-column>
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
             <el-button

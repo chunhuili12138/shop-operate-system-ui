@@ -31,7 +31,7 @@ const form = reactive({
   name: "",
   address: "",
   contactPhone: "",
-  maxCapacity: null as number | null,
+  maxCapacity: 20,
   description: "",
   seatId: ""
 });
@@ -99,7 +99,7 @@ const openAdd = async () => {
     name: "",
     address: "",
     contactPhone: "",
-    maxCapacity: null,
+    maxCapacity: 20,
     description: "",
     seatId: ""
   });
@@ -127,9 +127,7 @@ const openEdit = async (id: number) => {
 };
 
 const save = async () => {
-  const r = isEdit.value 
-    ? await updateShop(form)
-    : await addShop(form);
+  const r = isEdit.value ? await updateShop(form) : await addShop(form);
   if (r?.success) {
     message("保存成功", { type: "success" });
     dialogVisible.value = false;
@@ -152,7 +150,7 @@ onMounted(load);
             v-model="query.keyword"
             placeholder="店铺名称/手机号"
             clearable
-            style="width:180px"
+            style="width: 180px"
             @keyup.enter="load"
           />
         </el-form-item>
@@ -161,7 +159,7 @@ onMounted(load);
             v-model="query.status"
             clearable
             placeholder="全部"
-            style="width:120px"
+            style="width: 120px"
           >
             <el-option label="营业中" :value="1" />
             <el-option label="休息" :value="0" />
@@ -170,9 +168,7 @@ onMounted(load);
       </el-form>
       <div class="page-header-actions">
         <div>
-          <el-button type="primary" @click="openAdd">
-            + 新增店铺
-          </el-button>
+          <el-button type="primary" @click="openAdd"> + 新增店铺 </el-button>
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
@@ -183,13 +179,10 @@ onMounted(load);
 
     <!-- 表格区 -->
     <div class="page-table">
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        style="width: 100%"
-      >
-        <el-table-column prop="name" label="店铺名称" min-width="150" />
+      <el-table v-loading="loading" :data="tableData" style="width: 100%">
+        <el-table-column prop="name" label="店铺名称" width="150" />
         <el-table-column prop="owner_name" label="所属商户" width="120" />
+        <el-table-column prop="max_capacity" label="最大容量" width="90" />
         <el-table-column prop="contact_phone" label="电话" width="130" />
         <el-table-column
           prop="address"
@@ -197,15 +190,19 @@ onMounted(load);
           min-width="160"
           show-overflow-tooltip
         />
+        <el-table-column prop="description" label="描述" min-width="160" />
         <el-table-column label="营业状态" width="90" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+            <el-tag
+              :type="row.status === 1 ? 'success' : 'danger'"
+              size="small"
+            >
               {{ row.status === 1 ? "营业中" : "休息" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="170" />
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row.id)">
               编辑
@@ -250,7 +247,12 @@ onMounted(load);
           <el-input v-model="form.name" placeholder="请输入店铺名称" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="关联席位" required>
-          <el-select v-model="form.seatId" placeholder="请选择席位" style="width:100%">
+          <el-select
+            v-model="form.seatId"
+            placeholder="请选择席位"
+            style="width: 100%"
+            filterable
+          >
             <el-option
               v-for="s in seatOptions"
               :key="s.id"
@@ -259,18 +261,22 @@ onMounted(load);
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="地址">
-          <el-input v-model="form.address" placeholder="请输入地址" />
-        </el-form-item>
-        <el-form-item label="联系电话">
-          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
-        </el-form-item>
         <el-form-item label="最大容量">
           <el-input-number
             v-model="form.maxCapacity"
             :min="1"
             placeholder="不限"
-            style="width:100%"
+          />
+        </el-form-item>
+        <el-form-item label="联系电话">
+          <el-input v-model="form.contactPhone" placeholder="请输入联系电话" />
+        </el-form-item>
+        <el-form-item label="地址">
+          <el-input
+            v-model="form.address"
+            type="textarea"
+            :rows="2"
+            placeholder="请输入地址"
           />
         </el-form-item>
         <el-form-item label="描述">
