@@ -41,7 +41,15 @@ const handleClose = () => {
     >
       <el-form label-width="100px">
         <el-form-item label="新密码">
-          <el-input v-model="newPwd" type="password" />
+          <el-input
+            v-model="newPwd"
+            type="password"
+            placeholder="请输入新密码"
+            show-password
+          />
+          <div class="text-xs text-gray-500 mt-1">
+            密码要求：8-20位，包含字母和数字
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
