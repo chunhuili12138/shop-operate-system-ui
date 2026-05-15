@@ -4,8 +4,8 @@ import { message } from "@/utils/message";
 import { resetTenantPassword } from "@/api/tenant";
 
 const props = defineProps<{
-  visible: boolean;
-  staffId: number;
+  visible?: boolean;
+  staffId?: number;
 }>();
 
 const emit = defineEmits(["update:visible"]);
@@ -30,22 +30,24 @@ const handleClose = () => {
 </script>
 
 <template>
-  <el-dialog
-    :model-value="visible"
-    title="重置密码"
-    width="400px"
-    class="dialog-xs"
-    :close-on-click-modal="false"
-    @close="handleClose"
-  >
-    <el-form label-width="100px">
-      <el-form-item label="新密码">
-        <el-input v-model="newPwd" type="password" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button type="primary" @click="doResetPwd">确认重置</el-button>
-    </template>
-  </el-dialog>
+  <div>
+    <el-dialog
+      :model-value="visible"
+      title="重置密码"
+      width="400px"
+      class="dialog-xs"
+      :close-on-click-modal="false"
+      @close="handleClose"
+    >
+      <el-form label-width="100px">
+        <el-form-item label="新密码">
+          <el-input v-model="newPwd" type="password" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="handleClose">取消</el-button>
+        <el-button type="primary" @click="doResetPwd">确认重置</el-button>
+      </template>
+    </el-dialog>
+  </div>
 </template>

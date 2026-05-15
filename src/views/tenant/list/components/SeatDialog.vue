@@ -5,8 +5,8 @@ import { getSeatList, addSeat, renewSeat, deleteSeat } from "@/api/tenant";
 import { getDictData } from "@/api/system";
 
 const props = defineProps<{
-  visible: boolean;
-  staffId: number;
+  visible?: boolean;
+  staffId?: number;
 }>();
 
 const emit = defineEmits(["update:visible", "refresh"]);
@@ -114,153 +114,157 @@ defineExpose({
 </script>
 
 <template>
-  <el-dialog
-    :model-value="visible"
-    title="席位管理"
-    width="750px"
-    class="dialog-lg"
-    :close-on-click-modal="false"
-    @close="handleClose"
-  >
-    <template #header>
-      <div class="flex-bc">
-        <span>席位管理</span>
-        <el-button size="small" type="primary" @click="openSeatAdd">
-          新增席位
-        </el-button>
-      </div>
-    </template>
-    <el-table :data="seats" style="width: 100%">
-      <el-table-column prop="start_date" label="生效" width="120" />
-      <el-table-column prop="end_date" label="到期" width="120" />
-      <el-table-column label="状态" width="80" align="center">
-        <template #default="{ row }">
-          <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
-            {{ row.status === 1 ? "生效中" : "已到期" }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="shop_names" label="关联店铺" />
-      <el-table-column label="操作" width="160" fixed="right">
-        <template #default="{ row }">
-          <el-button
-            v-if="row.status === 1"
-            link
-            type="primary"
-            @click="openSeatRenew(row)"
-          >
-            续订
+  <div>
+    <el-dialog
+      :model-value="visible"
+      title="席位管理"
+      width="750px"
+      class="dialog-lg"
+      :close-on-click-modal="false"
+      @close="handleClose"
+    >
+      <template #header>
+        <div class="flex-bc">
+          <span>席位管理</span>
+          <el-button size="small" type="primary" @click="openSeatAdd">
+            新增席位
           </el-button>
-          <el-button link type="danger" @click="doSeatDel(row.id)">
-            删除
-          </el-button>
+        </div>
+      </template>
+      <el-table :data="seats" style="width: 100%">
+        <el-table-column prop="start_date" label="生效" width="120" />
+        <el-table-column prop="end_date" label="到期" width="120" />
+        <el-table-column label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? "生效中" : "已到期" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="shop_names" label="关联店铺" />
+        <el-table-column label="操作" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              v-if="row.status === 1"
+              link
+              type="primary"
+              @click="openSeatRenew(row)"
+            >
+              续订
+            </el-button>
+            <el-button link type="danger" @click="doSeatDel(row.id)">
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 新增席位 -->
+      <el-dialog
+        v-model="seatAddDialog"
+        title="新增席位"
+        width="440px"
+        class="dialog-sm"
+        :close-on-click-modal="false"
+        append-to-body
+      >
+        <el-form :model="seatForm" label-width="100px">
+          <el-form-item label="类型">
+            <el-select v-model="seatForm.subscriptionType" style="width: 100%">
+              <el-option label="月付" :value="1" />
+              <el-option label="年付" :value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="数量">
+            <el-input-number
+              v-model="seatForm.subscriptionNum"
+              :min="1"
+              style="width: 100%"
+            />
+          </el-form-item>
+          <el-form-item label="金额">
+            <el-input-number
+              v-model="seatForm.amount"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
+          </el-form-item>
+          <el-form-item label="支付方式">
+            <el-select
+              v-model="seatForm.paymentMethod"
+              style="width: 100%"
+              clearable
+            >
+              <el-option
+                v-for="pm in paymentMethods"
+                :key="pm.dict_key"
+                :label="pm.dict_value"
+                :value="pm.dict_label"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="seatAddDialog = false">取消</el-button>
+          <el-button type="primary" @click="doSeatAdd">保存</el-button>
         </template>
-      </el-table-column>
-    </el-table>
-  </el-dialog>
+      </el-dialog>
 
-  <!-- 新增席位 -->
-  <el-dialog
-    v-model="seatAddDialog"
-    title="新增席位"
-    width="440px"
-    class="dialog-sm"
-    :close-on-click-modal="false"
-  >
-    <el-form :model="seatForm" label-width="100px">
-      <el-form-item label="类型">
-        <el-select v-model="seatForm.subscriptionType" style="width: 100%">
-          <el-option label="月付" :value="1" />
-          <el-option label="年付" :value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="数量">
-        <el-input-number
-          v-model="seatForm.subscriptionNum"
-          :min="1"
-          style="width: 100%"
-        />
-      </el-form-item>
-      <el-form-item label="金额">
-        <el-input-number
-          v-model="seatForm.amount"
-          :min="0"
-          :precision="2"
-          style="width: 100%"
-        />
-      </el-form-item>
-      <el-form-item label="支付方式">
-        <el-select
-          v-model="seatForm.paymentMethod"
-          style="width: 100%"
-          clearable
-        >
-          <el-option
-            v-for="pm in paymentMethods"
-            :key="pm.dict_key"
-            :label="pm.dict_value"
-            :value="pm.dict_label"
-          />
-        </el-select>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="seatAddDialog = false">取消</el-button>
-      <el-button type="primary" @click="doSeatAdd">保存</el-button>
-    </template>
-  </el-dialog>
-
-  <!-- 续订席位 -->
-  <el-dialog
-    v-model="seatRenewDialog"
-    title="续订席位"
-    width="440px"
-    class="dialog-sm"
-    :close-on-click-modal="false"
-  >
-    <el-form :model="seatRenewForm" label-width="100px">
-      <el-form-item label="类型">
-        <el-select
-          v-model="seatRenewForm.subscriptionType"
-          style="width: 100%"
-        >
-          <el-option label="月付" :value="1" />
-          <el-option label="年付" :value="2" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="数量">
-        <el-input-number
-          v-model="seatRenewForm.subscriptionNum"
-          :min="1"
-          style="width: 100%"
-        />
-      </el-form-item>
-      <el-form-item label="金额">
-        <el-input-number
-          v-model="seatRenewForm.amount"
-          :min="0"
-          :precision="2"
-          style="width: 100%"
-        />
-      </el-form-item>
-      <el-form-item label="支付方式">
-        <el-select
-          v-model="seatRenewForm.paymentMethod"
-          style="width: 100%"
-          clearable
-        >
-          <el-option
-            v-for="pm in paymentMethods"
-            :key="pm.dict_key"
-            :label="pm.dict_value"
-            :value="pm.dict_label"
-          />
-        </el-select>
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <el-button @click="seatRenewDialog = false">取消</el-button>
-      <el-button type="primary" @click="doSeatRenew">保存</el-button>
-    </template>
-  </el-dialog>
+      <!-- 续订席位 -->
+      <el-dialog
+        v-model="seatRenewDialog"
+        title="续订席位"
+        width="440px"
+        class="dialog-sm"
+        :close-on-click-modal="false"
+        append-to-body
+      >
+        <el-form :model="seatRenewForm" label-width="100px">
+          <el-form-item label="类型">
+            <el-select
+              v-model="seatRenewForm.subscriptionType"
+              style="width: 100%"
+            >
+              <el-option label="月付" :value="1" />
+              <el-option label="年付" :value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="数量">
+            <el-input-number
+              v-model="seatRenewForm.subscriptionNum"
+              :min="1"
+              style="width: 100%"
+            />
+          </el-form-item>
+          <el-form-item label="金额">
+            <el-input-number
+              v-model="seatRenewForm.amount"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+            />
+          </el-form-item>
+          <el-form-item label="支付方式">
+            <el-select
+              v-model="seatRenewForm.paymentMethod"
+              style="width: 100%"
+              clearable
+            >
+              <el-option
+                v-for="pm in paymentMethods"
+                :key="pm.dict_key"
+                :label="pm.dict_value"
+                :value="pm.dict_label"
+              />
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="seatRenewDialog = false">取消</el-button>
+          <el-button type="primary" @click="doSeatRenew">保存</el-button>
+        </template>
+      </el-dialog>
+    </el-dialog>
+  </div>
 </template>

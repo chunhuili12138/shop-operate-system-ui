@@ -10,10 +10,6 @@ import ResetPasswordDialog from "@/views/tenant/list/components/ResetPasswordDia
 import SeatDialog from "@/views/tenant/list/components/SeatDialog.vue";
 import TenantFormDialog from "@/views/tenant/list/components/TenantFormDialog.vue";
 import TransactionDialog from "@/views/tenant/list/components/TransactionDialog.vue";
-// import SeatDialog from "@/views/tenant/list/components/SeatDialog.vue";
-// import TransactionDialog from "./components/TransactionDialog.vue";
-// import TenantFormDialog from "./components/TenantFormDialog.vue";
-// import ResetPasswordDialog from "./components/ResetPasswordDialog.vue";
 
 defineOptions({ name: "TenantList" });
 
@@ -253,33 +249,33 @@ onMounted(() => {
       @current-change="load"
     />
 
-<!--    &lt;!&ndash; 席位管理弹窗 &ndash;&gt;-->
-<!--    <SeatDialog-->
-<!--      ref="seatDialogRef"-->
-<!--      v-model:visible="seatDialogVisible"-->
-<!--      :staff-id="currentStaffId"-->
-<!--    />-->
+    <!-- 席位管理弹窗 -->
+    <SeatDialog
+      ref="seatDialogRef"
+      v-model:visible="seatDialogVisible"
+      :staff-id="currentStaffId"
+    />
 
-<!--    &lt;!&ndash; 流水弹窗 &ndash;&gt;-->
-<!--    <TransactionDialog-->
-<!--      ref="txDialogRef"-->
-<!--      v-model:visible="txDialogVisible"-->
-<!--      :staff-id="currentStaffId"-->
-<!--    />-->
+    <!-- 流水弹窗 -->
+    <TransactionDialog
+      ref="txDialogRef"
+      v-model:visible="txDialogVisible"
+      :staff-id="currentStaffId"
+    />
 
-<!--    &lt;!&ndash; 商户表单弹窗 &ndash;&gt;-->
-<!--    <TenantFormDialog-->
-<!--      ref="formDialogRef"-->
-<!--      v-model:visible="formDialogVisible"-->
-<!--      :is-edit="isEdit"-->
-<!--      :form-data="currentFormData"-->
-<!--      @success="load"-->
-<!--    />-->
+    <!-- 商户表单弹窗 -->
+    <TenantFormDialog
+      ref="formDialogRef"
+      v-model:visible="formDialogVisible"
+      :is-edit="isEdit"
+      :form-data="currentFormData"
+      @success="load"
+    />
 
-<!--    &lt;!&ndash; 重置密码 &ndash;&gt;-->
-<!--    <ResetPasswordDialog-->
-<!--      v-model:visible="pwdDialogVisible"-->
-<!--      :staff-id="pwdStaffId"-->
-<!--    />-->
+    <!-- 重置密码 -->
+    <ResetPasswordDialog
+      v-model:visible="pwdDialogVisible"
+      :staff-id="pwdStaffId"
+    />
   </div>
 </template>
