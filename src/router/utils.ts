@@ -24,7 +24,10 @@ import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 const IFrame = () => import("@/layout/frame.vue");
 // https://cn.vitejs.dev/guide/features.html#glob-import
-const modulesRoutes = import.meta.glob("/src/views/**/*.{vue,tsx}");
+const modulesRoutes = import.meta.glob([
+  "/src/views/**/*.{vue,tsx}",
+  "!/src/views/**/components/**"
+]);
 
 // 动态路由
 import { getAsyncRoutes } from "@/api/routes";
@@ -325,16 +328,38 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
     } else {
       // 如果 component 是字符串，则查找匹配的路径
       if (typeof v.component === "string") {
-        const componentStr = v.component;
-        const index = modulesRoutesKeys.findIndex(
-          ev => ev === componentStr || ev.endsWith(componentStr)
-        );
+        const componentStr: string = v.component;
+        // 优先精确匹配
+        let index = modulesRoutesKeys.findIndex(ev => ev === componentStr);
+        // 如果精确匹配失败，尝试去除开头的 / 后匹配
+        if (index === -1 && componentStr.startsWith("/")) {
+          index = modulesRoutesKeys.findIndex(
+            ev => ev === componentStr.substring(1)
+          );
+        }
+        // 如果还是失败，尝试 endsWith 匹配
+        if (index === -1) {
+          index = modulesRoutesKeys.findIndex(
+            ev =>
+              ev.endsWith(componentStr) ||
+              (componentStr.startsWith("/") &&
+                ev.endsWith(componentStr.substring(1)))
+          );
+        }
         if (index >= 0) {
           v.component = modulesRoutes[modulesRoutesKeys[index]];
+        } else {
+          console.warn(
+            `未找到组件: ${componentStr}`,
+            "可用组件:",
+            modulesRoutesKeys
+          );
         }
       } else if (!v.component) {
         // 如果没有 component，则根据 path 查找
-        const index = modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
+        const index = modulesRoutesKeys.findIndex(ev =>
+          ev.includes(v.path) && (ev.endsWith("/index.vue") || ev.endsWith("/index.tsx"))
+        );
         if (index >= 0) {
           v.component = modulesRoutes[modulesRoutesKeys[index]];
         }

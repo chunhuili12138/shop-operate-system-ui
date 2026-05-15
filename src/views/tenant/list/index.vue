@@ -6,10 +6,10 @@ import {
   deleteTenant,
   updateTenantBanStatus
 } from "@/api/tenant";
-import ResetPasswordDialog from "@/views/tenant/list/components/ResetPasswordDialog.vue";
-import SeatDialog from "@/views/tenant/list/components/SeatDialog.vue";
-import TenantFormDialog from "@/views/tenant/list/components/TenantFormDialog.vue";
-import TransactionDialog from "@/views/tenant/list/components/TransactionDialog.vue";
+import ResetPasswordDialog from "./components/ResetPasswordDialog.vue";
+import SeatDialog from "./components/SeatDialog.vue";
+import TenantFormDialog from "./components/TenantFormDialog.vue";
+import TransactionDialog from "./components/TransactionDialog.vue";
 
 defineOptions({ name: "TenantList" });
 
@@ -52,6 +52,9 @@ const load = async () => {
       tableData.value = r.data.list;
       total.value = r.data.total;
     }
+  } catch (error) {
+    console.error("加载租户列表失败:", error);
+    message("加载失败", { type: "error" });
   } finally {
     loading.value = false;
   }
@@ -112,28 +115,40 @@ const openTx = (id: number) => {
 };
 
 const doDelete = async (id: number) => {
-  await import("element-plus").then(m =>
-    m.ElMessageBox.confirm("确认删除？", "提示")
-  );
-  const r = await deleteTenant(id);
-  if (r?.success) {
-    message("已删除", { type: "success" });
-    load();
-  } else {
-    message(r?.msg || "失败", { type: "warning" });
+  try {
+    await import("element-plus").then(m =>
+      m.ElMessageBox.confirm("确认删除？", "提示")
+    );
+    const r = await deleteTenant(id);
+    if (r?.success) {
+      message("已删除", { type: "success" });
+      load();
+    } else {
+      message(r?.msg || "失败", { type: "warning" });
+    }
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message("删除失败", { type: "error" });
+    }
   }
 };
 
 const toggleBan = async (id: number, isBan: number) => {
-  const r = await updateTenantBanStatus({
-    staffId: id,
-    banStatus: isBan ? 0 : 1
-  });
-  if (r?.success) {
-    message("操作成功", { type: "success" });
-    load();
-  } else {
-    message(r?.msg || "失败", { type: "warning" });
+  try {
+    const r = await updateTenantBanStatus({
+      staffId: id,
+      banStatus: isBan ? 0 : 1
+    });
+    if (r?.success) {
+      message("操作成功", { type: "success" });
+      load();
+    } else {
+      message(r?.msg || "失败", { type: "warning" });
+    }
+  } catch (error) {
+    console.error("切换状态失败:", error);
+    message("操作失败", { type: "error" });
   }
 };
 
@@ -251,6 +266,7 @@ onMounted(() => {
 
     <!-- 席位管理弹窗 -->
     <SeatDialog
+      v-if="seatDialogVisible"
       ref="seatDialogRef"
       v-model:visible="seatDialogVisible"
       :staff-id="currentStaffId"
@@ -258,6 +274,7 @@ onMounted(() => {
 
     <!-- 流水弹窗 -->
     <TransactionDialog
+      v-if="txDialogVisible"
       ref="txDialogRef"
       v-model:visible="txDialogVisible"
       :staff-id="currentStaffId"
@@ -265,6 +282,7 @@ onMounted(() => {
 
     <!-- 商户表单弹窗 -->
     <TenantFormDialog
+      v-if="formDialogVisible"
       ref="formDialogRef"
       v-model:visible="formDialogVisible"
       :is-edit="isEdit"
@@ -274,6 +292,7 @@ onMounted(() => {
 
     <!-- 重置密码 -->
     <ResetPasswordDialog
+      v-if="pwdDialogVisible"
       v-model:visible="pwdDialogVisible"
       :staff-id="pwdStaffId"
     />

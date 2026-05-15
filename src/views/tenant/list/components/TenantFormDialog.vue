@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
 import { createTenant, updateTenant } from "@/api/tenant";
@@ -23,23 +23,27 @@ const form = reactive({
   remark: ""
 });
 
-// 监听 props 变化，同步表单数据
-const syncFormData = () => {
-  if (props.formData) {
-    Object.assign(form, props.formData);
-  } else {
-    // 重置表单
-    Object.assign(form, {
-      staffId: null,
-      name: "",
-      phone: "",
-      username: "",
-      password: "",
-      maxSeats: null,
-      remark: ""
-    });
-  }
-};
+// 监听 props.formData 变化，自动同步表单数据
+watch(
+  () => props.formData,
+  newData => {
+    if (newData) {
+      Object.assign(form, newData);
+    } else {
+      // 重置表单
+      Object.assign(form, {
+        staffId: null,
+        name: "",
+        phone: "",
+        username: "",
+        password: "",
+        maxSeats: null,
+        remark: ""
+      });
+    }
+  },
+  { immediate: true }
+);
 
 const save = async () => {
   const r = props.isEdit ? await updateTenant(form) : await createTenant(form);
@@ -55,10 +59,6 @@ const save = async () => {
 const handleClose = () => {
   emit("update:visible", false);
 };
-
-defineExpose({
-  syncFormData
-});
 </script>
 
 <template>
@@ -73,19 +73,27 @@ defineExpose({
     >
       <el-form ref="formRef" :model="form" label-width="100px">
         <el-form-item label="名称">
-          <el-input v-model="form.name" />
+          <el-input v-model="form.name" placeholder="请输入商户名称" />
         </el-form-item>
         <el-form-item label="手机号">
-          <el-input v-model="form.phone" />
+          <el-input v-model="form.phone" placeholder="请输入手机号" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="用户名">
-          <el-input v-model="form.username" />
+          <el-input v-model="form.username" placeholder="请输入用户名" />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="密码">
-          <el-input v-model="form.password" type="password" />
+          <el-input
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+          />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="form.remark" type="textarea" />
+          <el-input
+            v-model="form.remark"
+            type="textarea"
+            placeholder="请输入备注信息"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
