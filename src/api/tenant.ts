@@ -174,12 +174,26 @@ export interface TransactionListResult {
   code: number;
   msg: string;
   data: Array<{
+    id: number;
+    seat_id: number;
+    seat_no: string;
     amount: number;
     payment_method: string;
     subscription_type: number;
+    subscription_num: number;
+    status: number;
+    refund_amount?: number;
+    refund_days?: number;
     created_at: string;
   }>;
   timestamp: number;
+}
+
+// 退款参数
+export interface RefundParams {
+  transactionId: number;
+  refundAmount: number;
+  deductedDays: number;
 }
 
 /** 获取席位流水列表 */
@@ -187,4 +201,9 @@ export const getTransactionList = (staffId: number) => {
   return http.request<TransactionListResult>("get", "/admin/tenants/subscriptionTransactionList", { 
     params: { staffId } 
   });
+};
+
+/** 席位流水退款 */
+export const refundTransaction = (data: RefundParams) => {
+  return http.request<ApiResult>("put", "/admin/tenants/subscriptionTransactionRefund", { data });
 };
