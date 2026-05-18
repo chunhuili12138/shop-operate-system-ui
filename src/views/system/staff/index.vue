@@ -5,7 +5,7 @@ import { ElMessageBox } from "element-plus";
 import {
   getStaffList,
   updateStaff,
-  resetStaffPassword,
+  updateStaffStatus,
   deleteStaff,
   getRoleList
 } from "@/api/system";
@@ -49,7 +49,12 @@ const loadData = async () => {
     if (res?.success) {
       tableData.value = res.data.list;
       total.value = res.data.total;
+    } else {
+      message(res?.msg || "加载失败", { type: "error" });
     }
+  } catch (error) {
+    console.error("加载员工列表失败:", error);
+    message("加载失败", { type: "error" });
   } finally {
     loading.value = false;
   }
@@ -70,8 +75,12 @@ const onSizeChange = (s: number) => {
 };
 
 const loadOptions = async () => {
-  const r = await getRoleList();
-  if (r?.success) roles.value = r.data;
+  try {
+    const r = await getRoleList();
+    if (r?.success) roles.value = r.data;
+  } catch (error) {
+    console.error("加载角色列表失败:", error);
+  }
 };
 
 const openAdd = () => {
@@ -97,29 +106,44 @@ const openResetPwd = (staffId: number) => {
   pwdDialogVisible.value = true;
 };
 
-
-
 const doDelete = async (staffId: number) => {
-  await ElMessageBox.confirm("确认删除？", "提示");
-  const res = await deleteStaff(staffId);
-  if (res?.success) {
-    message("已删除", { type: "success" });
-    await loadData();
-  } else {
-    message(res?.msg || "失败", { type: "warning" });
+  try {
+    await ElMessageBox.confirm(
+      "删除后该员工将无法登录系统，是否确认？",
+      "提示"
+    );
+    const res = await deleteStaff(staffId);
+    if (res?.success) {
+      message("已删除", { type: "success" });
+      await loadData();
+    } else {
+      message(res?.msg || "失败", { type: "warning" });
+    }
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message("删除失败", { type: "error" });
+    }
   }
 };
 
 const toggleStatus = async (row: any) => {
-  const newStatus = row.status === 1 ? 0 : 1;
-  const label = newStatus === 0 ? "设为离职" : "设为在职";
-  await ElMessageBox.confirm(`确认${label}？`, "提示");
-  const res = await updateStaff({ staffId: row.id, status: newStatus });
-  if (res?.success) {
-    message("操作成功", { type: "success" });
-    await loadData();
-  } else {
-    message(res?.msg || "失败", { type: "warning" });
+  try {
+    const newStatus = row.status === 1 ? 0 : 1;
+    const label = newStatus === 0 ? "设为离职" : "设为在职";
+    await ElMessageBox.confirm(`确认${label}？`, "提示");
+    const res = await updateStaffStatus({ staffId: row.id, status: newStatus });
+    if (res?.success) {
+      message("操作成功", { type: "success" });
+      await loadData();
+    } else {
+      message(res?.msg || "失败", { type: "warning" });
+    }
+  } catch (error) {
+    if (error !== "cancel") {
+      console.error("切换状态失败:", error);
+      message("操作失败", { type: "error" });
+    }
   }
 };
 

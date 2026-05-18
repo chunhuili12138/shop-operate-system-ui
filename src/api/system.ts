@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 // ========== 字典管理相关 ==========
 
@@ -81,7 +81,9 @@ export interface DictDataListResult {
 
 /** 获取字典数据 */
 export const getDictData = (params?: DictDataQueryParams) => {
-  return http.request<DictDataListResult>("get", "/system/dict/data", { params });
+  return http.request<DictDataListResult>("get", "/system/dict/data", {
+    params
+  });
 };
 
 // ========== 角色管理相关 ==========
@@ -181,6 +183,12 @@ export interface StaffFormParams {
   remark: string;
 }
 
+// 更新员工状态参数
+export interface UpdateStaffStatusParams {
+  staffId: number;
+  status: number;
+}
+
 // 重置密码参数
 export interface ResetPasswordParams {
   staffId: number;
@@ -202,6 +210,11 @@ export const updateStaff = (data: StaffFormParams) => {
   return http.request<ApiResult>("put", "/staff/update", { data });
 };
 
+/** 更新员工状态 */
+export const updateStaffStatus = (data: UpdateStaffStatusParams) => {
+  return http.request<ApiResult>("put", "/staff/status", { data });
+};
+
 /** 重置员工密码 */
 export const resetStaffPassword = (data: ResetPasswordParams) => {
   return http.request<ApiResult>("put", "/staff/password", { data });
@@ -209,8 +222,8 @@ export const resetStaffPassword = (data: ResetPasswordParams) => {
 
 /** 删除员工 */
 export const deleteStaff = (staffId: number) => {
-  return http.request<ApiResult>("delete", "/staff/delete", { 
-    params: { staffId } 
+  return http.request<ApiResult>("delete", "/staff/delete", {
+    params: { staffId }
   });
 };
 
