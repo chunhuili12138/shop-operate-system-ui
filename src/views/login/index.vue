@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import { ref, reactive, toRaw, onMounted } from "vue";
-import { debounce } from "@pureadmin/utils";
+import { debounce, storageLocal } from "@pureadmin/utils";
 import { useNav } from "@/layout/hooks/useNav";
 import { useEventListener } from "@vueuse/core";
 import type { FormInstance } from "element-plus";
@@ -15,6 +15,7 @@ import { getCaptcha } from "@/api/auth";
 import { bg, avatar, illustration } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import { userKey, type DataInfo, getToken } from "@/utils/auth";
 
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
@@ -104,7 +105,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
                 }
                 // 多个店铺 → 弹窗让用户选，选完再调用 initRouter
                 shopOptions.value = shops;
-                selectedShopId.value = null;
+                selectedShopId.value = shops[0].id;
                 shopDialogVisible.value = true;
               });
           } else {
@@ -147,6 +148,18 @@ useEventListener(document, "keydown", ({ code }) => {
 
 onMounted(() => {
   loadCaptcha();
+  // 已登录但未选店铺 → 自动弹出店铺选择弹窗
+  const tokenInfo = getToken();
+  if (tokenInfo) {
+    const saved = storageLocal().getItem<DataInfo<number>>(userKey);
+    const shops = saved?.shops;
+    const shopId = storageLocal().getItem("current-shop-id");
+    if (!saved?.superAdmin && shops?.length > 0 && !shopId) {
+      shopOptions.value = shops;
+      selectedShopId.value = shops[0].id;
+      shopDialogVisible.value = true;
+    }
+  }
 });
 </script>
 
@@ -251,13 +264,41 @@ onMounted(() => {
   </div>
 
   <!-- 店铺选择弹窗 -->
-  <el-dialog v-model="shopDialogVisible" title="选择店铺" :close-on-click-modal="false" :show-close="false" width="400px">
-    <p class="mb-4 text-gray-500">您有多个店铺，请选择一个进入系统：</p>
-    <el-radio-group v-model="selectedShopId" class="flex flex-col gap-2">
-      <el-radio v-for="s in shopOptions" :key="s.id" :value="s.id" class="!mr-0 !h-10">{{s.name}}</el-radio>
-    </el-radio-group>
+  <el-dialog
+    v-model="shopDialogVisible"
+    title="选择店铺"
+    :close-on-click-modal="false"
+    :show-close="false"
+    width="480px"
+    top="20vh"
+  >
+    <p class="text-gray-400 text-sm mb-4">您有多个店铺，请选择一个进入系统：</p>
+    <div class="shop-list">
+      <div
+        v-for="s in shopOptions"
+        :key="s.id"
+        :class="['shop-card', { 'shop-card--selected': selectedShopId === s.id }]"
+        @click="selectedShopId = s.id"
+      >
+        <div class="shop-card-icon">
+          <span class="text-xl">🏪</span>
+        </div>
+        <div class="shop-card-body">
+          <div class="shop-card-name">{{ s.name }}</div>
+          <div v-if="s.address || s.contact_phone" class="shop-card-info">
+            <span v-if="s.address" class="shop-card-addr">📍 {{ s.address }}</span>
+            <span v-if="s.contact_phone" class="shop-card-phone">📞 {{ s.contact_phone }}</span>
+          </div>
+        </div>
+        <div class="shop-card-check">
+          <span v-if="selectedShopId === s.id" class="text-lg text-[var(--el-color-primary)]">✓</span>
+        </div>
+      </div>
+    </div>
     <template #footer>
-      <el-button type="primary" :disabled="!selectedShopId" @click="confirmShop">进入系统</el-button>
+      <el-button type="primary" :disabled="!selectedShopId" @click="confirmShop">
+        进入系统
+      </el-button>
     </template>
   </el-dialog>
 </template>
@@ -281,6 +322,82 @@ onMounted(() => {
   cursor: pointer;
   border-radius: 4px;
   flex-shrink: 0;
+}
+
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.shop-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 2px solid var(--el-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.shop-card:hover {
+  border-color: var(--el-color-primary-light-5);
+  background: var(--el-color-primary-light-9);
+}
+
+.shop-card--selected {
+  border-color: var(--el-color-primary);
+  background: var(--el-color-primary-light-9);
+}
+
+.shop-card-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--el-color-primary-light-9);
+  border-radius: 8px;
+}
+
+.shop-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.shop-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shop-card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.shop-card-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.shop-card-check {
+  flex-shrink: 0;
+  width: 24px;
+  text-align: center;
 }
 </style>
 

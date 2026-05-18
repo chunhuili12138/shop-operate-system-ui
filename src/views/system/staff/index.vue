@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, computed } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
 import { ElMessageBox } from "element-plus";
@@ -9,9 +9,9 @@ import {
   updateStaff,
   resetStaffPassword,
   deleteStaff,
-  getRoleList,
-  getShopList
+  getRoleList
 } from "@/api/system";
+import { useUserStoreHook } from "@/store/modules/user";
 
 defineOptions({ name: "SystemStaff" });
 
@@ -22,7 +22,9 @@ const page = ref(1);
 const size = ref(20);
 
 const roles = ref<{ id: number; name: string }[]>([]);
-const shops = ref<{ id: number; name: string }[]>([]);
+
+// 新增员工时可选的角色（排除超级管理员 id=2 和店长 id=3）
+const addableRoles = computed(() => roles.value.filter(r => r.id !== 2 && r.id !== 3));
 
 const query = reactive({
   keyword: "",
@@ -85,17 +87,14 @@ const onSizeChange = (s: number) => {
 };
 
 const loadOptions = async () => {
-  const [r, s] = await Promise.all([
-    getRoleList(),
-    getShopList({ page: 1, size: 999, status: 1 })
-  ]);
+  const r = await getRoleList();
   if (r?.success) roles.value = r.data;
-  if (s?.success) shops.value = s.data.list;
 };
 
 const openAdd = () => {
   isEdit.value = false;
   dialogTitle.value = "新增员工";
+  const userStore = useUserStoreHook();
   Object.assign(form, {
     staffId: null,
     name: "",
@@ -103,7 +102,7 @@ const openAdd = () => {
     username: "",
     password: "",
     roleIds: [],
-    shopId: "",
+    shopId: userStore.currentShopId ?? "",
     employmentType: 1,
     remark: ""
   });
@@ -113,6 +112,7 @@ const openAdd = () => {
 const openEdit = (row: any) => {
   isEdit.value = true;
   dialogTitle.value = "编辑员工";
+  const userStore = useUserStoreHook();
   Object.assign(form, {
     staffId: row.id,
     name: row.name,
@@ -120,7 +120,7 @@ const openEdit = (row: any) => {
     username: "",
     password: "",
     roleIds: [],
-    shopId: row.shop_id,
+    shopId: userStore.currentShopId ?? row.shop_id,
     employmentType: row.employment_type,
     remark: row.remark
   });
@@ -318,12 +318,7 @@ onMounted(() => {
         </el-form-item>
         <el-form-item label="角色" prop="roleIds">
           <el-select v-model="form.roleIds" multiple style="width:100%">
-            <el-option v-for="r in roles" :key="r.id" :label="r.name" :value="r.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="所属店铺" prop="shopId">
-          <el-select v-model="form.shopId" placeholder="仅可选一个店铺" style="width:100%">
-            <el-option v-for="s in shops" :key="s.id" :label="s.name" :value="s.id" />
+            <el-option v-for="r in addableRoles" :key="r.id" :label="r.name" :value="r.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="用工类型">

@@ -32,7 +32,8 @@ export const useUserStore = defineStore("pure-user", {
     superAdmin:
       storageLocal().getItem<DataInfo<number>>(userKey)?.superAdmin ?? false,
     userId: null as number | null,
-    shops: [],
+    shops:
+      storageLocal().getItem<DataInfo<number>>(userKey)?.shops ?? [],
     /** 当前选中的店铺ID（超管为null） */
     currentShopId: getCurrentShopId()
   }),
@@ -88,6 +89,7 @@ export const useUserStore = defineStore("pure-user", {
                 storageLocal().getItem<DataInfo<number>>(userKey) ||
                 ({} as any);
               u.superAdmin = this.superAdmin;
+              if (res.data.shops) u.shops = res.data.shops;
               storageLocal().setItem(userKey, u);
             }
             resolve(res);
@@ -137,6 +139,7 @@ export const useUserStore = defineStore("pure-user", {
               saved.nickname = info.nickname;
               saved.roles = info.roles || [];
               saved.permissions = info.buttons || [];
+              saved.shops = info.shops || [];
               storageLocal().setItem(userKey, saved);
               resolve(res);
             } else {

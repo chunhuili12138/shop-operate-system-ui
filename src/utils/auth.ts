@@ -23,6 +23,8 @@ export interface DataInfo<T> {
   superAdmin?: boolean;
   /** 用户ID */
   userId?: number;
+  /** 关联店铺列表 */
+  shops?: Array<any>;
 }
 
 export const userKey = "user-info";
@@ -74,7 +76,7 @@ export function setToken(data: DataInfo<Date>) {
       : {}
   );
 
-  function setUserKey({ avatar, username, nickname, roles, permissions }) {
+  function setUserKey({ avatar, username, nickname, roles, permissions, shops }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_NICKNAME(nickname);
@@ -87,7 +89,8 @@ export function setToken(data: DataInfo<Date>) {
       username,
       nickname,
       roles,
-      permissions
+      permissions,
+      shops
     });
   }
 
@@ -98,7 +101,8 @@ export function setToken(data: DataInfo<Date>) {
       username,
       nickname: data?.nickname ?? "",
       roles,
-      permissions: data?.permissions ?? []
+      permissions: data?.permissions ?? [],
+      shops: data?.shops ?? []
     });
   } else {
     const avatar =
@@ -111,12 +115,15 @@ export function setToken(data: DataInfo<Date>) {
       storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [];
     const permissions =
       storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [];
+    const shops =
+      storageLocal().getItem<DataInfo<number>>(userKey)?.shops ?? [];
     setUserKey({
       avatar,
       username,
       nickname,
       roles,
-      permissions
+      permissions,
+      shops
     });
   }
 }

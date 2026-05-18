@@ -204,6 +204,16 @@ router.beforeEach((to: ToRouteType, _from, next) => {
         });
         return;
       }
+      // 已登录在登录页且有店铺但未选店铺 → 留在登录页，等 onMounted 弹窗
+      if (
+        to.path === "/login" &&
+        !userInfo?.superAdmin &&
+        userInfo?.shops?.length > 0 &&
+        !storageLocal().getItem("current-shop-id")
+      ) {
+        next();
+        return;
+      }
       toCorrectRoute();
     }
   } else {

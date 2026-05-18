@@ -117,11 +117,14 @@ const openTx = (id: number) => {
 
 const doDelete = async (id: number) => {
   try {
-    await ElMessageBox.confirm("确认删除？", "提示");
+    await ElMessageBox.confirm(
+      "删除商户账号后关联的店铺和店铺下的全部记录都将删除（并确保席位订阅退款等已处理完成），是否确认？",
+      "提示"
+    );
     const r = await deleteTenant(id);
     if (r?.success) {
       message("已删除", { type: "success" });
-      load();
+      await load();
     } else {
       message(r?.msg || "失败", { type: "warning" });
     }
