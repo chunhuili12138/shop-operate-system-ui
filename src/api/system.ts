@@ -154,6 +154,7 @@ export interface StaffListResult {
     list: Array<{
       id: number;
       name: string;
+      username: string;
       phone: string;
       role_names: string;
       employment_type: number;
