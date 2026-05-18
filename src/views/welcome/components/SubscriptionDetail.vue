@@ -1,110 +1,60 @@
 <script setup lang="ts">
 import type { SubscriptionDistribution } from "@/api/dashboard";
 
-defineProps<{
-  data: SubscriptionDistribution;
-  loading?: boolean;
-}>();
+const props = defineProps<{ data: SubscriptionDistribution }>();
 
-const formatMoney = (v: number) => {
-  if (v >= 10000) return `¥${(v / 10000).toFixed(1)}万`;
-  return `¥${Number(v).toLocaleString()}`;
-};
+const fmt = (v: number) => (v >= 10000 ? `¥${(v / 10000).toFixed(1)}万` : `¥${Number(v).toLocaleString()}`);
 </script>
 
 <template>
-  <el-card shadow="hover" class="sub-detail-panel" v-loading="loading">
-    <template #header>
-      <div class="panel-header">
-        <span class="header-icon">📊</span>
-        <span class="header-title">订阅营收明细</span>
-      </div>
-    </template>
-
-    <div class="detail-grid">
-      <div class="detail-card monthly">
-        <div class="detail-tag">月付</div>
-        <div class="detail-count">{{ data?.monthlyCount ?? 0 }} 笔</div>
-        <div class="detail-amount">{{ formatMoney(data?.monthlyRevenue || 0) }}</div>
-      </div>
-      <div class="detail-card yearly">
-        <div class="detail-tag">年付</div>
-        <div class="detail-count">{{ data?.yearlyCount ?? 0 }} 笔</div>
-        <div class="detail-amount">{{ formatMoney(data?.yearlyRevenue || 0) }}</div>
-      </div>
+  <div class="sub-detail">
+    <div class="sub-item monthly">
+      <span class="sub-tag">月付</span>
+      <span class="sub-num">{{ props.data?.monthlyCount ?? 0 }} 笔</span>
+      <span class="sub-amt">{{ fmt(props.data?.monthlyRevenue || 0) }}</span>
     </div>
-  </el-card>
+    <div class="sub-item yearly">
+      <span class="sub-tag">年付</span>
+      <span class="sub-num">{{ props.data?.yearlyCount ?? 0 }} 笔</span>
+      <span class="sub-amt">{{ fmt(props.data?.yearlyRevenue || 0) }}</span>
+    </div>
+  </div>
 </template>
 
 <style scoped lang="scss">
-.sub-detail-panel {
-  border-radius: 12px;
-  border: none;
-  height: 100%;
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.15);
-  }
-}
-
-.panel-header {
+.sub-detail {
   display: flex;
-  align-items: center;
   gap: 8px;
-  .header-icon { font-size: 20px; }
-  .header-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-  }
 }
 
-.detail-grid {
+.sub-item {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: #fafafa;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 2px;
+  &.monthly { border-left: 2px solid #667eea; }
+  &.yearly { border-left: 2px solid #4facfe; }
 }
 
-.detail-card {
-  padding: 16px;
-  border-radius: 8px;
-  background: var(--el-fill-color-lighter);
-
-  &.monthly {
-    border-left: 3px solid var(--el-color-primary);
-  }
-  &.yearly {
-    border-left: 3px solid var(--el-color-success);
-  }
-}
-
-.detail-tag {
-  display: inline-block;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-  font-weight: 500;
-
-  .yearly & {
-    background: var(--el-color-success-light-9);
-    color: var(--el-color-success);
-  }
-}
-
-.detail-count {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--el-text-color-primary);
-  margin-bottom: 4px;
-}
-
-.detail-amount {
-  font-size: 16px;
+.sub-tag {
+  font-size: 11px;
   font-weight: 600;
-  color: var(--el-color-danger);
+  .monthly & { color: #667eea; }
+  .yearly & { color: #4facfe; }
+}
+
+.sub-num {
+  font-size: 15px;
+  font-weight: 700;
+  color: #333;
+}
+
+.sub-amt {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e74c3c;
 }
 </style>

@@ -3,15 +3,10 @@ import { ref, onMounted, onUnmounted, watch } from "vue";
 import * as echarts from "echarts";
 import type { TrendItem } from "@/api/dashboard";
 
-const props = defineProps<{
-  data: TrendItem[];
-  loading?: boolean;
-  height?: string;
-}>();
+const props = defineProps<{ data: TrendItem[] }>();
 
 const chartRef = ref<HTMLElement>();
 let chart: echarts.ECharts | null = null;
-const themeColor = "#f093fb";
 
 const initChart = () => {
   if (!chartRef.value) return;
@@ -26,69 +21,27 @@ const updateChart = () => {
 
   chart.setOption(
     {
-      tooltip: {
-        trigger: "axis",
-        formatter: (params: any) => {
-          const p = params[0];
-          return `${p.axisValue}<br/>新增商户: <b style="color:${themeColor}">${p.value} 家</b>`;
-        }
-      },
-      grid: { left: 50, right: 20, top: 20, bottom: 30 },
-      xAxis: {
-        type: "category",
-        data: periods,
-        axisLabel: { color: "#999", fontSize: 11 },
-        axisLine: { lineStyle: { color: "#e0e0e0" } }
-      },
-      yAxis: {
-        type: "value",
-        minInterval: 1,
-        axisLabel: { color: "#999", fontSize: 11 },
-        splitLine: { lineStyle: { color: "#f0f0f0", type: "dashed" } }
-      },
-      series: [
-        {
-          data: values,
-          type: "bar",
-          barWidth: 20,
-          itemStyle: {
-            borderRadius: [6, 6, 0, 0],
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: "rgba(240,147,251,0.8)" },
-              { offset: 1, color: "rgba(245,87,108,0.6)" }
-            ])
-          },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: "#f093fb" },
-                { offset: 1, color: "#f5576c" }
-              ])
-            }
-          }
-        }
-      ]
+      tooltip: { trigger: "axis", formatter: (p: any) => `${p[0].axisValue}<br/>新增商户: <b>${p[0].value} 家</b>` },
+      grid: { left: 35, right: 12, top: 8, bottom: 22 },
+      xAxis: { type: "category", data: periods, axisLabel: { fontSize: 10, color: "#999" }, axisLine: { show: false }, axisTick: { show: false } },
+      yAxis: { type: "value", minInterval: 1, axisLabel: { fontSize: 10, color: "#999" }, splitLine: { lineStyle: { color: "#f0f0f0" } } },
+      series: [{
+        data: values, type: "bar", barWidth: 16,
+        itemStyle: { borderRadius: [4, 4, 0, 0], color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: "#f093fb" }, { offset: 1, color: "#f5576c" }]) }
+      }]
     },
     { notMerge: true }
   );
 };
 
-watch(
-  () => props.data,
-  () => updateChart()
-);
-
+watch(() => props.data, () => updateChart());
 onMounted(initChart);
-
-onUnmounted(() => {
-  chart?.dispose();
-});
-
-const handleResize = () => chart?.resize();
-window.addEventListener("resize", handleResize);
-onUnmounted(() => window.removeEventListener("resize", handleResize));
+onUnmounted(() => chart?.dispose());
+const h = () => chart?.resize();
+window.addEventListener("resize", h);
+onUnmounted(() => window.removeEventListener("resize", h));
 </script>
 
 <template>
-  <div ref="chartRef" :style="{ width: '100%', height: height || '300px' }" />
+  <div ref="chartRef" style="width:100%;height:200px" />
 </template>
