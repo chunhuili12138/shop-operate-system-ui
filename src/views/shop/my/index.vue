@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, reactive, computed } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import {
-  getMyShopInfo,
-  updateMyShop,
-  updateMyShopStatus
-} from "@/api/shop";
+import { getMyShopInfo, updateMyShop, updateMyShopStatus } from "@/api/shop";
 
 defineOptions({ name: "ShopMy" });
 
 const loading = ref(false);
 const saving = ref(false);
 const shop = ref<any>(null);
+
+const signPhotoSrc = computed(() => {
+  if (!shop.value?.sign_photo) return "";
+  return `/file/image?name=${encodeURIComponent(shop.value.sign_photo)}`;
+});
 
 const dialogVisible = ref(false);
 const editForm = reactive({
@@ -90,74 +91,87 @@ onMounted(load);
 </script>
 
 <template>
-  <div class="page-container shop-my">
-    <div v-loading="loading" class="shop-detail-card">
-      <template v-if="shop">
-        <div class="card-header">
-          <div class="card-title">
-            <h2>{{ shop.name }}</h2>
-            <el-tag
-              :type="shop.status === 1 ? 'success' : 'danger'"
-              size="large"
-            >
-              {{ shop.status === 1 ? "营业中" : "休息" }}
-            </el-tag>
-          </div>
-          <div class="card-actions">
-            <el-button
-              v-auth="'btn:shop:edit'"
-              type="primary"
-              @click="openEdit"
-            >
-              编辑
-            </el-button>
-            <el-button
-              v-auth="'btn:shop:status'"
-              :type="shop.status === 1 ? 'warning' : 'success'"
-              @click="toggleStatus"
-            >
-              {{ shop.status === 1 ? "设为休息" : "设为营业" }}
-            </el-button>
+  <div v-loading="loading" class="shop-my">
+    <template v-if="shop">
+      <div class="shop-card">
+        <!-- 左侧：招牌照片 -->
+        <div class="card-left">
+          <div class="sign-photo">
+            <img v-if="shop.sign_photo" :src="signPhotoSrc" alt="招牌照片" />
+            <div v-else class="photo-placeholder">
+              <span>暂无招牌照片</span>
+            </div>
           </div>
         </div>
 
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="店铺名称" :span="2">
-            {{ shop.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="所属商户">
-            {{ shop.owner_name || "-" }}
-          </el-descriptions-item>
-          <el-descriptions-item label="联系电话">
-            {{ shop.contact_phone || "-" }}
-          </el-descriptions-item>
-          <el-descriptions-item label="地址" :span="2">
-            {{ shop.address || "-" }}
-          </el-descriptions-item>
-          <el-descriptions-item label="最大容量">
-            {{ shop.max_capacity ?? "-" }} 人
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间">
-            {{ shop.created_at || "-" }}
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ shop.description || "暂无描述" }}
-          </el-descriptions-item>
-        </el-descriptions>
+        <!-- 右侧：店铺信息 -->
+        <div class="card-right">
+          <!-- 标题行 -->
+          <div class="info-header">
+            <div class="header-left">
+              <h2 class="shop-name">{{ shop.name }}</h2>
+              <el-tag
+                :type="shop.status === 1 ? 'success' : 'danger'"
+                size="large"
+                class="status-tag"
+              >
+                {{ shop.status === 1 ? "营业中" : "休息" }}
+              </el-tag>
+            </div>
+            <div class="header-actions">
+              <el-button
+                v-auth="'btn:shop:edit'"
+                type="primary"
+                @click="openEdit"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-auth="'btn:shop:status'"
+                :type="shop.status === 1 ? 'warning' : 'success'"
+                @click="toggleStatus"
+              >
+                {{ shop.status === 1 ? "设为休息" : "设为营业" }}
+              </el-button>
+            </div>
+          </div>
 
-        <div v-if="shop.sign_photo" class="shop-sign-photo">
-          <h4>招牌照片</h4>
-          <el-image
-            :src="shop.sign_photo"
-            style="max-width: 300px"
-            fit="contain"
-            :preview-src-list="[shop.sign_photo]"
-          />
+          <!-- 信息列表 -->
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">所属商户</span>
+              <span class="info-value">{{ shop.owner_name || "-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">联系电话</span>
+              <span class="info-value">{{ shop.contact_phone || "-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">地址</span>
+              <span class="info-value">{{ shop.address || "-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">最大容量</span>
+              <span class="info-value">{{
+                shop.max_capacity ? shop.max_capacity + " 人" : "-"
+              }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">创建时间</span>
+              <span class="info-value">{{ shop.created_at || "-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">描述</span>
+              <span class="info-value info-desc">{{
+                shop.description || "暂无描述"
+              }}</span>
+            </div>
+          </div>
         </div>
-      </template>
+      </div>
+    </template>
 
-      <el-empty v-else description="暂无店铺信息" />
-    </div>
+    <el-empty v-else description="暂无店铺信息" />
 
     <!-- 编辑弹窗 -->
     <el-dialog
@@ -171,13 +185,21 @@ onMounted(load);
           <el-input v-model="editForm.name" placeholder="请输入店铺名称" />
         </el-form-item>
         <el-form-item label="联系电话">
-          <el-input v-model="editForm.contactPhone" placeholder="请输入联系电话" />
+          <el-input
+            v-model="editForm.contactPhone"
+            placeholder="请输入联系电话"
+          />
         </el-form-item>
         <el-form-item label="地址">
           <el-input v-model="editForm.address" placeholder="请输入地址" />
         </el-form-item>
         <el-form-item label="最大容量">
-          <el-input-number v-model="editForm.maxCapacity" :min="1" :max="999" placeholder="最大容量" />
+          <el-input-number
+            v-model="editForm.maxCapacity"
+            :min="1"
+            :max="999"
+            placeholder="最大容量"
+          />
         </el-form-item>
         <el-form-item label="描述">
           <el-input
@@ -190,9 +212,9 @@ onMounted(load);
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="doEdit">
-          保存
-        </el-button>
+        <el-button type="primary" :loading="saving" @click="doEdit"
+          >保存</el-button
+        >
       </template>
     </el-dialog>
   </div>
@@ -200,52 +222,119 @@ onMounted(load);
 
 <style scoped lang="scss">
 .shop-my {
-  padding: 20px 24px;
+  padding: 24px;
   min-height: 100%;
   background: #f5f6fa;
 }
 
-.shop-detail-card {
-  max-width: 860px;
+.shop-card {
+  max-width: 820px;
+  display: flex;
+  gap: 28px;
   background: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.card-header {
+/* ---- 左侧招牌照片 ---- */
+.card-left {
+  flex-shrink: 0;
+  width: 200px;
+}
+
+.sign-photo {
+  width: 200px;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f2f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.photo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #bbb;
+  font-size: 14px;
+}
+
+/* ---- 右侧信息 ---- */
+.card-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
-  flex-wrap: wrap;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-.card-title {
+.header-left {
   display: flex;
   align-items: center;
   gap: 12px;
-
-  h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-  }
 }
 
-.card-actions {
+.shop-name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.status-tag {
+  flex-shrink: 0;
+}
+
+.header-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.shop-sign-photo {
-  margin-top: 20px;
+/* ---- 信息字段 ---- */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-  h4 {
-    margin: 0 0 8px;
-    font-size: 14px;
-    color: #666;
-  }
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+
+.info-label {
+  flex-shrink: 0;
+  width: 80px;
+  color: #86909c;
+  font-size: 14px;
+}
+
+.info-value {
+  color: #1d2129;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.info-desc {
+  color: #4e5969;
 }
 </style>
