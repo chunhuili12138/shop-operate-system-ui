@@ -163,7 +163,7 @@ onMounted(() => {
       </el-form>
       <div class="page-header-actions">
         <div>
-          <el-button type="primary" @click="openAdd"> + 新增店铺 </el-button>
+          <el-button v-auth="'btn:shop:add'" type="primary" @click="openAdd"> + 新增店铺 </el-button>
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
@@ -199,17 +199,28 @@ onMounted(() => {
         <el-table-column prop="created_at" label="创建时间" width="170" />
         <el-table-column label="操作" width="200" align="center" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row.id)">
+            <el-button
+              v-auth="'btn:shop:edit'"
+              link
+              type="primary"
+              @click="openEdit(row.id)"
+            >
               编辑
             </el-button>
             <el-button
+              v-auth="'btn:shop:status'"
               link
               :type="row.status === 1 ? 'warning' : 'success'"
               @click="toggle(row.id, row.status)"
             >
               {{ row.status === 1 ? "设为休息" : "设为营业" }}
             </el-button>
-            <el-button link type="danger" @click="doDelete(row.id)">
+            <el-button
+              v-auth="'btn:shop:delete'"
+              link
+              type="danger"
+              @click="doDelete(row.id)"
+            >
               删除
             </el-button>
           </template>

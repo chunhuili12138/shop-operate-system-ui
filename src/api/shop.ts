@@ -90,3 +90,27 @@ export const deleteShop = (shopsId: number) => {
     params: { shopsId } 
   });
 };
+
+// ========== 店长专属：当前店铺操作 ==========
+
+/** 获取当前登录店铺信息 */
+export const getMyShopInfo = () => {
+  return http.request<ApiResult>("get", "/shops/my");
+};
+
+/** 编辑当前登录店铺 */
+export const updateMyShop = (data: {
+  name?: string;
+  address?: string;
+  contactPhone?: string;
+  maxCapacity?: number;
+  description?: string;
+  signPhoto?: string;
+}) => {
+  return http.request<ApiResult>("put", "/shops/myUpdate", { data });
+};
+
+/** 切换当前登录店铺营业状态 */
+export const updateMyShopStatus = (status: number) => {
+  return http.request<ApiResult>("put", "/shops/myStatus", { data: { status } });
+};

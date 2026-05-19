@@ -6,6 +6,7 @@ import {
   getStaffList,
   updateStaff,
   updateStaffStatus,
+  resetStaffPassword,
   deleteStaff,
   getRoleList
 } from "@/api/system";
@@ -128,22 +129,15 @@ const doDelete = async (staffId: number) => {
 };
 
 const toggleStatus = async (row: any) => {
-  try {
-    const newStatus = row.status === 1 ? 0 : 1;
-    const label = newStatus === 0 ? "设为离职" : "设为在职";
-    await ElMessageBox.confirm(`确认${label}？`, "提示");
-    const res = await updateStaffStatus({ staffId: row.id, status: newStatus });
-    if (res?.success) {
-      message("操作成功", { type: "success" });
-      await loadData();
-    } else {
-      message(res?.msg || "失败", { type: "warning" });
-    }
-  } catch (error) {
-    if (error !== "cancel") {
-      console.error("切换状态失败:", error);
-      message("操作失败", { type: "error" });
-    }
+  const newStatus = row.status === 1 ? 0 : 1;
+  const label = newStatus === 0 ? "设为离职" : "设为在职";
+  await ElMessageBox.confirm(`确认${label}？`, "提示");
+  const res = await updateStaffStatus({ staffId: row.id, status: newStatus });
+  if (res?.success) {
+    message("操作成功", { type: "success" });
+    await loadData();
+  } else {
+    message(res?.msg || "失败", { type: "warning" });
   }
 };
 

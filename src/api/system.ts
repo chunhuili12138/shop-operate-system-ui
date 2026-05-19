@@ -210,7 +210,7 @@ export const updateStaff = (data: StaffFormParams) => {
   return http.request<ApiResult>("put", "/staff/update", { data });
 };
 
-/** 更新员工状态 */
+/** 更新员工状态（在职/离职） */
 export const updateStaffStatus = (data: UpdateStaffStatusParams) => {
   return http.request<ApiResult>("put", "/staff/status", { data });
 };
