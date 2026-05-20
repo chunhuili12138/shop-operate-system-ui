@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { ref, reactive } from "vue";
 import { message } from "@/utils/message";
 import type { InventoryIoParams } from "@/api/inventory";
 import { inventoryInbound, inventoryOutbound } from "@/api/inventory";

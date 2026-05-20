@@ -190,10 +190,24 @@ export interface SupplierListResult {
     list: Array<{
       id: number;
       name: string;
+      contact_person: string;
+      phone: string;
+      address: string;
+      remark: string;
     }>;
     total: number;
   };
   timestamp: number;
+}
+
+// 供应商表单参数
+export interface SupplierFormParams {
+  supplierId?: number | null;
+  name: string;
+  contactPerson?: string;
+  phone?: string;
+  address?: string;
+  remark?: string;
 }
 
 // 采购单表单参数
@@ -241,6 +255,23 @@ export const getPurchaseOrderList = (params?: PurchaseOrderQueryParams) => {
 export const getSupplierList = (page = 1, size = 999) => {
   return http.request<SupplierListResult>("get", "/suppliers", { 
     params: { page, size } 
+  });
+};
+
+/** 新增供应商 */
+export const addSupplier = (data: SupplierFormParams) => {
+  return http.request<ApiResult>("post", "/suppliersAdd", { data });
+};
+
+/** 更新供应商 */
+export const updateSupplier = (data: SupplierFormParams) => {
+  return http.request<ApiResult>("put", "/suppliersUpdate", { data });
+};
+
+/** 删除供应商 */
+export const deleteSupplier = (supplierId: number) => {
+  return http.request<ApiResult>("delete", "/suppliersDelete", {
+    params: { supplierId }
   });
 };
 
