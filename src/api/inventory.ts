@@ -32,7 +32,7 @@ export interface InventoryListResult {
 // 出入库表单参数
 export interface InventoryIoParams {
   materialId: string;
-  quantity: string;
+  quantity: number;
   remark?: string;
 }
 

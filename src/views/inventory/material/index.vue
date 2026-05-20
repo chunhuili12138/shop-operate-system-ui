@@ -166,8 +166,13 @@ const loadWarn = async () => {
 };
 
 // 打开出入库弹窗
-const openIo = (type: number, materialId: string, materialName: string) => {
-  ioDialogRef.value?.open(type, materialId, materialName);
+const openIo = (
+  type: number,
+  materialId: string,
+  materialName: string,
+  stock: number
+) => {
+  ioDialogRef.value?.open(type, materialId, materialName, stock);
   ioDialog.value = true;
 };
 
@@ -269,15 +274,13 @@ onMounted(() => {
           <template #default="{ row }">
             <el-tag
               :type="
-                (row.quantity || 0) <= (row.min_stock || 0)
+                (row.quantity || 0) < (row.min_stock || 0)
                   ? 'danger'
                   : 'success'
               "
               size="small"
             >
-              {{
-                (row.quantity || 0) <= (row.min_stock || 0) ? "不足" : "正常"
-              }}
+              {{ (row.quantity || 0) < (row.min_stock || 0) ? "不足" : "正常" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -289,10 +292,16 @@ onMounted(() => {
             <el-button link type="danger" @click="deleteData(row.id)"
               >删除</el-button
             >
-            <el-button link type="success" @click="openIo(1, row.id, row.name)"
+            <el-button
+              link
+              type="success"
+              @click="openIo(1, row.id, row.name, row.quantity || 0)"
               >入库</el-button
             >
-            <el-button link type="warning" @click="openIo(2, row.id, row.name)"
+            <el-button
+              link
+              type="warning"
+              @click="openIo(2, row.id, row.name, row.quantity || 0)"
               >出库</el-button
             >
             <el-button link type="info" @click="openTx(row.id, row.name)"

@@ -14,19 +14,21 @@ const emit = defineEmits<{
 }>();
 
 const ioType = ref(1);
+const currentStock = ref(0);
 const ioForm = reactive<InventoryIoParams & { materialName?: string }>({
   materialId: "",
-  quantity: "",
+  quantity: 1,
   remark: "",
   materialName: ""
 });
 
 // 打开出入库弹窗
-const open = (type: number, materialId: string, materialName: string) => {
+const open = (type: number, materialId: string, materialName: string, stock: number) => {
   ioType.value = type;
+  currentStock.value = stock;
   ioForm.materialId = materialId;
   ioForm.materialName = materialName;
-  ioForm.quantity = "";
+  ioForm.quantity = 1;
   ioForm.remark = "";
 };
 
@@ -36,8 +38,12 @@ const doIo = async () => {
     message("请输入有效数量", { type: "warning" });
     return;
   }
+  if (ioType.value === 2 && ioForm.quantity > currentStock.value) {
+    message(`出库数量不能大于当前库存(${currentStock.value})`, { type: "warning" });
+    return;
+  }
   const fn = ioType.value === 1 ? inventoryInbound : inventoryOutbound;
-  const r = await fn(ioForm as InventoryIoParams);
+  const r = await fn(ioForm);
   if (r?.success) {
     message(ioType.value === 1 ? "入库成功" : "出库成功", { type: "success" });
     emit("update:visible", false);
@@ -67,8 +73,17 @@ defineExpose({ open });
       <el-form-item label="物料">
         <el-input :model-value="ioForm.materialName" disabled />
       </el-form-item>
+      <el-form-item v-if="ioType === 2" label="当前库存">
+        <span class="text-sm">{{ currentStock }}</span>
+      </el-form-item>
       <el-form-item label="数量" required>
-        <el-input v-model="ioForm.quantity" placeholder="请输入数量" />
+        <el-input-number
+          v-model="ioForm.quantity"
+          :min="1"
+          :max="ioType === 2 ? currentStock : undefined"
+          placeholder="请输入数量"
+          style="width: 100%"
+        />
       </el-form-item>
       <el-form-item label="备注">
         <el-input v-model="ioForm.remark" placeholder="可选备注" />
