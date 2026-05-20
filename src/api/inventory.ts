@@ -111,6 +111,7 @@ export interface MaterialListResult {
       unit: string;
       type: number;
       min_stock: number;
+      quantity: number;
       remark: string;
     }>;
     total: number;

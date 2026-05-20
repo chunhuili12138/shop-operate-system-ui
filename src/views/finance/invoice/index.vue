@@ -14,7 +14,7 @@ onMounted(load);
 </script>
 <template>
   <div class="page-container">
-    <div class="page-header"><div class="page-header-actions"><div><el-button type="success" @click="D=true;Object.assign(F,{referenceType:'purchase',referenceId:'',invoiceNumber:'',amount:'',issuedAt:''})">新增发票</el-button></div><div><el-button type="primary" @click="load">查询</el-button></div></div></div>
+    <div class="page-header"><div class="page-header-actions"><div><el-button type="primary" @click="D=true;Object.assign(F,{referenceType:'purchase',referenceId:'',invoiceNumber:'',amount:'',issuedAt:''})">新增发票</el-button></div><div><el-button type="primary" @click="load">查询</el-button></div></div></div>
     <div class="page-table"><el-table v-loading="L" :data="T" stripe border  style="width:100%">
       <el-table-column prop="reference_type" label="关联类型" width="100"/><el-table-column prop="reference_id" label="关联ID" width="80"/>
       <el-table-column prop="invoice_number" label="发票号"/><el-table-column prop="amount" label="金额"/><el-table-column prop="issued_at" label="开票日期"/>

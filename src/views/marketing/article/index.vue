@@ -27,7 +27,7 @@ onMounted(()=>{load();loadCats()});
     <div class="page-header"><el-form :model="Q" inline class="page-search">
       <el-form-item label="关键词"><el-input v-model="Q.keyword" clearable @keyup.enter="load"/></el-form-item>
     </el-form>
-    <div class="page-header-actions"><div><el-button type="success" @click="D=true;E=false;Object.assign(F,{articleId:null,categoryId:'',title:'',content:'',coverImage:'',contentType:3})">新增文章</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
+    <div class="page-header-actions"><div><el-button type="primary" @click="D=true;E=false;Object.assign(F,{articleId:null,categoryId:'',title:'',content:'',coverImage:'',contentType:3})">新增文章</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
     <div class="page-table"><el-table v-loading="L" :data="T" stripe border  style="width:100%">
       <el-table-column prop="title" label="标题" show-overflow-tooltip/><el-table-column label="发布" width="60"><template #default="{row}"><el-tag :type="row.is_published?'success':'info'">{{row.is_published?'已发布':'下架'}}</el-tag></template></el-table-column>
       <el-table-column prop="created_at" label="时间" width="170"/>

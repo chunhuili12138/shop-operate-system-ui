@@ -21,7 +21,7 @@ onMounted(()=>{load();loadCats()});
 </script>
 <template>
   <div class="page-container">
-    <div class="page-header"><div class="page-header-actions"><div><el-button type="success" @click="D=true;E=false;Object.assign(F,{expenseId:null,categoryId:'',amount:'',paymentMethod:'',expenseDate:'',remark:''})">新增支出</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
+    <div class="page-header"><div class="page-header-actions"><div><el-button type="primary" @click="D=true;E=false;Object.assign(F,{expenseId:null,categoryId:'',amount:'',paymentMethod:'',expenseDate:'',remark:''})">新增支出</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
     <div class="page-table"><el-table v-loading="L" :data="T" stripe border  style="width:100%">
       <el-table-column prop="category_name" label="分类"/><el-table-column prop="amount" label="金额"/><el-table-column prop="payment_method" label="支付方式"/>
       <el-table-column prop="expense_date" label="日期"/><el-table-column prop="remark" label="备注"/>

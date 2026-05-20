@@ -73,6 +73,27 @@ watch(
   { immediate: true }
 );
 
+// 监听对话框打开，确保新增时重置表单
+watch(
+  () => props.visible,
+  newVal => {
+    if (newVal && !props.isEdit) {
+      // 新增模式：重置表单
+      Object.assign(form, {
+        materialId: null,
+        name: "",
+        sku: "",
+        category: "",
+        unit: "个",
+        type: 1,
+        minStock: 20,
+        remark: ""
+      });
+      formRef.value?.clearValidate();
+    }
+  }
+);
+
 const loadCategories = async () => {
   const r = await getDictData({
     dictCode: "material_category",

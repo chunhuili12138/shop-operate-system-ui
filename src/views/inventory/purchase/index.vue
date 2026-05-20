@@ -30,7 +30,7 @@ onMounted(load);
     <div class="page-header"><el-form :model="Q" inline class="page-search">
       <el-form-item label="状态"><el-select v-model="Q.status" clearable style="width:120px"><el-option label="进行中" :value="1"/><el-option label="已完成" :value="2"/><el-option label="已取消" :value="3"/></el-select></el-form-item>
     </el-form>
-    <div class="page-header-actions"><div><el-button type="success" @click="openAdd">新增采购单</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
+    <div class="page-header-actions"><div><el-button type="primary" @click="openAdd">新增采购单</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
     <div class="page-table"><el-table v-loading="L" :data="T" stripe border  style="width:100%">
       <el-table-column prop="order_number" label="单号" width="160"/><el-table-column prop="supplier_name" label="供应商" width="120"/>
       <el-table-column prop="total_amount" label="总金额" width="80"/><el-table-column prop="paid_amount" label="已付" width="80"/>

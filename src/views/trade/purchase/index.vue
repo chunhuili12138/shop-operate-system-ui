@@ -80,6 +80,16 @@ const onSizeChange = (s: number) => {
 
 const openAddDialog = async () => {
   await Promise.all([loadCustomers(), loadPkgs()]);
+  // 重置表单
+  Object.assign(form, {
+    customersId: "",
+    packageId: "",
+    channel: "store",
+    paymentMethod: "",
+    totalAmount: "",
+    paidAmount: "",
+    remark: ""
+  });
   dialogVisible.value = true;
 };
 
