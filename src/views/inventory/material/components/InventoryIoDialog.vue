@@ -1,0 +1,82 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+import { message } from "@/utils/message";
+import type { InventoryIoParams } from "@/api/inventory";
+import { inventoryInbound, inventoryOutbound } from "@/api/inventory";
+
+const props = defineProps<{
+  visible: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:visible", v: boolean): void;
+  (e: "success"): void;
+}>();
+
+const ioType = ref(1);
+const ioForm = reactive<InventoryIoParams & { materialName?: string }>({
+  materialId: "",
+  quantity: "",
+  remark: "",
+  materialName: ""
+});
+
+// 打开出入库弹窗
+const open = (type: number, materialId: string, materialName: string) => {
+  ioType.value = type;
+  ioForm.materialId = materialId;
+  ioForm.materialName = materialName;
+  ioForm.quantity = "";
+  ioForm.remark = "";
+};
+
+// 执行出入库
+const doIo = async () => {
+  if (!ioForm.quantity || Number(ioForm.quantity) <= 0) {
+    message("请输入有效数量", { type: "warning" });
+    return;
+  }
+  const fn = ioType.value === 1 ? inventoryInbound : inventoryOutbound;
+  const r = await fn(ioForm as InventoryIoParams);
+  if (r?.success) {
+    message(ioType.value === 1 ? "入库成功" : "出库成功", { type: "success" });
+    emit("update:visible", false);
+    emit("success");
+  } else {
+    message(r?.msg || "操作失败", { type: "warning" });
+  }
+};
+
+const handleClose = () => {
+  emit("update:visible", false);
+};
+
+defineExpose({ open });
+</script>
+
+<template>
+  <el-dialog
+    :model-value="visible"
+    :title="ioType === 1 ? '入库' : '出库'"
+    width="440px"
+    class="dialog-sm"
+    :close-on-click-modal="false"
+    @close="handleClose"
+  >
+    <el-form :model="ioForm" label-width="80px">
+      <el-form-item label="物料">
+        <el-input :model-value="ioForm.materialName" disabled />
+      </el-form-item>
+      <el-form-item label="数量" required>
+        <el-input v-model="ioForm.quantity" placeholder="请输入数量" />
+      </el-form-item>
+      <el-form-item label="备注">
+        <el-input v-model="ioForm.remark" placeholder="可选备注" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="handleClose">取消</el-button>
+      <el-button type="primary" @click="doIo">确认</el-button>
+    </template>
+  </el-dialog>
+</template>
