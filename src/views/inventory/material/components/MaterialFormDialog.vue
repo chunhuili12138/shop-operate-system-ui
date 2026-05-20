@@ -17,14 +17,16 @@ const emit = defineEmits(["update:visible", "success"]);
 
 const formRef = ref<FormInstance>();
 
-const categoryOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const categoryOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 // 表单验证规则
 const rules = {
   name: [{ required: true, message: "请输入物料名称", trigger: "blur" }],
   sku: [{ required: true, message: "请输入SKU", trigger: "blur" }],
   minStock: [
-    { 
+    {
       validator: (rule: any, value: any, callback: any) => {
         if (value !== null && value !== undefined && value < 0) {
           callback(new Error("最低库存不能小于0"));
@@ -72,12 +74,18 @@ watch(
 );
 
 const loadCategories = async () => {
-  const r = await getDictData({ dictCode: "material_category", shopId: props.shopId } as any);
+  const r = await getDictData({
+    dictCode: "material_category",
+    shopId: props.shopId
+  } as any);
   if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
 };
 
 const reloadCategories = async () => {
-  const r = await getDictData({ dictCode: "material_category", shopId: props.shopId } as any);
+  const r = await getDictData({
+    dictCode: "material_category",
+    shopId: props.shopId
+  } as any);
   if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
 };
 
@@ -86,7 +94,7 @@ loadCategories();
 const save = async () => {
   // 表单验证
   if (!formRef.value) return;
-  
+
   try {
     await formRef.value.validate();
   } catch (error) {

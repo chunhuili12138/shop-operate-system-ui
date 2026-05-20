@@ -31,7 +31,9 @@ const queryParams = reactive<QueryParams>({
   category: ""
 });
 
-const categoryOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const categoryOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 // 对话框状态
 const dialogVisible = ref(false);
@@ -43,7 +45,10 @@ const currentShopId = useUserStoreHook()?.currentShopId ?? 0;
 
 // 加载分类字典
 const loadCategories = async () => {
-  const r = await getDictData({ dictCode: "material_category", shopId: currentShopId } as any);
+  const r = await getDictData({
+    dictCode: "material_category",
+    shopId: currentShopId
+  } as any);
   if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
 };
 
@@ -149,13 +154,15 @@ onMounted(() => {
             @keyup.enter="loadData"
         /></el-form-item>
         <el-form-item label="分类"
-          ><el-select v-model="queryParams.category" clearable style="width: 130px"
+          ><el-select
+            v-model="queryParams.category"
+            clearable
+            style="width: 130px"
             ><el-option
               v-for="c in categoryOptions"
               :key="c.dict_key"
               :label="c.dict_value"
-              :value="c.dict_value"
-            /></el-select
+              :value="c.dict_value" /></el-select
         ></el-form-item>
         <el-form-item label="类型"
           ><el-select v-model="queryParams.type" clearable style="width: 100px"
@@ -170,7 +177,8 @@ onMounted(() => {
           <el-button
             v-auth="'btn:material:category'"
             @click="categoryManageVisible = true"
-          >分类管理</el-button>
+            >分类管理</el-button
+          >
         </div>
         <div>
           <el-button type="primary" @click="loadData">查询</el-button
@@ -230,7 +238,12 @@ onMounted(() => {
       :visible="categoryManageVisible"
       :shop-id="currentShopId"
       @update:visible="categoryManageVisible = $event"
-      @refresh="() => { loadCategories(); formDialogRef?.reloadCategories(); }"
+      @refresh="
+        () => {
+          loadCategories();
+          formDialogRef?.reloadCategories();
+        }
+      "
     />
   </div>
 </template>
