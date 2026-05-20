@@ -2,47 +2,192 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import {
-  getMaterialList,
-  addMaterial,
-  updateMaterial,
-  deleteMaterial
-} from "@/api/inventory";
-defineOptions({name:"InvMaterial"}); const T=ref([]),L=ref(false),P=ref(1),S=ref(20),t=ref(0),Q=reactive({keyword:"",type:""as any});
-const D=ref(false),E=ref(false),F=reactive({materialId:null,name:"",sku:"",category:"",unit:"个",type:1,minStock:null,remark:""});
-const load=async()=>{L.value=true;try{const r=await getMaterialList({page:P.value,size:S.value,...Q});r?.success&&(T.value=r.data.list,t.value=r.data.total)}finally{L.value=false}};
-const reset=()=>{Q.keyword="";Q.type="";P.value=1;load()};
-const onSizeChange=(s:number)=>{S.value=s;P.value=1;load()};
-const openAdd=()=>{E.value=false;Object.assign(F,{materialId:null,name:"",sku:"",category:"",unit:"个",type:1,minStock:null,remark:""});D.value=true};
-const openEdit=(r:any)=>{E.value=true;Object.assign(F,{materialId:r.id,name:r.name,sku:r.sku,category:r.category,unit:r.unit,type:r.type,minStock:r.min_stock,remark:r.remark});D.value=true};
-const save=async()=>{const r=E.value?await updateMaterial(F):await addMaterial(F);r?.success?(message("成功",{type:"success"}),D.value=false,load()):message(r?.msg||"失败",{type:"warning"})};
-const del=async(id:number)=>{await ElMessageBox.confirm("确认删除？","提示");const r=await deleteMaterial(id);r?.success?(message("已删除",{type:"success"}),load()):message(r?.msg||"失败",{type:"warning"})};
-onMounted(load);
+import type { MaterialListResult } from "@/api/inventory";
+import { getMaterialList, deleteMaterial } from "@/api/inventory";
+import MaterialFormDialog from "./components/MaterialFormDialog.vue";
+
+defineOptions({ name: "InvMaterial" });
+
+// 数据状态
+const materialList = ref<any[]>([]);
+const loading = ref(false);
+const currentPage = ref(1);
+const pageSize = ref(20);
+const total = ref(0);
+
+// 查询参数
+interface QueryParams {
+  keyword: string;
+  type: number | string;
+}
+
+const queryParams = reactive<QueryParams>({
+  keyword: "",
+  type: ""
+});
+
+// 对话框状态
+const dialogVisible = ref(false);
+const isEdit = ref(false);
+const currentFormData = ref<any>(null);
+
+// 加载数据
+const loadData = async () => {
+  loading.value = true;
+  try {
+    const res = (await getMaterialList({
+      page: currentPage.value,
+      size: pageSize.value,
+      ...queryParams
+    })) as MaterialListResult;
+
+    if (res?.success) {
+      materialList.value = res.data.list;
+      total.value = res.data.total;
+    }
+  } catch (error) {
+    message("加载失败", { type: "error" });
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 重置查询
+const resetQuery = () => {
+  queryParams.keyword = "";
+  queryParams.type = "";
+  currentPage.value = 1;
+  loadData();
+};
+
+// 分页大小改变
+const handleSizeChange = (size: number) => {
+  pageSize.value = size;
+  currentPage.value = 1;
+  loadData();
+};
+
+// 打开新增对话框
+const openAddDialog = () => {
+  isEdit.value = false;
+  currentFormData.value = null;
+  dialogVisible.value = true;
+};
+
+// 打开编辑对话框
+const openEditDialog = (row: any) => {
+  isEdit.value = true;
+  currentFormData.value = {
+    materialId: row.id,
+    name: row.name,
+    sku: row.sku,
+    category: row.category,
+    unit: row.unit,
+    type: row.type,
+    minStock: row.min_stock,
+    remark: row.remark
+  };
+  dialogVisible.value = true;
+};
+
+// 删除数据
+const deleteData = async (id: number) => {
+  try {
+    await ElMessageBox.confirm("确认删除该物料吗？", "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    });
+
+    const res = await deleteMaterial(id);
+    if (res?.success) {
+      message("删除成功", { type: "success" });
+      loadData();
+    } else {
+      message(res?.msg || "删除失败", { type: "warning" });
+    }
+  } catch (error) {
+    // 用户取消删除
+    if (error !== "cancel") {
+      message("删除失败", { type: "error" });
+    }
+  }
+};
+
+onMounted(loadData);
 </script>
 <template>
   <div class="page-container">
-    <div class="page-header"><el-form :model="Q" inline class="page-search">
-      <el-form-item label="关键词"><el-input v-model="Q.keyword" clearable @keyup.enter="load"/></el-form-item>
-      <el-form-item label="类型"><el-select v-model="Q.type" clearable style="width:100px"><el-option label="消耗品" :value="1"/><el-option label="工具" :value="2"/></el-select></el-form-item>
-    </el-form>
-    <div class="page-header-actions"><div><el-button type="success" @click="openAdd">新增物料</el-button></div><div><el-button type="primary" @click="load">查询</el-button><el-button @click="reset">重置</el-button></div></div></div>
-    <div class="page-table"><el-table v-loading="L" :data="T" stripe border  style="width:100%">
-      <el-table-column prop="name" label="名称"/><el-table-column prop="sku" label="SKU" width="100"/><el-table-column prop="category" label="分类" width="80"/>
-      <el-table-column prop="unit" label="单位" width="50"/><el-table-column label="类型" width="70"><template #default="{row}">{{['','消耗品','工具'][row.type]}}</template></el-table-column>
-      <el-table-column prop="min_stock" label="最低库存" width="80"/>
-      <el-table-column label="操作" width="180" fixed="right"><template #default="{row}">
-        <el-button link type="primary" @click="openEdit(row)">编辑</el-button><el-button link type="danger" @click="del(row.id)">删除</el-button>
-      </template></el-table-column>
-    </el-table></div>
-    <el-pagination v-model:current-page="P" v-model:page-size="S" :total="t" :page-sizes="[10,20,50,100]" layout="total, sizes, prev, pager, next, jumper" @size-change="onSizeChange" @current-change="load" class="page-pagination"/>
-    <el-dialog v-model="D" :title="E?'编辑物料':'新增物料'" width="500px">
-      <el-form :model="F" label-width="100px">
-        <el-form-item label="名称"><el-input v-model="F.name"/></el-form-item><el-form-item label="SKU"><el-input v-model="F.sku"/></el-form-item>
-        <el-form-item label="分类"><el-input v-model="F.category"/></el-form-item><el-form-item label="单位"><el-input v-model="F.unit"/></el-form-item>
-        <el-form-item label="类型"><el-radio-group v-model="F.type"><el-radio :value="1">消耗品</el-radio><el-radio :value="2">工具</el-radio></el-radio-group></el-form-item>
-        <el-form-item label="最低库存"><el-input-number v-model="F.minStock" :min="0"/></el-form-item><el-form-item label="备注"><el-input v-model="F.remark" type="textarea"/></el-form-item>
+    <div class="page-header">
+      <el-form :model="queryParams" inline class="page-search">
+        <el-form-item label="关键词"
+          ><el-input
+            v-model="queryParams.keyword"
+            clearable
+            @keyup.enter="loadData"
+        /></el-form-item>
+        <el-form-item label="类型"
+          ><el-select v-model="queryParams.type" clearable style="width: 100px"
+            ><el-option label="消耗品" :value="1" /><el-option
+              label="工具"
+              :value="2" /></el-select
+        ></el-form-item>
       </el-form>
-      <template #footer><el-button @click="D=false">取消</el-button><el-button type="primary" @click="save">保存</el-button></template>
-    </el-dialog>
+      <div class="page-header-actions">
+        <div>
+          <el-button type="success" @click="openAddDialog">新增物料</el-button>
+        </div>
+        <div>
+          <el-button type="primary" @click="loadData">查询</el-button
+          ><el-button @click="resetQuery">重置</el-button>
+        </div>
+      </div>
+    </div>
+    <div class="page-table">
+      <el-table
+        v-loading="loading"
+        :data="materialList"
+        stripe
+        border
+        style="width: 100%"
+      >
+        <el-table-column prop="name" label="名称" />
+        <el-table-column prop="sku" label="SKU" width="150" />
+        <el-table-column prop="category" label="分类" width="150" />
+        <el-table-column prop="unit" label="单位" width="150" />
+        <el-table-column label="类型" width="200">
+          <template #default="{ row }">
+            {{ ["", "消耗品", "工具"][row.type] }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="min_stock" label="最低库存" width="120" />
+        <el-table-column label="操作" width="180" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openEditDialog(row)"
+              >编辑</el-button
+            >
+            <el-button link type="danger" @click="deleteData(row.id)"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    <el-pagination
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="total"
+      :page-sizes="[10, 20, 50, 100]"
+      layout="total, sizes, prev, pager, next, jumper"
+      class="page-pagination"
+      @size-change="handleSizeChange"
+      @current-change="loadData"
+    />
+    <MaterialFormDialog
+      v-model:visible="dialogVisible"
+      :is-edit="isEdit"
+      :form-data="currentFormData"
+      @success="loadData"
+    />
   </div>
 </template>
