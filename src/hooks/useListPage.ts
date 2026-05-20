@@ -5,6 +5,7 @@
 import { ref, reactive, onMounted, type Ref } from "vue";
 import { http } from "@/utils/http";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 // ---- 泛型约束 ----
 type RecordWithId = { id: number | null } & Record<string, any>;
 type ApiResult = { success: boolean; data?: any; msg?: string };
@@ -85,10 +86,12 @@ export function useListPage<TForm extends RecordWithId>(
       const params: Record<string, any> = noPagination
         ? { ...query }
         : { page: page.value, size: size.value, ...query };
-      const r: any = await http.get(listPath, { params }) as ApiResult;
+      const r: any = (await http.get(listPath, { params })) as ApiResult;
       if (r?.success) {
         if (noPagination) {
-          tableData.value = Array.isArray(r.data) ? r.data : r.data?.list ?? [];
+          tableData.value = Array.isArray(r.data)
+            ? r.data
+            : (r.data?.list ?? []);
         } else {
           tableData.value = r.data?.list ?? [];
           total.value = r.data?.total ?? 0;
@@ -129,9 +132,9 @@ export function useListPage<TForm extends RecordWithId>(
     isEdit.value = true;
     const id = typeof rowOrId === "object" ? rowOrId.id : rowOrId;
     try {
-      const r: any = await http.get(infoPath, {
+      const r: any = (await http.get(infoPath, {
         params: { [`${extractIdKey(apiPrefix)}Id`]: id }
-      }) as ApiResult;
+      })) as ApiResult;
       if (r?.success && r.data) {
         Object.assign(form, { id: null, ...emptyForm }, mapRowToForm(r.data));
       } else {
@@ -158,9 +161,9 @@ export function useListPage<TForm extends RecordWithId>(
     try {
       const url = isEdit.value ? updatePath : addPath;
       const method = isEdit.value ? "put" : "post";
-      const r: any = await http.request(method, url, {
+      const r: any = (await http.request(method, url, {
         data: { ...form }
-      }) as ApiResult;
+      })) as ApiResult;
       if (r?.success) {
         message("操作成功", { type: "success" });
         dialogVisible.value = false;
@@ -176,12 +179,10 @@ export function useListPage<TForm extends RecordWithId>(
   // ---- 删除 ----
   const doDelete = async (rowOrId: any) => {
     const id = typeof rowOrId === "object" ? rowOrId.id : rowOrId;
-    await import("element-plus").then(m =>
-      m.ElMessageBox.confirm(deleteConfirmText, deleteConfirmTitle)
-    );
-    const r: any = await http.delete(deletePath, {
+    await ElMessageBox.confirm(deleteConfirmText, deleteConfirmTitle);
+    const r: any = (await http.delete(deletePath, {
       params: { [`${extractIdKey(apiPrefix)}Id`]: id }
-    }) as ApiResult;
+    })) as ApiResult;
     if (r?.success) {
       message("已删除", { type: "success" });
       loadData();
@@ -196,7 +197,7 @@ export function useListPage<TForm extends RecordWithId>(
     data: Record<string, any>,
     successMsg = "操作成功"
   ) => {
-    const r: any = await http.put(actionPath, { data }) as ApiResult;
+    const r: any = (await http.put(actionPath, { data })) as ApiResult;
     if (r?.success) {
       message(successMsg, { type: "success" });
       loadData();
@@ -208,9 +209,9 @@ export function useListPage<TForm extends RecordWithId>(
   // ---- 详情获取 ----
   const getDetail = async (rowOrId: any): Promise<any | null> => {
     const id = typeof rowOrId === "object" ? rowOrId.id : rowOrId;
-    const r: any = await http.get(infoPath, {
+    const r: any = (await http.get(infoPath, {
       params: { [`${extractIdKey(apiPrefix)}Id`]: id }
-    }) as ApiResult;
+    })) as ApiResult;
     return r?.success ? r.data : null;
   };
 
