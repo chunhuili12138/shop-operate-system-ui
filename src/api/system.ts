@@ -64,6 +64,7 @@ export const deleteDict = (id: number) => {
 // 字典数据查询参数
 export interface DictDataQueryParams {
   dictCode: string;
+  shopId?: number;
 }
 
 // 字典数据列表响应

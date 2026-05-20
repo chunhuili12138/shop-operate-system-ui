@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { message } from "@/utils/message";
 import {
   getCustomerInfo,
@@ -9,6 +9,7 @@ import {
   adjustWallet,
   adjustPoints
 } from "@/api/customer";
+import { getDictData } from "@/api/system";
 
 const props = defineProps<{
   visible: boolean;
@@ -33,6 +34,19 @@ const pointsPage = ref(1);
 const activeTab = ref("purchases");
 
 const pageSize = 20;
+const sourceOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+
+const sourceLabel = (key: string) => {
+  const found = sourceOptions.value.find(s => s.dict_label === key);
+  return found?.dict_value || key || "-";
+};
+
+onMounted(async () => {
+  const r = await getDictData({ dictCode: "customer_source" });
+  if (r?.success && Array.isArray(r.data)) {
+    sourceOptions.value = r.data;
+  }
+});
 
 watch(
   () => props.visible,
@@ -157,7 +171,7 @@ const purchaseStatusMap: Record<number, string> = { 1: "有效", 2: "已退款",
           <el-descriptions :column="2" size="small">
             <el-descriptions-item label="手机号">{{ customer.phone || "-" }}</el-descriptions-item>
             <el-descriptions-item label="性别">{{ genderMap[customer.gender] || "-" }}</el-descriptions-item>
-            <el-descriptions-item label="来源">{{ customer.source || "-" }}</el-descriptions-item>
+            <el-descriptions-item label="来源">{{ sourceLabel(customer.source) }}</el-descriptions-item>
             <el-descriptions-item label="注册时间">{{ customer.created_at || "-" }}</el-descriptions-item>
             <el-descriptions-item v-if="customer.tags" label="标签" :span="2">{{ customer.tags }}</el-descriptions-item>
             <el-descriptions-item v-if="customer.remark" label="备注" :span="2">{{ customer.remark }}</el-descriptions-item>

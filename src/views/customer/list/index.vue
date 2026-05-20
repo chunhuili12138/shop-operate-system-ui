@@ -2,6 +2,8 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
+import { formatDate } from "@/utils/date";
+import { useUserStoreHook } from "@/store/modules/user";
 import {
   getCustomerList,
   deleteCustomer,
@@ -9,8 +11,9 @@ import {
   type CustomerFormParams
 } from "@/api/customer";
 import { getDictData } from "@/api/system";
-import FormDialog from "./FormDialog.vue";
-import DetailDrawer from "./DetailDrawer.vue";
+import FormDialog from "./components/FormDialog.vue";
+import DetailDrawer from "./components/DetailDrawer.vue";
+import TagManageDialog from "./components/TagManageDialog.vue";
 
 defineOptions({ name: "CustomerList" });
 
@@ -19,7 +22,9 @@ const loading = ref(false);
 const page = ref(1);
 const size = ref(20);
 const total = ref(0);
-const sourceOptions = ref<{ dict_key: number; dict_value: string }[]>([]);
+const sourceOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 const query = reactive<CustomerQueryParams>({
   keyword: "",
@@ -30,8 +35,11 @@ const query = reactive<CustomerQueryParams>({
 const formVisible = ref(false);
 const formMode = ref<"add" | "edit">("add");
 const formData = ref<CustomerFormParams | null>(null);
+const formDialogRef = ref<InstanceType<typeof FormDialog>>();
 const detailVisible = ref(false);
 const detailCustomerId = ref<number | null>(null);
+const tagManageVisible = ref(false);
+const currentShopId = useUserStoreHook()?.currentShopId ?? 0;
 
 const loadDicts = async () => {
   const r = await getDictData({ dictCode: "customer_source" });
@@ -87,6 +95,7 @@ const openEdit = (row: any) => {
     phone: row.phone,
     gender: row.gender,
     birthday: row.birthday,
+    source: row.source || "offline",
     remark: row.remark,
     tags: row.tags || ""
   };
@@ -96,11 +105,15 @@ const openEdit = (row: any) => {
 // ---- 删除 ----
 const handleDelete = async (row: any) => {
   try {
-    await ElMessageBox.confirm(`确认删除顾客"${row.nickname || row.phone}"？删除后该顾客的所有关联数据（钱包、购买记录、积分、优惠券等）将被级联删除。`, "删除确认", {
-      confirmButtonText: "确认删除",
-      cancelButtonText: "取消",
-      type: "warning"
-    });
+    await ElMessageBox.confirm(
+      `确认删除顾客"${row.nickname || row.phone}"？删除后该顾客的所有关联数据（钱包、购买记录、积分、优惠券等）将被级联删除。`,
+      "删除确认",
+      {
+        confirmButtonText: "确认删除",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    );
   } catch {
     return;
   }
@@ -119,9 +132,18 @@ const openDetail = (row: any) => {
   detailVisible.value = true;
 };
 
+const sourceLabel = (key: string) => {
+  const found = sourceOptions.value.find(s => s.dict_label === key);
+  return found?.dict_value || key || "-";
+};
+
 const onFormSubmit = () => {
   load();
 };
+
+onMounted(() => {
+  loadDicts().then(() => load());
+});
 </script>
 
 <template>
@@ -149,13 +171,16 @@ const onFormSubmit = () => {
               v-for="s in sourceOptions"
               :key="s.dict_key"
               :label="s.dict_value"
-              :value="s.dict_key"
+              :value="s.dict_label"
             />
           </el-select>
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
-        <el-button type="primary" @click="openAdd">+ 新增顾客</el-button>
+        <div>
+          <el-button type="primary" @click="openAdd">+ 新增顾客</el-button>
+          <el-button v-auth="'btn:customer:tag'" @click="tagManageVisible = true">标签管理</el-button>
+        </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
           <el-button @click="reset">重置</el-button>
@@ -165,22 +190,17 @@ const onFormSubmit = () => {
 
     <!-- 表格区 -->
     <div class="page-table">
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        style="width: 100%"
-      >
+      <el-table v-loading="loading" :data="tableData" style="width: 100%">
         <template #empty>
           <el-empty description="暂无顾客数据" :image-size="80" />
         </template>
-        <el-table-column prop="nickname" label="昵称" min-width="120">
+        <el-table-column prop="nickname" label="昵称" width="200">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">
               {{ row.nickname || "-" }}
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="phone" label="手机号" width="130" />
         <el-table-column label="性别" width="60" align="center">
           <template #default="{ row }">
             <span class="text-sm" style="color: var(--el-text-color-secondary)">
@@ -188,9 +208,38 @@ const onFormSubmit = () => {
             </span>
           </template>
         </el-table-column>
+        <el-table-column prop="phone" label="手机号" width="130" />
+        <el-table-column prop="birthday" label="生日" width="120">
+          <template #default="{ row }">
+            <span class="text-sm" style="color: var(--el-text-color-secondary)">
+              {{ formatDate(row.birthday) }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="标签" min-width="140">
+          <template #default="{ row }">
+            <template v-if="row.tags">
+              <el-tag
+                v-for="(t, i) in row.tags.split(',')"
+                :key="i"
+                size="small"
+                class="mr-1"
+                >{{ t }}</el-tag
+              >
+            </template>
+            <span
+              v-else
+              class="text-sm"
+              style="color: var(--el-text-color-secondary)"
+              >-</span
+            >
+          </template>
+        </el-table-column>
         <el-table-column prop="source" label="来源" width="100">
           <template #default="{ row }">
-            <el-tag size="small" type="info">{{ row.source || "-" }}</el-tag>
+            <el-tag size="small" type="info">{{
+              sourceLabel(row.source)
+            }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="170" />
@@ -199,7 +248,12 @@ const onFormSubmit = () => {
             <el-button link type="primary" size="small" @click="openEdit(row)">
               编辑
             </el-button>
-            <el-button link type="danger" size="small" @click="handleDelete(row)">
+            <el-button
+              link
+              type="danger"
+              size="small"
+              @click="handleDelete(row)"
+            >
               删除
             </el-button>
           </template>
@@ -221,11 +275,21 @@ const onFormSubmit = () => {
 
     <!-- 新增/编辑弹窗 -->
     <FormDialog
+      ref="formDialogRef"
       :visible="formVisible"
       :mode="formMode"
       :data="formData"
+      :shop-id="currentShopId"
       @update:visible="formVisible = $event"
       @submit="onFormSubmit"
+    />
+
+    <!-- 标签管理弹窗 -->
+    <TagManageDialog
+      :visible="tagManageVisible"
+      :shop-id="currentShopId"
+      @update:visible="tagManageVisible = $event"
+      @refresh="formDialogRef?.reloadTags()"
     />
 
     <!-- 详情抽屉 -->
