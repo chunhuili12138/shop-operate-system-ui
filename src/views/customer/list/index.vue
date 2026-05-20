@@ -179,7 +179,11 @@ onMounted(() => {
       <div class="page-header-actions">
         <div>
           <el-button type="primary" @click="openAdd">+ 新增顾客</el-button>
-          <el-button v-auth="'btn:customer:tag'" @click="tagManageVisible = true">标签管理</el-button>
+          <el-button
+            v-auth="'btn:customer:tag'"
+            @click="tagManageVisible = true"
+            >标签管理</el-button
+          >
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
@@ -243,8 +247,16 @@ onMounted(() => {
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="创建时间" width="170" />
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openDetail(row)"
+            >
+              详情
+            </el-button>
             <el-button link type="primary" size="small" @click="openEdit(row)">
               编辑
             </el-button>
