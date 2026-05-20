@@ -2,17 +2,25 @@
 import { ref, onMounted, reactive, computed } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import { getMyShopInfo, updateMyShop, updateMyShopStatus } from "@/api/shop";
+import {
+  getMyShopInfo,
+  updateMyShop,
+  updateMyShopStatus,
+  uploadShopPhoto
+} from "@/api/shop";
+import EpPlus from "~icons/ep/plus";
 
 defineOptions({ name: "ShopMy" });
 
 const loading = ref(false);
 const saving = ref(false);
 const shop = ref<any>(null);
+const uploadRef = ref();
+const pendingFile = ref<File | null>(null);
 
 const signPhotoSrc = computed(() => {
   if (!shop.value?.sign_photo) return "";
-  return `/file/image?name=${encodeURIComponent(shop.value.sign_photo)}`;
+  return `/api/file/image?name=${encodeURIComponent(shop.value.sign_photo)}`;
 });
 
 const dialogVisible = ref(false);
@@ -21,7 +29,8 @@ const editForm = reactive({
   address: "",
   contactPhone: "",
   maxCapacity: null as number | null,
-  description: ""
+  description: "",
+  signPhoto: ""
 });
 
 const load = async () => {
@@ -44,20 +53,45 @@ const openEdit = () => {
   editForm.contactPhone = shop.value?.contact_phone || "";
   editForm.maxCapacity = shop.value?.max_capacity ?? null;
   editForm.description = shop.value?.description || "";
+  editForm.signPhoto = "";
+  pendingFile.value = null;
+  uploadRef.value?.clearFiles();
   dialogVisible.value = true;
+};
+
+const handleChange = (uploadFile: any) => {
+  const raw = uploadFile.raw as File;
+  if (!raw) return;
+  if (
+    !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(raw.type)
+  ) {
+    message("仅支持 jpg/png/gif/webp 格式", { type: "warning" });
+    uploadRef.value?.clearFiles();
+    return;
+  }
+  pendingFile.value = raw;
 };
 
 const doEdit = async () => {
   saving.value = true;
   try {
+    let signPhoto = editForm.signPhoto;
+    if (pendingFile.value) {
+      const up: any = await uploadShopPhoto(pendingFile.value);
+      if (up?.success && up.data) {
+        signPhoto = up.data;
+      }
+    }
     const r: any = await updateMyShop({
       name: editForm.name,
       address: editForm.address,
       contactPhone: editForm.contactPhone,
       maxCapacity: editForm.maxCapacity ?? undefined,
-      description: editForm.description
+      description: editForm.description,
+      signPhoto: signPhoto || undefined
     });
     if (r?.success) {
+      pendingFile.value = null;
       message("保存成功", { type: "success" });
       dialogVisible.value = false;
       load();
@@ -120,14 +154,14 @@ onMounted(load);
             </div>
             <div class="header-actions">
               <el-button
-                v-auth="'btn:shop:edit'"
+                v-auth="'btn:shop:myEdit'"
                 type="primary"
                 @click="openEdit"
               >
                 编辑
               </el-button>
               <el-button
-                v-auth="'btn:shop:status'"
+                v-auth="'btn:shop:myStatus'"
                 :type="shop.status === 1 ? 'warning' : 'success'"
                 @click="toggleStatus"
               >
@@ -200,6 +234,18 @@ onMounted(load);
             :max="999"
             placeholder="最大容量"
           />
+        </el-form-item>
+        <el-form-item label="招牌照片">
+          <el-upload
+            ref="uploadRef"
+            list-type="picture-card"
+            :limit="1"
+            :auto-upload="false"
+            :on-change="handleChange"
+            accept="image/*"
+          >
+            <EpPlus />
+          </el-upload>
         </el-form-item>
         <el-form-item label="描述">
           <el-input

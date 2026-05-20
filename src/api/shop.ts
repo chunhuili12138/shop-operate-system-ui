@@ -114,3 +114,10 @@ export const updateMyShop = (data: {
 export const updateMyShopStatus = (status: number) => {
   return http.request<ApiResult>("put", "/shops/myStatus", { data: { status } });
 };
+
+/** 上传招牌照片 */
+export const uploadShopPhoto = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return http.request<ApiResult>("post", "/file/uploadShopPhoto", { data: formData });
+};
