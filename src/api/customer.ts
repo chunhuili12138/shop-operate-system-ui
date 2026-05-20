@@ -6,20 +6,25 @@ export interface CustomerQueryParams {
   page?: number;
   size?: number;
   keyword?: string;
+  phone?: string;
   source?: string;
+  tag?: string;
 }
 
 // 顾客信息
 export interface CustomerInfo {
   id: number;
+  shop_id?: number;
   nickname: string;
   phone: string;
+  avatar_url?: string;
   gender?: number;
   birthday?: string;
+  wechat_openid?: string;
   source?: string;
-  created_at?: string;
-  remark?: string;
   tags?: string;
+  remark?: string;
+  created_at?: string;
 }
 
 // 顾客列表响应
@@ -75,6 +80,13 @@ export const updateCustomer = (data: CustomerFormParams) => {
   return http.request<ApiResult>("put", "/customers/update", { data });
 };
 
+/** 删除顾客 */
+export const deleteCustomer = (customersId: number) => {
+  return http.request<ApiResult>("delete", "/customers/delete", {
+    params: { customersId }
+  });
+};
+
 /** 获取顾客详情 */
 export const getCustomerInfo = (customersId: number) => {
   return http.request<ApiResult>("get", "/customers/info", {
@@ -119,4 +131,9 @@ export const adjustWallet = (data: WalletAdjustParams) => {
 /** 积分调整 */
 export const adjustPoints = (data: PointsAdjustParams) => {
   return http.request<ApiResult>("put", "/customers/pointsAdjust", { data });
+};
+
+/** 小程序端绑定手机号并合并账号 */
+export const bindPhone = (data: { wechatOpenid: string; phone: string }) => {
+  return http.request<ApiResult>("post", "/app/customer/bindPhone", { data });
 };
