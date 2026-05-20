@@ -4,16 +4,20 @@ import { message } from "@/utils/message";
 import type { FormInstance } from "element-plus";
 import type { MaterialFormParams } from "@/api/inventory";
 import { addMaterial, updateMaterial } from "@/api/inventory";
+import { getDictData } from "@/api/system";
 
 const props = defineProps<{
   visible: boolean;
   isEdit: boolean;
   formData?: MaterialFormParams | null;
+  shopId: number;
 }>();
 
 const emit = defineEmits(["update:visible", "success"]);
 
 const formRef = ref<FormInstance>();
+
+const categoryOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
 
 // 表单验证规则
 const rules = {
@@ -67,6 +71,18 @@ watch(
   { immediate: true }
 );
 
+const loadCategories = async () => {
+  const r = await getDictData({ dictCode: "material_category", shopId: props.shopId } as any);
+  if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
+};
+
+const reloadCategories = async () => {
+  const r = await getDictData({ dictCode: "material_category", shopId: props.shopId } as any);
+  if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
+};
+
+loadCategories();
+
 const save = async () => {
   // 表单验证
   if (!formRef.value) return;
@@ -93,6 +109,8 @@ const save = async () => {
 const handleClose = () => {
   emit("update:visible", false);
 };
+
+defineExpose({ reloadCategories });
 </script>
 
 <template>
@@ -113,7 +131,21 @@ const handleClose = () => {
           <el-input v-model="form.sku" placeholder="请输入SKU" />
         </el-form-item>
         <el-form-item label="分类">
-          <el-input v-model="form.category" placeholder="请输入分类" />
+          <el-select
+            v-model="form.category"
+            placeholder="请选择或输入分类"
+            filterable
+            allow-create
+            default-first-option
+            style="width: 100%"
+          >
+            <el-option
+              v-for="c in categoryOptions"
+              :key="c.dict_key"
+              :label="c.dict_value"
+              :value="c.dict_value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="单位">
           <el-select

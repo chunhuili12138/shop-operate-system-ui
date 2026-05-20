@@ -4,7 +4,10 @@ import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import type { MaterialListResult } from "@/api/inventory";
 import { getMaterialList, deleteMaterial } from "@/api/inventory";
+import { getDictData } from "@/api/system";
+import { useUserStoreHook } from "@/store/modules/user";
 import MaterialFormDialog from "./components/MaterialFormDialog.vue";
+import CategoryManageDialog from "./components/CategoryManageDialog.vue";
 
 defineOptions({ name: "InvMaterial" });
 
@@ -19,17 +22,30 @@ const total = ref(0);
 interface QueryParams {
   keyword: string;
   type: number | string;
+  category: string;
 }
 
 const queryParams = reactive<QueryParams>({
   keyword: "",
-  type: ""
+  type: "",
+  category: ""
 });
+
+const categoryOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
 
 // 对话框状态
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const currentFormData = ref<any>(null);
+const formDialogRef = ref<InstanceType<typeof MaterialFormDialog>>();
+const categoryManageVisible = ref(false);
+const currentShopId = useUserStoreHook()?.currentShopId ?? 0;
+
+// 加载分类字典
+const loadCategories = async () => {
+  const r = await getDictData({ dictCode: "material_category", shopId: currentShopId } as any);
+  if (r?.success && Array.isArray(r.data)) categoryOptions.value = r.data;
+};
 
 // 加载数据
 const loadData = async () => {
@@ -38,7 +54,9 @@ const loadData = async () => {
     const res = (await getMaterialList({
       page: currentPage.value,
       size: pageSize.value,
-      ...queryParams
+      keyword: queryParams.keyword,
+      type: queryParams.type,
+      category: queryParams.category
     })) as MaterialListResult;
 
     if (res?.success) {
@@ -56,6 +74,7 @@ const loadData = async () => {
 const resetQuery = () => {
   queryParams.keyword = "";
   queryParams.type = "";
+  queryParams.category = "";
   currentPage.value = 1;
   loadData();
 };
@@ -114,7 +133,10 @@ const deleteData = async (id: number) => {
   }
 };
 
-onMounted(loadData);
+onMounted(() => {
+  loadCategories();
+  loadData();
+});
 </script>
 <template>
   <div class="page-container">
@@ -126,6 +148,15 @@ onMounted(loadData);
             clearable
             @keyup.enter="loadData"
         /></el-form-item>
+        <el-form-item label="分类"
+          ><el-select v-model="queryParams.category" clearable style="width: 130px"
+            ><el-option
+              v-for="c in categoryOptions"
+              :key="c.dict_key"
+              :label="c.dict_value"
+              :value="c.dict_value"
+            /></el-select
+        ></el-form-item>
         <el-form-item label="类型"
           ><el-select v-model="queryParams.type" clearable style="width: 100px"
             ><el-option label="消耗品" :value="1" /><el-option
@@ -136,6 +167,10 @@ onMounted(loadData);
       <div class="page-header-actions">
         <div>
           <el-button type="success" @click="openAddDialog">新增物料</el-button>
+          <el-button
+            v-auth="'btn:material:category'"
+            @click="categoryManageVisible = true"
+          >分类管理</el-button>
         </div>
         <div>
           <el-button type="primary" @click="loadData">查询</el-button
@@ -184,10 +219,18 @@ onMounted(loadData);
       @current-change="loadData"
     />
     <MaterialFormDialog
+      ref="formDialogRef"
       v-model:visible="dialogVisible"
       :is-edit="isEdit"
       :form-data="currentFormData"
+      :shop-id="currentShopId"
       @success="loadData"
+    />
+    <CategoryManageDialog
+      :visible="categoryManageVisible"
+      :shop-id="currentShopId"
+      @update:visible="categoryManageVisible = $event"
+      @refresh="() => { loadCategories(); formDialogRef?.reloadCategories(); }"
     />
   </div>
 </template>

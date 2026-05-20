@@ -94,6 +94,7 @@ export interface MaterialQueryParams {
   size?: number;
   keyword?: string;
   type?: number | string;
+  category?: string;
 }
 
 // 物料列表响应

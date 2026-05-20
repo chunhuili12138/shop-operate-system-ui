@@ -29,11 +29,9 @@ const form = ref({
 const loadData = async () => {
   loading.value = true;
   try {
-    const r = await getDictData({ dictCode: "customer_tag", shopId: props.shopId });
+    const r = await getDictData({ dictCode: "material_category", shopId: props.shopId });
     if (r?.success) {
       const allTags = r.data || [];
-      // 优先展示本店标签，后台 GET /system/dict/data 已按 shop_id=0 OR shop_id=?
-      // 此处按 shop_id 排序：本店在前，全局在后
       allTags.sort((a: any, b: any) => {
         if (a.shop_id === props.shopId && b.shop_id !== props.shopId) return -1;
         if (b.shop_id === props.shopId && a.shop_id !== props.shopId) return 1;
@@ -62,7 +60,7 @@ const openEdit = (row: any) => {
 
 const handleDelete = async (row: any) => {
   try {
-    await ElMessageBox.confirm(`确认删除标签"${row.dict_value}"？`, "提示", { type: "warning" });
+    await ElMessageBox.confirm(`确认删除分类"${row.dict_value}"？`, "提示", { type: "warning" });
   } catch {
     return;
   }
@@ -98,7 +96,7 @@ const handleSave = async () => {
     const maxKey = tableData.value.length > 0
       ? Math.max(...tableData.value.map((t: any) => t.dict_key)) : 0;
     r = await addDict({
-      dictCode: "customer_tag",
+      dictCode: "material_category",
       dictKey: maxKey + 1,
       dictValue: dictValue.trim(),
       dictLabel: dictLabel.trim(),
@@ -120,16 +118,16 @@ const handleSave = async () => {
 <template>
   <el-dialog
     :model-value="visible"
-    title="标签管理"
+    title="分类管理"
     width="550px"
     @update:model-value="emit('update:visible', $event)"
   >
     <div class="mb-3">
-      <el-button type="primary" size="small" @click="openAdd">+ 新增标签</el-button>
+      <el-button type="primary" size="small" @click="openAdd">+ 新增分类</el-button>
     </div>
     <el-table v-loading="loading" :data="tableData" size="small" max-height="400">
       <template #empty>
-        <el-empty description="暂无标签" :image-size="60" />
+        <el-empty description="暂无分类" :image-size="60" />
       </template>
       <el-table-column prop="dict_label" label="编码" width="140" />
       <el-table-column prop="dict_value" label="名称" min-width="120" />
@@ -163,17 +161,17 @@ const handleSave = async () => {
 
     <el-dialog
       :model-value="dialogVisible"
-      :title="isEdit ? '编辑标签' : '新增标签'"
+      :title="isEdit ? '编辑分类' : '新增分类'"
       width="400px"
       append-to-body
       @update:model-value="dialogVisible = $event"
     >
       <el-form :model="form" label-width="80px">
         <el-form-item label="编码">
-          <el-input v-model="form.dictLabel" placeholder="如 vip" maxlength="30" />
+          <el-input v-model="form.dictLabel" placeholder="如 handcraft" maxlength="30" />
         </el-form-item>
         <el-form-item label="名称">
-          <el-input v-model="form.dictValue" placeholder="如 VIP" maxlength="30" />
+          <el-input v-model="form.dictValue" placeholder="如 手工材料" maxlength="30" />
         </el-form-item>
       </el-form>
       <template #footer>
