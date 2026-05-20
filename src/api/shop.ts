@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 // 店铺查询参数
 export interface ShopQueryParams {
@@ -64,8 +64,8 @@ export const getShopList = (params?: ShopQueryParams) => {
 
 /** 获取店铺详情 */
 export const getShopInfo = (shopsId: number) => {
-  return http.request<ApiResult>("get", "/shops/info", { 
-    params: { shopsId } 
+  return http.request<ApiResult>("get", "/shops/info", {
+    params: { shopsId }
   });
 };
 
@@ -86,8 +86,8 @@ export const updateShopStatus = (data: ShopStatusParams) => {
 
 /** 删除店铺 */
 export const deleteShop = (shopsId: number) => {
-  return http.request<ApiResult>("delete", "/shops/delete", { 
-    params: { shopsId } 
+  return http.request<ApiResult>("delete", "/shops/delete", {
+    params: { shopsId }
   });
 };
 
@@ -112,12 +112,19 @@ export const updateMyShop = (data: {
 
 /** 切换当前登录店铺营业状态 */
 export const updateMyShopStatus = (status: number) => {
-  return http.request<ApiResult>("put", "/shops/myStatus", { data: { status } });
+  return http.request<ApiResult>("put", "/shops/myStatus", {
+    data: { status }
+  });
 };
 
 /** 上传招牌照片 */
 export const uploadShopPhoto = (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  return http.request<ApiResult>("post", "/file/uploadShopPhoto", { data: formData });
+  return http.request<ApiResult>("post", "/file/uploadShopPhoto", {
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
 };
