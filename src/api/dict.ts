@@ -2,6 +2,7 @@ import { http } from "@/utils/http";
 
 type Result<T = any> = {
   code: number;
+  success: boolean;
   message: string;
   data: T;
   timestamp: number;

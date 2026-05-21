@@ -126,6 +126,9 @@ export interface RefundRecord {
   operated_by?: number;
   created_at?: string;
   updated_at?: string;
+  purchase_amount?: number;
+  payment_method?: string;
+  customer_name?: string;
 }
 
 export interface RefundPreview {
@@ -143,8 +146,10 @@ export interface RefundPreview {
 export const getRefundList = (params?: {
   page?: number;
   size?: number;
-  purchaseId?: number;
+  keyword?: string;
   status?: string;
+  startDate?: string;
+  endDate?: string;
 }) => {
   return http.request<ApiResult<PageResult<RefundRecord>>>("get", "/purchasesRefunds", { params });
 };
