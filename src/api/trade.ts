@@ -75,6 +75,8 @@ export interface GameSession {
   status: number;
   customer_name?: string;
   staff_name?: string;
+  package_name?: string;
+  duration_minutes?: number;
 }
 
 export const getGameSessions = (params?: {

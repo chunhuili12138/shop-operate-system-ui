@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
+import { formatDate } from "@/utils/date";
 import {
   getGameSessions,
   getAvailableSessions,
@@ -10,7 +11,6 @@ import {
 } from "@/api/trade";
 import { getCustomerList } from "@/api/customer";
 import type { GameSession, AvailableSession } from "@/api/trade";
-import { formatDate } from "@/utils/date";
 
 defineOptions({ name: "TradeCheckin" });
 
@@ -20,6 +20,8 @@ const customerId = ref<number | null>(null);
 const customers = ref<any[]>([]);
 const activeLoading = ref(false);
 const availLoading = ref(false);
+const now = ref(Date.now());
+let timer: ReturnType<typeof setInterval> | null = null;
 
 const loadActive = async () => {
   activeLoading.value = true;
@@ -85,8 +87,8 @@ const onCheckin = async (csid: number) => {
   });
   if (r?.success) {
     message("核销成功", { type: "success" });
-    searchAvail();
-    loadActive();
+    await searchAvail();
+    await loadActive();
     if (activeList.value.length >= 50) {
       message("当前进行中人数较多，请注意店铺容量", {
         type: "warning",
@@ -118,7 +120,27 @@ const onFinish = async (gsid: number) => {
   }
 };
 
-onMounted(loadActive);
+const elapsed = (row: any) => {
+  if (!row.start_time) return "-";
+  const diff = Math.floor(
+    (now.value - new Date(row.start_time).getTime()) / 60000
+  );
+  if (diff < 0) return "0分";
+  if (diff < 60) return diff + "分";
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  return h + "时" + m + "分";
+};
+
+onMounted(() => {
+  loadActive();
+  timer = setInterval(() => {
+    now.value = Date.now();
+  }, 30000);
+});
+onUnmounted(() => {
+  if (timer) clearInterval(timer);
+});
 </script>
 
 <template>
@@ -175,9 +197,28 @@ onMounted(loadActive);
             ><span>进行中 ({{ activeList.length }})</span></template
           >
           <el-table v-loading="activeLoading" :data="activeList" stripe>
-            <el-table-column prop="customer_name" label="顾客" />
-            <el-table-column prop="staff_name" label="员工" width="80" />
+            <el-table-column prop="customer_name" label="顾客" width="150" />
+            <el-table-column prop="package_name" label="套餐" />
             <el-table-column prop="start_time" label="开始时间" width="170" />
+            <el-table-column label="时长" width="150">
+              <template #default="{ row }">
+                <div style="display: flex; flex-direction: column; gap: 4px">
+                  <span
+                    v-if="row.duration_minutes"
+                    style="font-size: 14px; color: #606266"
+                    >套餐: {{ row.duration_minutes }}分钟</span
+                  >
+                  <span v-else style="font-size: 14px; color: #909399"
+                    >套餐: 不限时</span
+                  >
+                  <span
+                    style="color: #e6a23c; font-weight: 700; font-size: 16px"
+                    >已玩: {{ elapsed(row) }}</span
+                  >
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="staff_name" label="核销人员" width="80" />
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
                 <el-button type="warning" size="small" @click="onFinish(row.id)"
