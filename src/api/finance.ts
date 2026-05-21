@@ -41,6 +41,16 @@ export const addCommissionRule = (data: CommissionRuleFormParams) => {
   return http.request<ApiResult>("post", "/commissionRulesAdd", { data });
 };
 
+/** 编辑提成规则 */
+export const updateCommissionRule = (data: { ruleId: number; ruleType?: number; value?: string; description?: string }) => {
+  return http.request<ApiResult>("put", "/commissionRulesUpdate", { data });
+};
+
+/** 启用/禁用提成规则 */
+export const toggleCommissionRuleStatus = (ruleId: number, isActive: number) => {
+  return http.request<ApiResult>("put", "/commissionRulesStatus", { data: { ruleId, isActive } });
+};
+
 // ========== 结算记录相关 ==========
 
 // 结算记录查询参数
@@ -132,6 +142,21 @@ export const getExpenseList = (params?: ExpenseQueryParams) => {
 /** 获取支出分类列表 */
 export const getExpenseCategories = () => {
   return http.request<ApiResult>("get", "/expenseCategories");
+};
+
+/** 新增支出分类 */
+export const addExpenseCategory = (name: string) => {
+  return http.request<ApiResult>("post", "/expenseCategoriesAdd", { data: { name } });
+};
+
+/** 编辑支出分类 */
+export const updateExpenseCategory = (categoryId: number, name: string) => {
+  return http.request<ApiResult>("put", "/expenseCategoriesUpdate", { data: { categoryId, name } });
+};
+
+/** 删除支出分类 */
+export const deleteExpenseCategory = (categoryId: number) => {
+  return http.request<ApiResult>("delete", "/expenseCategoriesDelete", { params: { categoryId } });
 };
 
 /** 新增支出 */
@@ -233,6 +258,17 @@ export const markNotificationsRead = (data: MarkNotificationsReadParams) => {
   return http.request<ApiResult>("put", "/notificationsRead", { data });
 };
 
+/** 发送通知 */
+export const sendNotification = (data: {
+  recipientIds: string;
+  recipientType?: number;
+  channel?: number;
+  title: string;
+  content: string;
+}) => {
+  return http.request<ApiResult>("post", "/notificationsSend", { data });
+};
+
 // ========== 收入管理相关 ==========
 
 // 收入查询参数
@@ -262,4 +298,49 @@ export interface RevenueListResult {
 /** 获取收入列表 */
 export const getRevenueList = (params?: RevenueQueryParams) => {
   return http.request<RevenueListResult>("get", "/revenues", { params });
+};
+
+// ========== 考勤管理 ==========
+
+export const getAttendanceRecords = (params?: { page?: number; size?: number }) => {
+  return http.request<ApiResult>("get", "/attendanceRecords", { params });
+};
+
+export const checkIn = () => {
+  return http.request<ApiResult>("post", "/attendanceRecordsCheckIn");
+};
+
+export const checkOut = (recordId: number) => {
+  return http.request<ApiResult>("put", "/attendanceRecordsCheckOut", { data: { recordId } });
+};
+
+// ========== 排班管理 ==========
+
+export const getStaffSchedules = (params?: { page?: number; size?: number }) => {
+  return http.request<ApiResult>("get", "/staffSchedules", { params });
+};
+
+export const addStaffSchedule = (data: {
+  staffId: number;
+  scheduleDate: string;
+  startTime: string;
+  endTime: string;
+  type?: number;
+  remark?: string;
+}) => {
+  return http.request<ApiResult>("post", "/staffSchedulesAdd", { data });
+};
+
+export const updateStaffSchedule = (data: {
+  scheduleId: number;
+  startTime?: string;
+  endTime?: string;
+  type?: number;
+  remark?: string;
+}) => {
+  return http.request<ApiResult>("put", "/staffSchedulesUpdate", { data });
+};
+
+export const deleteStaffSchedule = (scheduleId: number) => {
+  return http.request<ApiResult>("delete", "/staffSchedulesDelete", { params: { scheduleId } });
 };

@@ -1,8 +1,7 @@
 ﻿<script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { http } from "@/utils/http";
 import { useUserStoreHook } from "@/store/modules/user";
-import type { PlatformDashboardData, ShopDashboardData } from "@/api/dashboard";
+import { getDashboardToday, type PlatformDashboardData, type ShopDashboardData } from "@/api/dashboard";
 import StatCard from "./components/StatCard.vue";
 import PlatformOverviewCards from "./components/PlatformOverviewCards.vue";
 import RevenueTrendChart from "./components/RevenueTrendChart.vue";
@@ -31,7 +30,7 @@ const shopCards = computed(() => [
 const load = async () => {
   loading.value = true;
   try {
-    const r: any = await http.get("/dashboard/today");
+    const r = await getDashboardToday();
     if (r?.success) {
       if (r.data?.overview) {
         isPlatform.value = true;

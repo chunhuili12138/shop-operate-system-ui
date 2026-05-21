@@ -86,6 +86,8 @@ export interface DashboardTodayResult {
 export interface DailySnapshotQueryParams {
   page?: number;
   size?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface DailySnapshotListResult {

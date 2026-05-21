@@ -37,31 +37,25 @@ onMounted(load);
 
 <template>
   <div class="page-container">
-    <!-- 表格区 -->
+    <div class="page-header">
+      <div />
+      <div><el-button type="primary" @click="load">刷新</el-button></div>
+    </div>
     <div class="page-table">
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-                style="width: 100%"
-      >
-        <el-table-column prop="id" label="ID" width="60" align="center" />
-        <el-table-column prop="game_session_id" label="游玩ID" />
-        <el-table-column prop="amount" label="金额" width="100" align="center" />
+      <el-table v-loading="loading" :data="tableData" style="width:100%">
+        <el-table-column prop="game_session_id" label="游玩场次ID" width="120" />
         <el-table-column prop="staff_name" label="确认员工" width="120" />
+        <el-table-column label="金额" width="100" align="center">
+          <template #default="{ row }">¥{{ row.amount }}</template>
+        </el-table-column>
         <el-table-column prop="confirmed_at" label="确认时间" width="170" />
+        <template #empty><el-empty description="暂无收入记录" /></template>
       </el-table>
     </div>
-
-    <!-- 分页区 -->
     <el-pagination
-      v-model:current-page="page"
-      v-model:page-size="size"
-      :total="total"
-      :page-sizes="[10, 20, 50, 100]"
-      layout="total, sizes, prev, pager, next, jumper"
-      class="page-pagination"
-      @size-change="onSizeChange"
-      @current-change="load"
+      v-model:current-page="page" v-model:page-size="size" :total="total"
+      :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper"
+      class="page-pagination" @size-change="onSizeChange" @current-change="load"
     />
   </div>
 </template>
