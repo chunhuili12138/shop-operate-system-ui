@@ -1,6 +1,12 @@
 import { http } from "@/utils/http";
 import type { ApiResult } from "@/types/api";
 
+// BOM 物料项
+export interface BomItem {
+  materialId: string;
+  quantity: number;
+}
+
 // 套餐查询参数
 export interface PackageQueryParams {
   page?: number;
@@ -37,10 +43,10 @@ export interface PackageFormParams {
   name: string;
   type: number;
   durationMinutes: number | null;
-  price: string;
+  price: number;
   maxPeoplePerSession: number;
   description: string;
-  bom: any[];
+  bom: BomItem[];
 }
 
 // 套餐状态参数
@@ -86,5 +92,12 @@ export const updatePackageStatus = (data: PackageStatusParams) => {
 export const getPackageBom = (packagesId: number) => {
   return http.request<PackageBomResult>("get", "/packages/bom", {
     params: { packagesId }
+  });
+};
+
+/** 删除套餐 */
+export const deletePackage = (packageId: number) => {
+  return http.request<ApiResult>("delete", "/packages/delete", {
+    params: { packageId }
   });
 };

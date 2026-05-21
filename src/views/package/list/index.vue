@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
+import { useUserStoreHook } from "@/store/modules/user";
 import {
   getPackageList,
   addPackage,
   updatePackage,
   updatePackageStatus,
-  getPackageBom
+  getPackageBom,
+  deletePackage
 } from "@/api/package";
+import { getDictData } from "@/api/system";
 import PackageDialog from "./components/PackageDialog.vue";
 import BomDialog from "./components/BomDialog.vue";
 
@@ -20,22 +24,37 @@ const size = ref(20);
 const total = ref(0);
 
 const query = reactive({ keyword: "", type: "", status: "" });
+const typeOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const bomDialog = ref(false);
 const bomList = ref([]);
+const currentShopId = useUserStoreHook()?.currentShopId ?? 0;
+const packageDialogRef = ref<InstanceType<typeof PackageDialog>>();
 
-const formData = reactive({
-  packageId: null as number | null,
+const formData = reactive<any>({
+  packageId: null,
   name: "",
   type: 1,
-  durationMinutes: null as number | null,
-  price: "",
+  durationMinutes: 60,
+  price: 0,
   maxPeoplePerSession: 1,
   description: "",
-  bom: [] as any[]
+  bom: []
 });
+
+const loadDicts = async () => {
+  const r = await getDictData({ dictCode: "package_type" });
+  if (r?.success && Array.isArray(r.data)) typeOptions.value = r.data;
+};
+
+const typeLabel = (type: number) => {
+  const item = typeOptions.value.find(t => t.dict_key === type);
+  return item?.dict_value || String(type);
+};
 
 const load = async () => {
   loading.value = true;
@@ -43,7 +62,9 @@ const load = async () => {
     const r = await getPackageList({
       page: page.value,
       size: size.value,
-      ...query
+      keyword: query.keyword || undefined,
+      type: query.type || undefined,
+      status: query.status || undefined
     });
     if (r?.success) {
       tableData.value = r.data.list;
@@ -74,8 +95,8 @@ const openAdd = () => {
     packageId: null,
     name: "",
     type: 1,
-    durationMinutes: null,
-    price: "",
+    durationMinutes: 60,
+    price: 0,
     maxPeoplePerSession: 1,
     description: "",
     bom: []
@@ -99,28 +120,49 @@ const openEdit = (row: any) => {
 };
 
 const save = async () => {
+  const data = packageDialogRef.value?.form;
+  if (!data) return;
   const r = isEdit.value
-    ? await updatePackage({ ...formData, bom: JSON.stringify(formData.bom) })
-    : await addPackage({ ...formData, bom: JSON.stringify(formData.bom) });
+    ? await updatePackage({ ...data, bom: JSON.stringify(data.bom) } as any)
+    : await addPackage({ ...data, bom: JSON.stringify(data.bom) } as any);
   if (r?.success) {
-    message("保存成功", { type: "success" });
+    message(isEdit.value ? "编辑成功" : "新增成功", { type: "success" });
     dialogVisible.value = false;
     load();
   } else {
-    message(r?.msg || "失败", { type: "warning" });
+    message(r?.msg || "操作失败", { type: "warning" });
   }
 };
 
-const toggle = async (id: number, status: number) => {
+const toggle = async (id: number, isActive: number) => {
   const r = await updatePackageStatus({
     packageId: id,
-    isActive: status ? 0 : 1
+    isActive: isActive ? 0 : 1
   });
   if (r?.success) {
-    message("已切换", { type: "success" });
+    message(isActive ? "已下架" : "已上架", { type: "success" });
     load();
   } else {
-    message(r?.msg || "失败", { type: "warning" });
+    message(r?.msg || "操作失败", { type: "warning" });
+  }
+};
+
+const handleDelete = async (id: number, name: string) => {
+  try {
+    await ElMessageBox.confirm(`确认删除套餐"${name}"？`, "提示", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    });
+  } catch {
+    return;
+  }
+  const r = await deletePackage(id);
+  if (r?.success) {
+    message("已删除", { type: "success" });
+    load();
+  } else {
+    message(r?.msg || "删除失败", { type: "warning" });
   }
 };
 
@@ -130,12 +172,14 @@ const openBom = async (id: number) => {
   bomDialog.value = true;
 };
 
-onMounted(load);
+onMounted(() => {
+  loadDicts();
+  load();
+});
 </script>
 
 <template>
   <div class="page-container">
-    <!-- 搜索/筛选区 -->
     <div class="page-header">
       <el-form :model="query" inline>
         <el-form-item label="关键词">
@@ -152,17 +196,33 @@ onMounted(load);
             v-model="query.type"
             clearable
             placeholder="全部"
+            style="width: 110px"
+          >
+            <el-option
+              v-for="t in typeOptions"
+              :key="t.dict_key"
+              :label="t.dict_value"
+              :value="t.dict_key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="query.status"
+            clearable
+            placeholder="全部"
             style="width: 100px"
           >
-            <el-option label="单次" :value="1" />
-            <el-option label="周卡" :value="2" />
-            <el-option label="月卡" :value="3" />
+            <el-option label="上架" :value="1" />
+            <el-option label="下架" :value="0" />
           </el-select>
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
         <div>
-          <el-button type="primary" @click="openAdd">新增套餐</el-button>
+          <el-button v-auth="'btn:package:add'" type="primary" @click="openAdd"
+            >新增套餐</el-button
+          >
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
@@ -171,13 +231,21 @@ onMounted(load);
       </div>
     </div>
 
-    <!-- 表格区 -->
     <div class="page-table">
-      <el-table v-loading="loading" :data="tableData" style="width: 100%">
-        <el-table-column prop="name" label="套餐名" min-width="120" />
-        <el-table-column label="类型" width="80" align="center">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        stripe
+        border
+        style="width: 100%"
+      >
+        <template #empty>
+          <el-empty description="暂无套餐" :image-size="80" />
+        </template>
+        <el-table-column prop="name" label="套餐名" width="300" />
+        <el-table-column label="类型" width="90" align="center">
           <template #default="{ row }">
-            {{ ["", "单次", "周卡", "月卡"][row.type] }}
+            {{ typeLabel(row.type) }}
           </template>
         </el-table-column>
         <el-table-column
@@ -186,35 +254,60 @@ onMounted(load);
           width="80"
           align="center"
         />
-        <el-table-column prop="price" label="价格" width="80" align="center" />
-        <el-table-column label="状态" width="70" align="center">
+        <el-table-column prop="price" label="价格" width="90" align="right" />
+        <el-table-column
+          prop="max_people_per_session"
+          label="最大人数"
+          width="100"
+          align="center"
+        />
+        <el-table-column
+          prop="description"
+          label="描述"
+          min-width="150"
+          show-overflow-tooltip
+        />
+        <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.is_active ? 'success' : 'info'" size="small">
               {{ row.is_active ? "上架" : "下架" }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openEdit(row)"
-              >编辑</el-button
+            <el-button
+              v-auth="'btn:package:edit'"
+              link
+              type="primary"
+              @click="openEdit(row)"
             >
+              编辑
+            </el-button>
             <el-button link type="primary" @click="openBom(row.id)"
-              >BOM</el-button
+              >物料清单</el-button
             >
             <el-button
+              v-auth="'btn:package:status'"
               link
               :type="row.is_active ? 'warning' : 'success'"
               @click="toggle(row.id, row.is_active)"
             >
               {{ row.is_active ? "下架" : "上架" }}
             </el-button>
+            <el-button
+              v-auth="'btn:package:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row.id, row.name)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <!-- 分页区 -->
     <el-pagination
       v-model:current-page="page"
       v-model:page-size="size"
@@ -226,15 +319,15 @@ onMounted(load);
       @current-change="load"
     />
 
-    <!-- 套餐表单弹窗 -->
     <PackageDialog
+      ref="packageDialogRef"
       v-model:visible="dialogVisible"
       :is-edit="isEdit"
       :form-data="formData"
+      :shop-id="currentShopId"
       @save="save"
     />
 
-    <!-- BOM 弹窗 -->
     <BomDialog v-model:visible="bomDialog" :bom-list="bomList" />
   </div>
 </template>
