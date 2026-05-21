@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
 import { useUserStoreHook } from "@/store/modules/user";
 import {
   getPurchaseOrderList,
@@ -13,6 +12,7 @@ import {
 } from "@/api/inventory";
 import PurchaseDialog from "./components/PurchaseDialog.vue";
 import ItemsDialog from "./components/ItemsDialog.vue";
+import PayDialog from "./components/PayDialog.vue";
 
 defineOptions({ name: "InvPurchase" });
 
@@ -33,6 +33,10 @@ const purchaseDialogRef = ref();
 // 明细弹窗
 const itemsVisible = ref(false);
 const itemsList = ref<any[]>([]);
+
+// 付款弹窗
+const payVisible = ref(false);
+const currentPayOrderId = ref<number>(0);
 
 const load = async () => {
   loading.value = true;
@@ -109,26 +113,23 @@ const openItems = async (id: number) => {
   itemsVisible.value = true;
 };
 
-const payOrder = async (id: number) => {
-  const { value } = await ElMessageBox.prompt("请输入付款金额", "付款", {
-    confirmButtonText: "确认",
-    cancelButtonText: "取消",
-    inputPattern: /^\d+(\.\d{1,2})?$/,
-    inputErrorMessage: "请输入有效的金额"
-  });
-  if (value) {
-    const r = await payPurchaseOrder({
-      orderId: id,
-      amount: value,
-      paymentMethod: "cash",
-      paidAt: new Date().toISOString().split("T")[0]
-    } as any);
-    if (r?.success) {
-      message("付款成功", { type: "success" });
-      load();
-    } else {
-      message(r?.msg || "付款失败", { type: "warning" });
-    }
+const openPayDialog = (id: number) => {
+  currentPayOrderId.value = id;
+  payVisible.value = true;
+};
+
+const handlePaySuccess = async (amount: number) => {
+  const r = await payPurchaseOrder({
+    orderId: currentPayOrderId.value,
+    amount: amount,
+    paymentMethod: "cash",
+    paidAt: new Date().toISOString().split("T")[0]
+  } as any);
+  if (r?.success) {
+    message("付款成功", { type: "success" });
+    load();
+  } else {
+    message(r?.msg || "付款失败", { type: "warning" });
   }
 };
 
@@ -215,7 +216,7 @@ onMounted(load);
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openItems(row.id)"
               >明细</el-button
@@ -223,18 +224,18 @@ onMounted(load);
             <el-button
               v-if="row.status === 1"
               link
-              type="success"
-              @click="updateStatus(row.id, 2)"
+              type="primary"
+              @click="openPayDialog(row.id)"
             >
-              完成
+              付款
             </el-button>
             <el-button
               v-if="row.status === 1"
               link
-              type="primary"
-              @click="payOrder(row.id)"
+              type="success"
+              @click="updateStatus(row.id, 2)"
             >
-              付款
+              完成
             </el-button>
             <el-button
               v-if="row.status === 1"
@@ -271,5 +272,12 @@ onMounted(load);
 
     <!-- 采购明细弹窗 -->
     <ItemsDialog v-model:visible="itemsVisible" :items-list="itemsList" />
+
+    <!-- 付款弹窗 -->
+    <PayDialog
+      v-model:visible="payVisible"
+      :order-id="currentPayOrderId"
+      @success="handlePaySuccess"
+    />
   </div>
 </template>
