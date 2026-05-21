@@ -34,7 +34,7 @@ const rules: FormRules = {
 };
 
 const addItem = () => {
-  form.items.push({ materialId: "", quantity: 1, unitPrice: "0" });
+  form.items.push({ materialId: "", quantity: 1, unitPrice: 0 });
 };
 
 const removeItem = (i: number) => {
@@ -101,7 +101,7 @@ defineExpose({
   <el-dialog
     :model-value="visible"
     title="新增采购单"
-    width="680px"
+    width="800px"
     :close-on-click-modal="false"
     @update:model-value="$emit('update:visible', $event)"
   >
@@ -145,53 +145,78 @@ defineExpose({
         </el-radio-group>
       </el-form-item>
       <el-form-item label="采购明细">
-        <div class="mb-2">
-          <el-button size="small" type="primary" @click="addItem"
-            >+ 添加物料</el-button
+        <div style="">
+          <div class="flex items-center justify-between mb-3">
+            <el-button type="primary" size="small" @click="addItem"
+              >+ 添加物料</el-button
+            >
+            <span class="text-xs" style="color: #909399; margin-left: 5px"
+              >至少添加一项</span
+            >
+          </div>
+          <div
+            v-if="form.items.length === 0"
+            class="text-center py-4"
+            style="color: #909399; font-size: 13px"
           >
-          <span class="text-xs text-dim ml-1">至少添加一项</span>
+            暂无明细，请点击“添加物料”
+          </div>
         </div>
-        <div
-          v-if="form.items.length === 0"
-          class="text-center py-3 text-xs text-dim"
-        >
-          暂无明细，请点击"添加物料"
-        </div>
-        <div
-          v-for="(item, i) in form.items"
-          :key="i"
-          class="flex items-center gap-2 mb-2 p-2 rounded"
-          style="background: var(--el-fill-color-light)"
-        >
-          <span class="text-xs text-dim w-6">{{ i + 1 }}</span>
-          <el-select
-            v-model="item.materialId"
-            placeholder="选择物料"
-            filterable
-            style="width: 200px"
-            @change="onMaterialChange(i, item.materialId)"
+        <div v-if="form.items.length !== 0" class="purchase-items-container">
+          <div
+            v-for="(item, i) in form.items"
+            :key="i"
+            class="purchase-item-row"
           >
-            <el-option
-              v-for="m in materials"
-              :key="m.id"
-              :label="`${m.name} (${m.sku || '-'})`"
-              :value="String(m.id)"
-            />
-          </el-select>
-          <el-input-number
-            v-model="item.quantity"
-            :min="1"
-            placeholder="数量"
-            style="width: 100px"
-          />
-          <el-input
-            v-model="item.unitPrice"
-            placeholder="单价"
-            style="width: 100px"
-          />
-          <el-button size="small" type="danger" plain @click="removeItem(i)"
-            >删除</el-button
-          >
+            <div class="item-index">{{ i + 1 }}</div>
+            <div class="item-content">
+              <div class="item-field">
+                <span class="field-label">物料</span>
+                <el-select
+                  v-model="item.materialId"
+                  placeholder="选择物料"
+                  filterable
+                  class="field-input"
+                  @change="onMaterialChange(i, item.materialId)"
+                >
+                  <el-option
+                    v-for="m in materials"
+                    :key="m.id"
+                    :label="`${m.name} (${m.sku || '-'})`"
+                    :value="String(m.id)"
+                  />
+                </el-select>
+              </div>
+              <div class="item-fields-row">
+                <div class="item-field">
+                  <span class="field-label">数量</span>
+                  <el-input-number
+                    v-model="item.quantity"
+                    :min="1"
+                    class="field-input"
+                  />
+                </div>
+                <div class="item-field">
+                  <span class="field-label">单价</span>
+                  <el-input-number
+                    v-model="item.unitPrice"
+                    :min="0"
+                    :precision="2"
+                    class="field-input"
+                  />
+                </div>
+              </div>
+            </div>
+            <el-button
+              type="danger"
+              size="small"
+              plain
+              class="item-delete-btn"
+              @click="removeItem(i)"
+            >
+              删除
+            </el-button>
+          </div>
         </div>
       </el-form-item>
       <el-form-item label="备注">
@@ -213,3 +238,80 @@ defineExpose({
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+.purchase-items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.purchase-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  border: 1px solid #e4e7ed;
+  transition: all 0.3s;
+}
+
+.purchase-item-row:hover {
+  background: #ecf5ff;
+  border-color: #b3d8ff;
+}
+
+.item-index {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #409eff;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-fields-row {
+  display: flex;
+  gap: 16px;
+}
+
+.item-fields-row .item-field {
+  flex: 1;
+}
+
+.field-label {
+  font-size: 13px;
+  color: #606266;
+  min-width: 40px;
+  text-align: right;
+}
+
+.field-input {
+  flex: 1;
+}
+
+.item-delete-btn {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+</style>

@@ -180,26 +180,26 @@ onMounted(load);
         <template #empty>
           <el-empty description="暂无采购单" :image-size="80" />
         </template>
-        <el-table-column prop="order_number" label="单号" width="170" />
-        <el-table-column prop="supplier_name" label="供应商" width="130" />
+        <el-table-column prop="order_number" label="单号" width="180" />
+        <el-table-column prop="supplier_name" label="供应商" min-width="120" />
         <el-table-column
           prop="total_amount"
           label="总金额"
-          width="90"
+          width="100"
           align="right"
         />
         <el-table-column
           prop="paid_amount"
           label="已付"
-          width="90"
+          width="100"
           align="right"
         />
-        <el-table-column label="结算" width="70" align="center">
+        <el-table-column label="结算" width="80" align="center">
           <template #default="{ row }">
             {{ row.type === 1 ? "现结" : "赊账" }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="80" align="center">
+        <el-table-column label="状态" width="90" align="center">
           <template #default="{ row }">
             <el-tag
               :type="
@@ -215,7 +215,7 @@ onMounted(load);
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openItems(row.id)"
               >明细</el-button
