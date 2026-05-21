@@ -160,6 +160,11 @@ export interface PurchaseOrderQueryParams {
   page?: number;
   size?: number;
   status?: number | string;
+  supplierId?: number | string;
+  amountMin?: number;
+  amountMax?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 // 采购单列表响应
@@ -175,6 +180,9 @@ export interface PurchaseOrderListResult {
       total_amount: number;
       paid_amount: number;
       status: number;
+      type: number;
+      order_date: string;
+      material_names: string;
     }>;
     total: number;
   };
