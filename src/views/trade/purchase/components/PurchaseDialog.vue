@@ -23,12 +23,13 @@ const customers = ref<any[]>([]);
 const packages = ref<any[]>([]);
 const channelOptions = ref<any[]>([]);
 const paymentMethodOptions = ref<any[]>([]);
+const couponChannels = computed(() => channelOptions.value.filter((c: any) => ["meituan", "douyin"].includes(c.dict_label)));
 const walletInfo = ref<{ balance: number; total_recharged: number } | null>(null);
 const walletLoading = ref(false);
 
 const form = reactive<AddPurchaseParams>({
-  customersId: 0,
-  packageId: 0,
+  customersId: null as unknown as number,
+  packageId: null as unknown as number,
   channel: "store",
   paymentType: "direct",
   paymentMethod: "",
@@ -56,8 +57,20 @@ const loadDicts = async () => {
       getDictData("purchase_channel"),
       getDictData("payment_method")
     ]);
-    if (chRes?.success && Array.isArray(chRes.data)) channelOptions.value = chRes.data;
+    if (chRes?.success && Array.isArray(chRes.data) && chRes.data.length > 0) channelOptions.value = chRes.data;
+    else channelOptions.value = [
+      { dict_label: "store", dict_value: "门店" },
+      { dict_label: "meituan", dict_value: "美团" },
+      { dict_label: "douyin", dict_value: "抖音" }
+    ];
     if (pmRes?.success && Array.isArray(pmRes.data)) paymentMethodOptions.value = pmRes.data;
+    else paymentMethodOptions.value = [
+      { dict_label: "wechat", dict_value: "微信支付" },
+      { dict_label: "alipay", dict_value: "支付宝" },
+      { dict_label: "cash", dict_value: "现金" },
+      { dict_label: "wallet", dict_value: "储值钱包" },
+      { dict_label: "other", dict_value: "其他" }
+    ];
   } catch { /* 降级 */ }
 };
 
@@ -96,8 +109,8 @@ const onPackageChange = (packageId: number) => {
 
 const resetForm = () => {
   Object.assign(form, {
-    customersId: 0,
-    packageId: 0,
+    customersId: null as unknown as number,
+    packageId: null as unknown as number,
     channel: "store",
     paymentType: "direct",
     paymentMethod: "",
@@ -147,8 +160,11 @@ watch(() => props.visible, (val) => {
   }
 });
 
-watch(() => form.paymentType, () => {
+watch(() => form.paymentType, (val) => {
   formRef.value?.clearValidate();
+  if (val === "coupon") { form.channel = "meituan"; form.paymentMethod = "other"; }
+  if (val === "direct") { form.channel = "store"; form.paymentMethod = ""; }
+  if (val === "wallet") form.paymentMethod = "wallet";
 });
 </script>
 
@@ -190,7 +206,7 @@ watch(() => form.paymentType, () => {
         </el-radio-group>
       </el-form-item>
 
-      <template v-if="form.paymentType === 'wallet'">
+      <template v-if="form.paymentType === 'wallet' && form.customersId">
         <el-form-item label="钱包余额">
           <span v-if="walletLoading" style="color:#909399">加载中...</span>
           <span v-else-if="walletInfo" :style="{ color: walletInfo.balance < form.totalAmount ? '#f56c6c' : '#67c23a', fontWeight: 700 }">
@@ -200,43 +216,46 @@ watch(() => form.paymentType, () => {
           <span v-else style="color:#909399">未开通钱包</span>
         </el-form-item>
       </template>
+      <template v-if="form.paymentType === 'wallet' && !form.customersId">
+        <el-form-item label="钱包余额">
+          <span style="color:#909399">请选择一位顾客</span>
+        </el-form-item>
+      </template>
 
       <template v-if="form.paymentType === 'direct'">
-        <el-form-item label="渠道">
-          <el-select v-model="form.channel" style="width:100%">
-            <el-option v-for="c in channelOptions" :key="c.dict_label" :label="c.dict_value" :value="c.dict_label" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="支付方式" prop="paymentMethod">
           <el-select v-model="form.paymentMethod" style="width:100%">
             <el-option v-for="m in paymentMethodOptions" :key="m.dict_label" :label="m.dict_value" :value="m.dict_label" />
           </el-select>
         </el-form-item>
         <el-form-item label="总金额" prop="totalAmount">
-          <el-input v-model.number="form.totalAmount" placeholder="0.00" />
+          <el-input-number v-model="form.totalAmount" :min="0" :precision="2" style="width:100%" />
         </el-form-item>
         <el-form-item label="实付">
-          <el-input v-model.number="form.paidAmount" placeholder="0.00" />
+          <el-input-number v-model="form.paidAmount" :min="0" :precision="2" style="width:100%" />
         </el-form-item>
       </template>
 
-      <template v-if="form.paymentType === 'wallet'">
+      <template v-if="form.paymentType === 'wallet' && form.customersId">
         <el-form-item label="扣款金额" prop="totalAmount">
-          <el-input v-model.number="form.totalAmount" placeholder="0.00" />
+          <el-input-number v-model="form.totalAmount" :min="0" :precision="2" style="width:100%" />
         </el-form-item>
       </template>
 
       <template v-if="form.paymentType === 'coupon'">
         <el-form-item label="来源渠道">
           <el-select v-model="form.channel" style="width:100%">
-            <el-option v-for="c in channelOptions" :key="c.dict_label" :label="c.dict_value" :value="c.dict_label" />
+            <el-option v-for="c in couponChannels" :key="c.dict_label" :label="c.dict_value" :value="c.dict_label" />
           </el-select>
         </el-form-item>
         <el-form-item label="第三方券码" prop="thirdPartyCouponCode">
           <el-input v-model="form.thirdPartyCouponCode" placeholder="输入美团/抖音券码" />
         </el-form-item>
         <el-form-item label="金额" prop="totalAmount">
-          <el-input v-model.number="form.totalAmount" placeholder="0.00" />
+          <el-input-number v-model="form.totalAmount" :min="0" :precision="2" style="width:100%" />
+        </el-form-item>
+        <el-form-item label="实付">
+          <el-input-number v-model="form.paidAmount" :min="0" :precision="2" style="width:100%" />
         </el-form-item>
       </template>
 

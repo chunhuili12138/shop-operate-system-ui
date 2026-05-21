@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import { getPurchaseSessions } from "@/api/trade";
 import type { CustomerSessionDetail } from "@/api/trade";
+import { formatDate } from "@/utils/date";
 
 interface Props {
   visible: boolean;
@@ -30,26 +31,38 @@ const load = async () => {
   try {
     const r = await getPurchaseSessions(props.purchaseId);
     if (r?.success) sessions.value = r.data || [];
-  } catch { /* ignore */ }
-  finally { loading.value = false; }
+  } catch {
+    /* ignore */
+  } finally {
+    loading.value = false;
+  }
 };
 
-watch(() => props.visible, (val) => { if (val) load(); });
+watch(
+  () => props.visible,
+  val => {
+    if (val) load();
+  }
+);
 </script>
 
 <template>
   <el-drawer
     :model-value="visible"
     title="场次明细"
-    size="420px"
+    size="480px"
     @update:model-value="emit('update:visible', $event)"
   >
-    <div style="margin-bottom:12px;font-size:14px;color:#606266">
+    <div style="margin-bottom: 12px; font-size: 14px; color: #606266">
       套餐: <b>{{ packageName }}</b>
     </div>
     <el-table v-loading="loading" :data="sessions" stripe size="small">
       <el-table-column type="index" label="#" width="50" />
-      <el-table-column prop="session_date" label="日期" width="120" />
+      <el-table-column label="日期" width="120">
+        <template #default="{ row }">
+          {{ formatDate(row.session_date) }}
+        </template>
+      </el-table-column>
       <el-table-column label="状态" width="90">
         <template #default="{ row }">
           <el-tag :type="statusMap[row.status]?.type || 'info'" size="small">
@@ -60,9 +73,11 @@ watch(() => props.visible, (val) => { if (val) load(); });
       <el-table-column prop="used_at" label="核销时间" min-width="140">
         <template #default="{ row }">{{ row.used_at || "-" }}</template>
       </el-table-column>
-      <template #empty><el-empty description="暂无数据" :image-size="40" /></template>
+      <template #empty
+        ><el-empty description="暂无数据" :image-size="40"
+      /></template>
     </el-table>
-    <div style="margin-top:8px;font-size:12px;color:#909399">
+    <div style="margin-top: 8px; font-size: 12px; color: #909399">
       共 {{ sessions.length }} 条场次记录
     </div>
   </el-drawer>

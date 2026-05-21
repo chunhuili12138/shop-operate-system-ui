@@ -136,7 +136,7 @@ onMounted(() => { loadDicts(); load(); });
         <el-table-column label="支付方式" width="90" align="center">
           <template #default="{ row }">{{ paymentLabel(row.payment_method) }}</template>
         </el-table-column>
-        <el-table-column prop="total_amount" label="总金额" width="90" align="center" />
+        <el-table-column prop="total_amount" label="套餐金额" width="90" align="center" />
         <el-table-column prop="paid_amount" label="实付" width="90" align="center" />
         <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
