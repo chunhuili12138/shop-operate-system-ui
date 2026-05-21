@@ -28,6 +28,7 @@ export interface PackageListResult {
       type: number;
       duration_minutes: number;
       price: string;
+      original_price: string;
       max_people_per_session: number;
       is_active: number;
       description: string;
@@ -44,6 +45,7 @@ export interface PackageFormParams {
   type: number;
   durationMinutes: number | null;
   price: number;
+  originalPrice?: number | null;
   maxPeoplePerSession: number;
   description: string;
   bom: BomItem[];

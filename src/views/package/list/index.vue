@@ -41,6 +41,7 @@ const formData = reactive<any>({
   type: 1,
   durationMinutes: 60,
   price: 0,
+  original_price: null,
   maxPeoplePerSession: 1,
   description: "",
   bom: []
@@ -97,6 +98,7 @@ const openAdd = () => {
     type: 1,
     durationMinutes: 60,
     price: 0,
+    original_price: null,
     maxPeoplePerSession: 1,
     description: "",
     bom: []
@@ -112,6 +114,7 @@ const openEdit = (row: any) => {
     type: row.type,
     durationMinutes: row.duration_minutes,
     price: row.price,
+    original_price: row.original_price,
     maxPeoplePerSession: row.max_people_per_session,
     description: row.description,
     bom: []
@@ -254,7 +257,17 @@ onMounted(() => {
           width="80"
           align="center"
         />
-        <el-table-column prop="price" label="价格" width="90" align="right" />
+        <el-table-column label="价格" width="130" align="right">
+          <template #default="{ row }">
+            <template v-if="row.original_price && row.original_price > row.price">
+              <span class="text-xs text-dim line-through">¥{{ Number(row.original_price).toFixed(2) }}</span>
+              <span class="ml-1" style="color: var(--el-color-danger)">¥{{ Number(row.price).toFixed(2) }}</span>
+            </template>
+            <template v-else>
+              ¥{{ Number(row.price).toFixed(2) }}
+            </template>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="max_people_per_session"
           label="最大人数"
