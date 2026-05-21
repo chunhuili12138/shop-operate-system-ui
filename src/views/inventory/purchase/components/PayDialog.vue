@@ -24,7 +24,7 @@ const dialogVisible = ref(false);
 
 watch(
   () => props.visible,
-  (val) => {
+  val => {
     dialogVisible.value = val;
     if (val) {
       // 重置表单
@@ -33,7 +33,7 @@ watch(
   }
 );
 
-watch(dialogVisible, (val) => {
+watch(dialogVisible, val => {
   emit("update:visible", val);
 });
 

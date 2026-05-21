@@ -13,6 +13,7 @@ import {
 import PurchaseDialog from "./components/PurchaseDialog.vue";
 import ItemsDialog from "./components/ItemsDialog.vue";
 import PayDialog from "./components/PayDialog.vue";
+import { ElMessageBox } from "element-plus";
 
 defineOptions({ name: "InvPurchase" });
 
