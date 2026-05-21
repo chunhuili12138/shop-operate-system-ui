@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
@@ -10,12 +10,13 @@ import {
 } from "@/api/trade";
 import { getCustomerList } from "@/api/customer";
 import type { GameSession, AvailableSession } from "@/api/trade";
+import { formatDate } from "@/utils/date";
 
 defineOptions({ name: "TradeCheckin" });
 
 const activeList = ref<GameSession[]>([]);
 const availSessions = ref<AvailableSession[]>([]);
-const customerId = ref<number>(0);
+const customerId = ref<number | null>(null);
 const customers = ref<any[]>([]);
 const activeLoading = ref(false);
 const availLoading = ref(false);
@@ -40,13 +41,20 @@ const searchCustomers = async (keyword: string) => {
   }
 };
 
-const onCustomerSelect = (cid: number) => {
+const onCustomerSelect = (cid: number | null) => {
   customerId.value = cid;
-  searchAvail();
+  if (cid) {
+    searchAvail();
+  } else {
+    availSessions.value = [];
+  }
 };
 
 const searchAvail = async () => {
-  if (!customerId.value) return;
+  if (!customerId.value) {
+    availSessions.value = [];
+    return;
+  }
   availLoading.value = true;
   try {
     const r = await getAvailableSessions(customerId.value);
@@ -58,6 +66,10 @@ const searchAvail = async () => {
 };
 
 const onCheckin = async (csid: number) => {
+  if (!customerId.value) {
+    message("请先选择顾客", { type: "warning" });
+    return;
+  }
   try {
     await ElMessageBox.confirm("确认核销入座？", "核销确认", {
       confirmButtonText: "确认核销",
@@ -100,7 +112,7 @@ const onFinish = async (gsid: number) => {
   const r = await finishGameSession(gsid);
   if (r?.success) {
     message("已结束游玩", { type: "success" });
-    loadActive();
+    await loadActive();
   } else {
     message(r?.msg || "结束失败", { type: "warning" });
   }
@@ -136,7 +148,11 @@ onMounted(loadActive);
           </div>
           <el-table v-loading="availLoading" :data="availSessions" stripe>
             <el-table-column prop="package_name" label="套餐" />
-            <el-table-column prop="session_date" label="可用日期" width="120" />
+            <el-table-column label="可用日期" width="120">
+              <template #default="{ row }">
+                {{ formatDate(row.session_date) }}
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
                 <el-button
