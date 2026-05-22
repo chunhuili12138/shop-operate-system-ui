@@ -9,40 +9,29 @@ const loading = ref(false);
 const page = ref(1);
 const size = ref(20);
 const total = ref(0);
-const query = reactive({ dateRange: [] as string[] });
+const query = reactive({
+  dateRange: [] as string[],
+  flowType: "" as string,
+  amountMin: undefined as number | undefined,
+  amountMax: undefined as number | undefined
+});
 
 const load = async () => {
   loading.value = true;
   try {
     const params: any = { page: page.value, size: size.value };
-    if (query.dateRange?.length === 2) {
-      params.startDate = query.dateRange[0];
-      params.endDate = query.dateRange[1];
-    }
+    if (query.dateRange?.length === 2) { params.startDate = query.dateRange[0]; params.endDate = query.dateRange[1]; }
+    if (query.flowType) params.flowType = query.flowType;
+    if (query.amountMin !== undefined) params.amountMin = query.amountMin;
+    if (query.amountMax !== undefined) params.amountMax = query.amountMax;
     const r = await getCashFlow(params);
-    if (r?.success) {
-      tableData.value = r.data.list;
-      total.value = r.data.total;
-    }
-  } finally {
-    loading.value = false;
-  }
+    if (r?.success) { tableData.value = r.data.list; total.value = r.data.total; }
+  } finally { loading.value = false; }
 };
 
-const onSearch = () => {
-  page.value = 1;
-  load();
-};
-const onReset = () => {
-  query.dateRange = [];
-  page.value = 1;
-  load();
-};
-const onSizeChange = (s: number) => {
-  size.value = s;
-  page.value = 1;
-  load();
-};
+const onSearch = () => { page.value = 1; load(); };
+const onReset = () => { query.dateRange = []; query.flowType = ""; query.amountMin = undefined; query.amountMax = undefined; page.value = 1; load(); };
+const onSizeChange = (s: number) => { size.value = s; page.value = 1; load(); };
 
 onMounted(load);
 </script>
@@ -53,15 +42,21 @@ onMounted(load);
       <el-form :model="query" inline class="page-search">
         <el-form-item label="日期范围">
           <el-date-picker
-            v-model="query.dateRange"
-            type="daterange"
-            range-separator="-"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            value-format="YYYY-MM-DD"
-            style="width: 260px"
-            @change="onSearch"
+            v-model="query.dateRange" type="daterange" range-separator="-"
+            start-placeholder="开始时间" end-placeholder="结束时间" value-format="YYYY-MM-DD"
+            style="width:260px" @change="onSearch"
           />
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="query.flowType" clearable placeholder="全部" style="width:100px" @change="onSearch">
+            <el-option label="收入" value="收入" />
+            <el-option label="支出" value="支出" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="金额">
+          <el-input-number v-model="query.amountMin" :min="0" placeholder="最低" style="width:120px" @change="onSearch" />
+          <span style="margin:0 6px;color:#999">-</span>
+          <el-input-number v-model="query.amountMax" :min="0" placeholder="最高" style="width:120px" @change="onSearch" />
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
@@ -74,61 +69,31 @@ onMounted(load);
     </div>
 
     <div class="page-table">
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        stripe
-        style="width: 100%"
-      >
+      <el-table v-loading="loading" :data="tableData" stripe style="width:100%">
         <el-table-column label="类型" width="80" align="center">
           <template #default="{ row }">
-            <el-tag
-              :type="row.flow_type === '收入' ? 'success' : 'danger'"
-              size="small"
-            >
+            <el-tag :type="row.flow_type === '收入' ? 'success' : 'danger'" size="small">
               {{ row.flow_type }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="金额" width="110" align="center">
           <template #default="{ row }">
-            <span
-              :style="{
-                color:
-                  row.flow_type === '收入'
-                    ? 'var(--el-color-success)'
-                    : 'var(--el-color-danger)'
-              }"
-            >
-              {{ row.flow_type === "收入" ? "+" : "-" }}¥{{ row.amount }}
+            <span :style="{ color: row.flow_type === '收入' ? 'var(--el-color-success)' : 'var(--el-color-danger)' }">
+              {{ row.flow_type === '收入' ? '+' : '-' }}¥{{ row.amount }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="relate_name"
-          label="关联信息"
-          min-width="140"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="desc_name"
-          label="说明"
-          min-width="160"
-          show-overflow-tooltip
-        />
+        <el-table-column prop="relate_name" label="关联信息" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="desc_name" label="说明" min-width="160" show-overflow-tooltip />
         <el-table-column prop="flow_date" label="日期" width="170" />
         <template #empty><el-empty description="暂无流水记录" /></template>
       </el-table>
     </div>
     <el-pagination
-      v-model:current-page="page"
-      v-model:page-size="size"
-      :total="total"
-      :page-sizes="[10, 20, 50, 100]"
-      layout="total, sizes, prev, pager, next, jumper"
-      class="page-pagination"
-      @size-change="onSizeChange"
-      @current-change="load"
+      v-model:current-page="page" v-model:page-size="size" :total="total"
+      :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next, jumper"
+      class="page-pagination" @size-change="onSizeChange" @current-change="load"
     />
   </div>
 </template>

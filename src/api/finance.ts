@@ -112,6 +112,9 @@ export interface ExpenseQueryParams {
   size?: number;
   startDate?: string;
   endDate?: string;
+  categoryId?: number;
+  amountMin?: number;
+  amountMax?: number;
 }
 
 // 支出汇总响应
@@ -199,6 +202,8 @@ export const deleteExpense = (expenseId: number) => {
 export interface InvoiceQueryParams {
   page?: number;
   size?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 // 发票列表响应
@@ -220,6 +225,7 @@ export interface InvoiceFormParams {
   invoiceNumber: string;
   amount: string;
   issuedAt: string;
+  imagePath?: string;
 }
 
 /** 获取发票列表 */
@@ -230,6 +236,16 @@ export const getInvoiceList = (params?: InvoiceQueryParams) => {
 /** 新增发票 */
 export const addInvoice = (data: InvoiceFormParams) => {
   return http.request<ApiResult>("post", "/invoicesAdd", { data });
+};
+
+/** 上传发票图片 */
+export const uploadInvoice = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return http.request<ApiResult>("post", "/file/uploadInvoice", {
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 };
 
 // ========== 通知管理相关 ==========
@@ -348,6 +364,9 @@ export interface CashFlowQueryParams {
   size?: number;
   startDate?: string;
   endDate?: string;
+  flowType?: string;
+  amountMin?: number;
+  amountMax?: number;
 }
 
 export const getCashFlow = (params?: CashFlowQueryParams) => {

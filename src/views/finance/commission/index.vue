@@ -350,16 +350,21 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <el-form-item label="值" required>
-          <el-input
+          <el-input-number
             v-model="ruleForm.value"
+            :min="0" :precision="2"
             :placeholder="
               ruleForm.ruleType === 1
-                ? '每场提成金额'
+                ? '每场提成金额，如 10 = 每场提成 10 元'
                 : ruleForm.ruleType === 2
-                  ? '流水比例(%)'
-                  : '固定金额'
+                  ? '收入百分比，如 5 = 提流水的 5%'
+                  : '每月固定提成，如 500 = 月固定 500 元'
             "
+            style="width:100%"
           />
+          <el-text type="info" size="small" style="margin-top:4px;display:block">
+            财务每月选择周期生成结算，系统统计该员工已完成核销场次及对应收入，匹配生效规则自动计算提成。未设置规则则该员工无提成。
+          </el-text>
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="ruleForm.description" />
