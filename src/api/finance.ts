@@ -227,6 +227,7 @@ export interface InvoiceFormParams {
   amount: string;
   issuedAt: string;
   imagePath?: string;
+  remark?: string;
 }
 
 /** 获取发票列表 */
@@ -237,6 +238,11 @@ export const getInvoiceList = (params?: InvoiceQueryParams) => {
 /** 新增发票 */
 export const addInvoice = (data: InvoiceFormParams) => {
   return http.request<ApiResult>("post", "/invoicesAdd", { data });
+};
+
+/** 删除发票 */
+export const deleteInvoice = (invoiceId: number) => {
+  return http.request<ApiResult>("delete", "/invoicesDelete", { params: { invoiceId } });
 };
 
 /** 上传发票图片 */
