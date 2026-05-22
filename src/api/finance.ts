@@ -57,6 +57,7 @@ export const toggleCommissionRuleStatus = (ruleId: number, isActive: number) => 
 export interface CommissionSettlementQueryParams {
   page?: number;
   size?: number;
+  settlementPeriod?: string;
 }
 
 // 结算记录列表响应
