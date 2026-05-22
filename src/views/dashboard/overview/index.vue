@@ -12,9 +12,21 @@ const isSuper = useUserStoreHook().superAdmin;
 const statCards = computed(() =>
   isSuper.value
     ? [
-        { label: "入驻商户", key: "totalTenants", color: "var(--color-stat-blue)" },
-        { label: "总店铺数", key: "totalShops", color: "var(--color-stat-green)" },
-        { label: "生效席位", key: "activeSeats", color: "var(--color-stat-orange)" },
+        {
+          label: "入驻商户",
+          key: "totalTenants",
+          color: "var(--color-stat-blue)"
+        },
+        {
+          label: "总店铺数",
+          key: "totalShops",
+          color: "var(--color-stat-green)"
+        },
+        {
+          label: "生效席位",
+          key: "activeSeats",
+          color: "var(--color-stat-orange)"
+        },
         {
           label: "本月新增商户",
           key: "newTenantsThisMonth",
@@ -34,8 +46,16 @@ const statCards = computed(() =>
           color: "var(--color-stat-green)",
           prefix: "¥"
         },
-        { label: "今日订单", key: "todayOrders", color: "var(--color-stat-orange)" },
-        { label: "今日核销", key: "todayCheckins", color: "var(--color-stat-purple)" },
+        {
+          label: "今日订单",
+          key: "todayOrders",
+          color: "var(--color-stat-orange)"
+        },
+        {
+          label: "今日核销",
+          key: "todayCheckins",
+          color: "var(--color-stat-purple)"
+        },
         {
           label: "新顾客数",
           key: "todayNewCustomers",
@@ -63,7 +83,10 @@ onMounted(load);
       <el-col
         v-for="card in statCards"
         :key="card.key"
-        :lg="4" :md="8" :sm="12" :xs="24"
+        :lg="4"
+        :md="8"
+        :sm="12"
+        :xs="24"
       >
         <el-card shadow="never">
           <div class="text-sm text-dim">{{ card.label }}</div>
