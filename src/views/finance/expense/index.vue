@@ -2,7 +2,7 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import { getExpenseList, getExpenseCategories, addExpense, updateExpense, deleteExpense, addExpenseCategory, updateExpenseCategory, deleteExpenseCategory } from "@/api/finance";
+import { getExpenseList, getExpenseSummary, getExpenseCategories, addExpense, updateExpense, deleteExpense, addExpenseCategory, updateExpenseCategory, deleteExpenseCategory } from "@/api/finance";
 import { getDictData } from "@/api/dict";
 
 defineOptions({ name: "FinanceExpense" });
@@ -12,24 +12,42 @@ const loading = ref(false);
 const page = ref(1);
 const size = ref(20);
 const total = ref(0);
+const query = reactive({ dateRange: [] as string[] });
+const summary = reactive({ totalExpense: 0, totalCount: 0, categories: [] as any[] });
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const categories = ref<any[]>([]);
 const paymentMethods = ref<any[]>([]);
 const form = reactive({ expenseId: 0, categoryId: "", amount: "", paymentMethod: "", expenseDate: "", remark: "" });
 
-// 分类管理
 const catDialogVisible = ref(false);
 const catForm = reactive({ catId: 0, name: "" });
 const isEditCat = ref(false);
 
+const sourceLabel = (val: string) => {
+  const item = paymentMethods.value.find((d: any) => d.dict_label === val);
+  return item ? item.dict_value : val || "-";
+};
+
+const loadSummary = async () => {
+  const params: any = {};
+  if (query.dateRange?.length === 2) { params.startDate = query.dateRange[0]; params.endDate = query.dateRange[1]; }
+  const r = await getExpenseSummary(params);
+  if (r?.success) Object.assign(summary, r.data);
+};
+
 const load = async () => {
   loading.value = true;
   try {
-    const r = await getExpenseList({ page: page.value, size: size.value });
+    const params: any = { page: page.value, size: size.value };
+    if (query.dateRange?.length === 2) { params.startDate = query.dateRange[0]; params.endDate = query.dateRange[1]; }
+    const r = await getExpenseList(params);
     if (r?.success) { tableData.value = r.data.list; total.value = r.data.total; }
   } finally { loading.value = false; }
 };
+
+const onSearch = () => { page.value = 1; load(); loadSummary(); };
+const onReset = () => { query.dateRange = []; page.value = 1; load(); loadSummary(); };
 
 const loadCats = async () => {
   const r = await getExpenseCategories();
@@ -62,18 +80,17 @@ const openEdit = (row: any) => {
 
 const save = async () => {
   const r = isEdit.value ? await updateExpense(form as any) : await addExpense(form as any);
-  if (r?.success) { message(isEdit.value ? "更新成功" : "新增成功", { type: "success" }); dialogVisible.value = false; load(); }
+  if (r?.success) { message(isEdit.value ? "更新成功" : "新增成功", { type: "success" }); dialogVisible.value = false; load(); loadSummary(); }
   else message(r?.msg || "失败", { type: "warning" });
 };
 
 const onDelete = async (id: number) => {
   try { await ElMessageBox.confirm("确认删除？", "提示", { type: "warning" }); } catch { return; }
   const r = await deleteExpense(id);
-  if (r?.success) { message("已删除", { type: "success" }); load(); }
+  if (r?.success) { message("已删除", { type: "success" }); load(); loadSummary(); }
   else message(r?.msg || "失败", { type: "warning" });
 };
 
-// 分类管理
 const openAddCat = () => { isEditCat.value = false; catForm.name = ""; catDialogVisible.value = true; };
 const openEditCat = (cat: any) => { isEditCat.value = true; catForm.catId = cat.id; catForm.name = cat.name; catDialogVisible.value = true; };
 const saveCat = async () => {
@@ -88,31 +105,75 @@ const onDeleteCat = async (id: number) => {
   else message(r?.msg || "失败", { type: "warning" });
 };
 
-onMounted(() => { load(); loadCats(); loadDicts(); });
+onMounted(() => { load(); loadSummary(); loadCats(); loadDicts(); });
 </script>
 
 <template>
   <div class="page-container">
     <div class="page-header">
+      <el-form :model="query" inline class="page-search">
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="query.dateRange" type="daterange" range-separator="-"
+            start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD"
+            style="width:260px" @change="onSearch"
+          />
+        </el-form-item>
+      </el-form>
       <div class="page-header-actions">
         <div>
           <el-button type="primary" @click="openAdd">新增支出</el-button>
           <el-button @click="openAddCat">管理分类</el-button>
         </div>
-        <div><el-button type="primary" @click="load">刷新</el-button></div>
+        <div>
+          <el-button type="primary" @click="onSearch">查询</el-button>
+          <el-button @click="onReset">重置</el-button>
+        </div>
       </div>
     </div>
+
+    <el-row :gutter="16" class="summary-row">
+      <el-col :span="8">
+        <el-card shadow="never">
+          <div class="text-sm text-dim">总支出</div>
+          <div class="text-2xl font-bold" style="color:var(--el-color-danger)">¥{{ summary.totalExpense ?? 0 }}</div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="never">
+          <div class="text-sm text-dim">记录数</div>
+          <div class="text-2xl font-bold" style="color:#667eea">{{ summary.totalCount ?? 0 }}</div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="never">
+          <div class="text-sm text-dim">分类TOP3</div>
+          <div v-if="summary.categories?.length" class="text-xs" style="line-height:1.8">
+            <div v-for="(cat, i) in summary.categories.slice(0,3)" :key="i" style="color:#666">
+              {{ cat.name }}: ¥{{ Number(cat.total).toFixed(0) }}
+            </div>
+          </div>
+          <div v-else class="text-dim text-sm">-</div>
+        </el-card>
+      </el-col>
+    </el-row>
+
     <div class="page-table">
       <el-table v-loading="loading" :data="tableData" stripe style="width:100%">
         <el-table-column prop="category_name" label="分类" width="120" />
-        <el-table-column prop="amount" label="金额" width="100" />
-        <el-table-column prop="payment_method" label="支付方式" width="100" />
+        <el-table-column label="金额" width="110" align="center">
+          <template #default="{ row }">¥{{ row.amount }}</template>
+        </el-table-column>
+        <el-table-column label="支付方式" width="100" align="center">
+          <template #default="{ row }">{{ sourceLabel(row.payment_method) }}</template>
+        </el-table-column>
         <el-table-column prop="expense_date" label="日期" width="120" />
-        <el-table-column prop="remark" label="备注" />
+        <el-table-column prop="remark" label="备注" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="operator_name" label="操作人" width="100" />
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="onDelete(row.id)">删除</el-button>
+            <el-button v-if="row.source_type === 'manual'" link type="primary" size="small" @click="openEdit(row)">编辑</el-button>
+            <el-button v-if="row.source_type === 'manual'" link type="danger" size="small" @click="onDelete(row.id)">删除</el-button>
           </template>
         </el-table-column>
         <template #empty><el-empty description="暂无支出记录" /></template>
@@ -174,3 +235,9 @@ onMounted(() => { load(); loadCats(); loadDicts(); });
     </el-dialog>
   </div>
 </template>
+
+<style scoped>
+.summary-row { margin-bottom: 16px; }
+.summary-row .el-card { border: 1px solid var(--el-border-color-light); }
+.summary-row :deep(.el-card__body) { padding: 16px; }
+</style>

@@ -21,7 +21,8 @@ const platformData = ref<PlatformDashboardData | null>(null);
 const shopStats = ref<ShopDashboardData>({});
 
 const shopCards = computed(() => [
-  { label: "今日营业额", key: "todaySales", prefix: "¥", color: "#667eea" },
+  { label: "今日收现", key: "todaySales", prefix: "¥", color: "#667eea" },
+  { label: "今日确认收入", key: "todayRevenue", prefix: "¥", color: "#43e97b" },
   { label: "今日订单", key: "todayOrders", color: "#f5576c" },
   { label: "今日核销", key: "todayCheckins", color: "#4facfe" },
   { label: "新顾客数", key: "todayNewCustomers", color: "#f093fb" }
@@ -185,7 +186,7 @@ onMounted(load);
 
 .shop-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-bottom: 12px;
 

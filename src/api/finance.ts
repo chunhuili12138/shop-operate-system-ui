@@ -110,6 +110,18 @@ export const paySettlement = (data: PaySettlementParams) => {
 export interface ExpenseQueryParams {
   page?: number;
   size?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+// 支出汇总响应
+export interface ExpenseSummaryResult {
+  success: boolean;
+  data: {
+    totalExpense: number;
+    totalCount: number;
+    categories: Array<{ name: string; total: number }>;
+  };
 }
 
 // 支出列表响应
@@ -137,6 +149,11 @@ export interface ExpenseFormParams {
 /** 获取支出列表 */
 export const getExpenseList = (params?: ExpenseQueryParams) => {
   return http.request<ExpenseListResult>("get", "/expenses", { params });
+};
+
+/** 获取支出汇总 */
+export const getExpenseSummary = (params?: { startDate?: string; endDate?: string }) => {
+  return http.request<ExpenseSummaryResult>("get", "/expenses/summary", { params });
 };
 
 /** 获取支出分类列表 */
@@ -275,6 +292,20 @@ export const sendNotification = (data: {
 export interface RevenueQueryParams {
   page?: number;
   size?: number;
+  startDate?: string;
+  endDate?: string;
+  staffId?: number;
+  customerId?: number;
+}
+
+// 收入汇总响应
+export interface RevenueSummaryResult {
+  success: boolean;
+  data: {
+    totalRevenue: number;
+    totalCount: number;
+    avgAmount: number;
+  };
 }
 
 // 收入列表响应
@@ -286,8 +317,13 @@ export interface RevenueListResult {
     list: Array<{
       id: number;
       game_session_id: number;
+      purchase_id: number;
       amount: number;
       staff_name: string;
+      customer_name: string;
+      package_name: string;
+      payment_method: string;
+      purchase_amount: number;
       confirmed_at: string;
     }>;
     total: number;
@@ -298,6 +334,24 @@ export interface RevenueListResult {
 /** 获取收入列表 */
 export const getRevenueList = (params?: RevenueQueryParams) => {
   return http.request<RevenueListResult>("get", "/revenues", { params });
+};
+
+/** 获取收入汇总 */
+export const getRevenueSummary = (params?: { startDate?: string; endDate?: string }) => {
+  return http.request<RevenueSummaryResult>("get", "/revenues/summary", { params });
+};
+
+// ========== 收支流水 ==========
+
+export interface CashFlowQueryParams {
+  page?: number;
+  size?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
+export const getCashFlow = (params?: CashFlowQueryParams) => {
+  return http.request<ApiResult>("get", "/cashFlow", { params });
 };
 
 // ========== 考勤管理 ==========

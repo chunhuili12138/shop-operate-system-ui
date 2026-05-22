@@ -23,13 +23,19 @@ const statCards = computed(() =>
       ]
     : [
         {
-          label: "今日营业额",
+          label: "今日收现",
           key: "todaySales",
           color: "var(--color-stat-blue)",
           prefix: "¥"
         },
-        { label: "今日订单", key: "todayOrders", color: "var(--color-stat-green)" },
-        { label: "今日核销", key: "todayCheckins", color: "var(--color-stat-orange)" },
+        {
+          label: "今日确认收入",
+          key: "todayRevenue",
+          color: "var(--color-stat-green)",
+          prefix: "¥"
+        },
+        { label: "今日订单", key: "todayOrders", color: "var(--color-stat-orange)" },
+        { label: "今日核销", key: "todayCheckins", color: "var(--color-stat-purple)" },
         {
           label: "新顾客数",
           key: "todayNewCustomers",
@@ -57,7 +63,7 @@ onMounted(load);
       <el-col
         v-for="card in statCards"
         :key="card.key"
-        :span="6"
+        :lg="4" :md="8" :sm="12" :xs="24"
       >
         <el-card shadow="never">
           <div class="text-sm text-dim">{{ card.label }}</div>

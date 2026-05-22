@@ -70,6 +70,7 @@ export interface PlatformDashboardData {
 
 export interface ShopDashboardData {
   todaySales?: number;
+  todayRevenue?: number;
   todayOrders?: number;
   todayCheckins?: number;
   todayNewCustomers?: number;

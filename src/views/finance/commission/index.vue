@@ -12,6 +12,7 @@ import {
   paySettlement
 } from "@/api/finance";
 import { getDictData } from "@/api/dict";
+import { getRoleList } from "@/api/system";
 
 defineOptions({ name: "FinanceCommission" });
 
@@ -19,6 +20,7 @@ const activeTab = ref("rules");
 
 // ---- 字典 ----
 const ruleTypeDict = ref<any[]>([]);
+const roleList = ref<any[]>([]);
 const ruleTypeLabel = (type: number) => {
   const item = ruleTypeDict.value.find((d: any) => d.dict_key === type);
   return item ? item.dict_value : String(type);
@@ -53,6 +55,12 @@ const loadDicts = async () => {
   try {
     const r = await getDictData("commission_rule_type");
     if (r?.success && Array.isArray(r.data)) ruleTypeDict.value = r.data;
+  } catch { /* ignore */ }
+  try {
+    const rl = await getRoleList();
+    if (rl?.success && Array.isArray(rl.data)) {
+      roleList.value = rl.data.filter((r: any) => r.id !== 2 && r.id !== 3);
+    }
   } catch { /* ignore */ }
 };
 
@@ -202,8 +210,10 @@ onMounted(() => { loadDicts(); loadRules(); loadSettlements(); });
 
     <el-dialog v-model="ruleDialog" :title="isEditRule ? '编辑提成规则' : '新增提成规则'" width="480px" :close-on-click-modal="false">
       <el-form :model="ruleForm" label-width="100px">
-        <el-form-item v-if="!isEditRule" label="角色ID" required>
-          <el-input v-model="ruleForm.roleId" placeholder="如 4=导玩员 5=仓管 6=财务" />
+        <el-form-item v-if="!isEditRule" label="角色" required>
+          <el-select v-model="ruleForm.roleId" placeholder="选择角色" style="width:100%">
+            <el-option v-for="r in roleList" :key="r.id" :label="r.name" :value="r.id" />
+          </el-select>
         </el-form-item>
         <el-form-item label="类型" required>
           <el-select v-model="ruleForm.ruleType" style="width:100%">
