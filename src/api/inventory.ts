@@ -161,6 +161,7 @@ export interface PurchaseOrderQueryParams {
   size?: number;
   status?: number | string;
   supplierId?: number | string;
+  keyword?: string;
   amountMin?: number;
   amountMax?: number;
   startDate?: string;

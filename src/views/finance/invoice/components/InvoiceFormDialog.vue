@@ -40,11 +40,11 @@ watch(() => props.visible, (v) => {
   if (v) { resetForm(); loadRefOptions(); }
 });
 
-const loadRefOptions = async () => {
+const loadRefOptions = async (keyword?: string) => {
   refOptionsLoading.value = true;
   try {
     if (form.referenceType === "purchase") {
-      const r = await getPurchaseList({ page: 1, size: 200 });
+      const r = await getPurchaseList({ page: 1, size: keyword ? 30 : 30, keyword });
       if (r?.success) {
         refOptions.value = (r.data.list || []).map((p: any) => ({
           id: p.id,
@@ -53,16 +53,21 @@ const loadRefOptions = async () => {
         }));
       }
     } else {
-      const r = await getPurchaseOrderList({ page: 1, size: 200 });
+      const r = await getPurchaseOrderList({ page: 1, size: 30, keyword });
       if (r?.success) {
         refOptions.value = (r.data.list || []).map((po: any) => ({
           id: po.id,
-          label: `${po.supplier_name || "供应商"} - ¥${po.total_amount || 0}`,
+          label: `${po.order_number || "单号"} - ${po.supplier_name || "供应商"} - ¥${po.total_amount || 0}`,
           amount: po.total_amount || 0
         }));
       }
     }
   } finally { refOptionsLoading.value = false; }
+};
+
+const remoteSearch = (query: string) => {
+  if (query) loadRefOptions(query);
+  else loadRefOptions();
 };
 
 watch(() => form.referenceType, () => {
@@ -125,8 +130,8 @@ const save = async () => {
       </el-form-item>
       <el-form-item label="关联记录" required>
         <el-select
-          v-model="form.referenceId" filterable :loading="refOptionsLoading"
-          placeholder="请选择关联记录" style="width:100%" @change="onRefSelect"
+          v-model="form.referenceId" filterable remote :remote-method="remoteSearch"
+          :loading="refOptionsLoading" placeholder="请选择关联记录" style="width:100%" @change="onRefSelect"
         >
           <el-option v-for="o in refOptions" :key="o.id" :label="o.label" :value="o.id" />
         </el-select>
