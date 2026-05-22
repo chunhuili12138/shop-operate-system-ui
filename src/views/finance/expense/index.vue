@@ -57,7 +57,10 @@ const sourceLabel = (val: string) => {
 
 const loadSummary = async () => {
   const params: any = {};
-  if (query.dateRange?.length === 2) { params.startDate = query.dateRange[0]; params.endDate = query.dateRange[1]; }
+  if (query.dateRange?.length === 2) {
+    params.startDate = query.dateRange[0];
+    params.endDate = query.dateRange[1];
+  }
   if (query.categoryId) params.categoryId = query.categoryId;
   if (query.amountMin !== undefined) params.amountMin = query.amountMin;
   if (query.amountMax !== undefined) params.amountMax = query.amountMax;
@@ -69,7 +72,10 @@ const load = async () => {
   loading.value = true;
   try {
     const params: any = { page: page.value, size: size.value };
-    if (query.dateRange?.length === 2) { params.startDate = query.dateRange[0]; params.endDate = query.dateRange[1]; }
+    if (query.dateRange?.length === 2) {
+      params.startDate = query.dateRange[0];
+      params.endDate = query.dateRange[1];
+    }
     if (query.categoryId) params.categoryId = query.categoryId;
     if (query.amountMin !== undefined) params.amountMin = query.amountMin;
     if (query.amountMax !== undefined) params.amountMax = query.amountMax;
@@ -218,20 +224,48 @@ onMounted(() => {
       <el-form :model="query" inline class="page-search">
         <el-form-item label="日期范围">
           <el-date-picker
-            v-model="query.dateRange" type="daterange" range-separator="-"
-            start-placeholder="开始时间" end-placeholder="结束时间" value-format="YYYY-MM-DD"
-            style="width:260px" @change="onSearch"
+            v-model="query.dateRange"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            value-format="YYYY-MM-DD"
+            style="width: 260px"
+            @change="onSearch"
           />
         </el-form-item>
         <el-form-item label="分类">
-          <el-select v-model="query.categoryId" clearable placeholder="全部分类" style="width:140px" @change="onSearch">
-            <el-option v-for="c in categories" :key="c.id" :label="c.name" :value="c.id" />
+          <el-select
+            v-model="query.categoryId"
+            clearable
+            placeholder="全部分类"
+            style="width: 160px"
+            @change="onSearch"
+          >
+            <el-option
+              v-for="c in categories"
+              :key="c.id"
+              :label="c.name"
+              :value="c.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="金额">
-          <el-input-number v-model="query.amountMin" :min="0" placeholder="最低" style="width:120px" @change="onSearch" />
-          <span style="margin:0 6px;color:#999">-</span>
-          <el-input-number v-model="query.amountMax" :min="0" placeholder="最高" style="width:120px" @change="onSearch" />
+          <el-input-number
+            v-model="query.amountMin"
+            :min="0"
+            placeholder="最低"
+            style="width: 150px"
+            @change="onSearch"
+          />
+          <span style="margin: 0 6px; color: #999">-</span>
+          <el-input-number
+            v-model="query.amountMax"
+            :min="0"
+            placeholder="最高"
+            style="width: 150px"
+            @change="onSearch"
+          />
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
@@ -360,7 +394,13 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <el-form-item label="金额" required>
-          <el-input-number v-model="form.amount" :min="0" :precision="2" placeholder="0.00" style="width:100%" />
+          <el-input-number
+            v-model="form.amount"
+            :min="0"
+            :precision="2"
+            placeholder="0.00"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="支付方式">
           <el-select v-model="form.paymentMethod" style="width: 100%">

@@ -47,7 +47,7 @@ const ruleForm = reactive({
   ruleId: 0,
   roleId: "",
   ruleType: 1,
-  value: "",
+  value: 0,
   description: ""
 });
 
@@ -106,7 +106,7 @@ const openAddRule = () => {
     ruleId: 0,
     roleId: "",
     ruleType: 1,
-    value: "",
+    value: 0,
     description: ""
   });
   ruleDialog.value = true;
@@ -268,7 +268,11 @@ onMounted(() => {
             style="width: 100%"
           >
             <el-table-column prop="staff_name" label="员工" min-width="150" />
-            <el-table-column prop="settlement_period" label="周期" min-width="120" />
+            <el-table-column
+              prop="settlement_period"
+              label="周期"
+              min-width="120"
+            />
             <el-table-column
               prop="total_sessions"
               label="次数"
@@ -352,7 +356,8 @@ onMounted(() => {
         <el-form-item label="值" required>
           <el-input-number
             v-model="ruleForm.value"
-            :min="0" :precision="2"
+            :min="0"
+            :precision="2"
             :placeholder="
               ruleForm.ruleType === 1
                 ? '每场提成金额，如 10 = 每场提成 10 元'
@@ -360,10 +365,20 @@ onMounted(() => {
                   ? '收入百分比，如 5 = 提流水的 5%'
                   : '每月固定提成，如 500 = 月固定 500 元'
             "
-            style="width:100%"
+            style="width: 100%"
           />
-          <el-text type="info" size="small" style="margin-top:4px;display:block">
-            财务每月选择周期生成结算，系统统计该员工已完成核销场次及对应收入，匹配生效规则自动计算提成。未设置规则则该员工无提成。
+          <el-text
+            type="info"
+            size="small"
+            style="margin-top: 4px; display: block"
+          >
+            {{
+              ruleForm.ruleType === 1
+                ? "每场提成金额，如 10 = 每场提成 10 元"
+                : ruleForm.ruleType === 2
+                  ? "收入百分比，如 5 = 提流水的 5%"
+                  : "每月固定提成，如 500 = 月固定 500 元"
+            }}
           </el-text>
         </el-form-item>
         <el-form-item label="描述">
