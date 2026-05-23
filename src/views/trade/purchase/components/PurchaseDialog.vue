@@ -6,6 +6,7 @@ import { addPurchase, type AddPurchaseParams } from "@/api/trade";
 import { getCustomerList, getCustomerWallet } from "@/api/customer";
 import { getPackageList } from "@/api/package";
 import { getDictData } from "@/api/dict";
+import { getAvailableCoupons, type AvailableCoupon } from "@/api/marketing";
 
 interface Props {
   visible: boolean;
@@ -26,6 +27,8 @@ const paymentMethodOptions = ref<any[]>([]);
 const couponChannels = computed(() => channelOptions.value.filter((c: any) => ["meituan", "douyin"].includes(c.dict_label)));
 const walletInfo = ref<{ balance: number; total_recharged: number } | null>(null);
 const walletLoading = ref(false);
+const availableCoupons = ref<AvailableCoupon[]>([]);
+const couponDiscount = ref(0);
 
 const form = reactive<AddPurchaseParams>({
   customersId: null as unknown as number,
@@ -36,6 +39,7 @@ const form = reactive<AddPurchaseParams>({
   totalAmount: 0,
   paidAmount: 0,
   thirdPartyCouponCode: "",
+  couponUsageId: undefined,
   remark: ""
 });
 
@@ -90,6 +94,9 @@ const loadPackages = async (keyword?: string) => {
 
 const onCustomerChange = async (customerId: number) => {
   walletInfo.value = null;
+  availableCoupons.value = [];
+  couponDiscount.value = 0;
+  form.couponUsageId = undefined;
   if (!customerId) return;
   walletLoading.value = true;
   try {
@@ -97,6 +104,7 @@ const onCustomerChange = async (customerId: number) => {
     if (r?.success && r.data) walletInfo.value = r.data;
   } catch { /* ignore */ }
   finally { walletLoading.value = false; }
+  loadAvailableCoupons();
 };
 
 const onPackageChange = (packageId: number) => {
@@ -105,6 +113,35 @@ const onPackageChange = (packageId: number) => {
     form.totalAmount = parseFloat(pkg.price) || 0;
     if (form.paymentType === "wallet") form.paidAmount = form.totalAmount;
   }
+  loadAvailableCoupons();
+};
+
+const loadAvailableCoupons = async () => {
+  availableCoupons.value = [];
+  couponDiscount.value = 0;
+  form.couponUsageId = undefined;
+  if (!form.customersId || !form.packageId) return;
+  try {
+    const r = await getAvailableCoupons({ customerId: form.customersId, packageId: form.packageId });
+    if (r?.success && Array.isArray(r.data)) availableCoupons.value = r.data;
+  } catch { /* ignore */ }
+};
+
+const onCouponChange = (usageId: number | undefined) => {
+  if (!usageId) {
+    couponDiscount.value = 0;
+    form.paidAmount = form.totalAmount;
+    return;
+  }
+  const c = availableCoupons.value.find(cu => cu.coupon_usage_id === usageId);
+  if (!c) return;
+  const total = form.totalAmount;
+  let discount = 0;
+  if (c.type === 1) discount = Math.min(Number(c.value), total);
+  else if (c.type === 2) discount = total * Number(c.value) / 100;
+  else if (c.type === 3) discount = total;
+  couponDiscount.value = discount;
+  form.paidAmount = total - discount;
 };
 
 const resetForm = () => {
@@ -117,9 +154,12 @@ const resetForm = () => {
     totalAmount: 0,
     paidAmount: 0,
     thirdPartyCouponCode: "",
+    couponUsageId: undefined,
     remark: ""
   });
   walletInfo.value = null;
+  availableCoupons.value = [];
+  couponDiscount.value = 0;
   formRef.value?.clearValidate();
 };
 
@@ -195,6 +235,20 @@ watch(() => form.paymentType, (val) => {
       <el-form-item label="套餐" prop="packageId">
         <el-select v-model="form.packageId" filterable placeholder="选择套餐" style="width:100%" @change="onPackageChange">
           <el-option v-for="p in packages" :key="p.id" :label="p.name" :value="p.id" />
+        </el-select>
+      </el-form-item>
+
+      <el-form-item v-if="form.customersId && form.packageId && availableCoupons.length > 0" label="优惠券">
+        <el-select
+          v-model="form.couponUsageId"
+          clearable
+          placeholder="不使用优惠券"
+          style="width: 100%"
+          @change="onCouponChange"
+        >
+          <el-option v-for="cu in availableCoupons" :key="cu.coupon_usage_id"
+            :label="cu.name + ' (抵¥' + (cu.type === 1 ? cu.value : cu.type === 2 ? (form.totalAmount * Number(cu.value) / 100).toFixed(2) : form.totalAmount.toFixed(2)) + ')'"
+            :value="cu.coupon_usage_id" />
         </el-select>
       </el-form-item>
 

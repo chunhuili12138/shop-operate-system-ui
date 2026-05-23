@@ -21,6 +21,8 @@ export interface PurchaseRecord {
   package_id: number;
   channel: string;
   third_party_coupon_code?: string;
+  coupon_usage_id?: number;
+  coupon_discount?: number;
   start_date?: string;
   total_amount: number;
   paid_amount: number;
@@ -42,6 +44,7 @@ export interface AddPurchaseParams {
   totalAmount: number;
   paidAmount?: number;
   thirdPartyCouponCode?: string;
+  couponUsageId?: number;
   remark?: string;
 }
 

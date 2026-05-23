@@ -131,7 +131,9 @@ export interface CouponFormParams {
   value: string;
   minOrderAmount: string;
   totalStock: number;
+  perUserLimit?: number;
   validDays: number;
+  autoGrantOnRegister?: number;
 }
 
 // 优惠券状态参数
@@ -198,4 +200,32 @@ export const getCouponUsages = (params?: CouponUsageQueryParams) => {
 /** 发放优惠券 */
 export const grantCoupon = (data: GrantCouponParams) => {
   return http.request<ApiResult>("post", "/couponUsagesGrant", { data });
+};
+
+/** 删除优惠券 */
+export const deleteCoupon = (couponId: number) => {
+  return http.request<ApiResult>("delete", "/couponsDelete", { params: { couponId } });
+};
+
+// 可用优惠券（购买时选择）
+export interface AvailableCoupon {
+  coupon_usage_id: number;
+  coupon_id: number;
+  name: string;
+  type: number;
+  value: string;
+  min_order_amount: string;
+  valid_days: number;
+  expires_at: string;
+  received_at: string;
+}
+
+export interface AvailableCouponQueryParams {
+  customerId: number;
+  packageId?: number;
+}
+
+/** 查询顾客当前可用的优惠券 */
+export const getAvailableCoupons = (params: AvailableCouponQueryParams) => {
+  return http.request<ApiResult<AvailableCoupon[]>>("get", "/coupons/available", { params });
 };

@@ -13,6 +13,7 @@ import EpPresent from "~icons/ep/present?raw";
 import EpMoney from "~icons/ep/money?raw";
 import EpDataAnalysis from "~icons/ep/data-analysis?raw";
 import EpTrendCharts from "~icons/ep/trend-charts?raw";
+import EpComment from "~icons/ep/comment?raw";
 
 // ===== Remix Icons =====
 import RiSearchLine from "~icons/ri/search-line?raw";
@@ -49,6 +50,7 @@ const icons = [
   ["ep/money", EpMoney],
   ["ep/data-analysis", EpDataAnalysis],
   ["ep/trend-charts", EpTrendCharts],
+  ["ep/comment", EpComment],
   // Remix Icons
   ["ri/search-line", RiSearchLine],
   ["ri/information-line", RiInformationLine],

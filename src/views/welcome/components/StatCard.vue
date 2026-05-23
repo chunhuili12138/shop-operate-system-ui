@@ -1,14 +1,14 @@
 <script setup lang="ts">
 defineProps<{
   label: string;
-  value: string | number;
+  value?: string | number;
   prefix?: string;
   suffix?: string;
   color?: string;
   loading?: boolean;
 }>();
 
-const formatValue = (val: string | number, prefix?: string, suffix?: string) => {
+const formatValue = (val?: string | number, prefix?: string, suffix?: string) => {
   if (val === null || val === undefined || val === "") return "-";
   let display = String(val);
   if (typeof val === "number" && !Number.isInteger(val)) {
