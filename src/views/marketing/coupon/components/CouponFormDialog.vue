@@ -16,12 +16,14 @@ const emit = defineEmits<{ (e: "update:visible", v: boolean): void; (e: "submit"
 const formRef = ref<FormInstance>();
 const loading = ref(false);
 const typeOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const sceneOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
 
 const form = reactive({
   couponId: null as number | null,
   name: "",
   description: "",
   type: 1,
+  useScene: "purchase",
   value: 0,
   minOrderAmount: 0,
   totalStock: 0,
@@ -57,6 +59,7 @@ function resetForm() {
     name: "",
     description: "",
     type: 1,
+    useScene: "purchase",
     value: 0,
     minOrderAmount: 0,
     totalStock: 0,
@@ -77,6 +80,7 @@ watch(
           name: props.editRow.name,
           description: props.editRow.description ?? "",
           type: props.editRow.type,
+          useScene: props.editRow.use_scene || "purchase",
           value: Number(props.editRow.value) || 0,
           minOrderAmount: Number(props.editRow.min_order_amount) || 0,
           totalStock: props.editRow.total_stock,
@@ -115,8 +119,12 @@ async function save() {
 
 async function loadDicts() {
   try {
-    const r = await getDictData("coupon_type");
-    if (r?.success && Array.isArray(r.data)) typeOptions.value = r.data;
+    const [tR, sR] = await Promise.all([
+      getDictData("coupon_type"),
+      getDictData("coupon_use_scene")
+    ]);
+    if (tR?.success && Array.isArray(tR.data)) typeOptions.value = tR.data;
+    if (sR?.success && Array.isArray(sR.data)) sceneOptions.value = sR.data;
   } catch {
     /* ignore */
   }
@@ -143,6 +151,11 @@ onMounted(loadDicts);
       <el-form-item label="类型">
         <el-select v-model="form.type" style="width: 100%" placeholder="请选择优惠券类型">
           <el-option v-for="s in typeOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_key" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="使用场景">
+        <el-select v-model="form.useScene" style="width: 100%" placeholder="请选择使用场景">
+          <el-option v-for="s in sceneOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_label" />
         </el-select>
       </el-form-item>
       <el-form-item label="面值" prop="value">

@@ -8,8 +8,10 @@ import {
   getCustomerPurchases,
   getCustomerPoints,
   adjustWallet,
-  adjustPoints
+  adjustPoints,
+  rechargeWallet
 } from "@/api/customer";
+import { getAvailableCoupons, type AvailableCoupon } from "@/api/marketing";
 import { getDictData } from "@/api/system";
 
 const props = defineProps<{
@@ -33,6 +35,14 @@ const pointsList = ref<any[]>([]);
 const pointsTotal = ref(0);
 const pointsPage = ref(1);
 const activeTab = ref("purchases");
+
+// 充值弹窗
+const rechargeVisible = ref(false);
+const rechargeAmount = ref(0);
+const rechargeCoupons = ref<AvailableCoupon[]>([]);
+const rechargeCouponId = ref<number | undefined>(undefined);
+const rechargeDiscount = ref(0);
+const rechargeLoading = ref(false);
 
 const pageSize = 20;
 const sourceOptions = ref<
@@ -136,6 +146,60 @@ const adjWallet = (type: number) => {
       }
     })
     .catch(() => {});
+};
+
+const openRecharge = async () => {
+  rechargeAmount.value = 0;
+  rechargeCouponId.value = undefined;
+  rechargeDiscount.value = 0;
+  rechargeCoupons.value = [];
+  rechargeVisible.value = true;
+  // 加载该顾客可用的充值券
+  try {
+    const r = await getAvailableCoupons({ customerId: props.customerId!, scene: "recharge" } as any);
+    if (r?.success && Array.isArray(r.data)) rechargeCoupons.value = r.data as any;
+  } catch { /* ignore */ }
+};
+
+const onRechargeCouponChange = (id: number | undefined) => {
+  if (!id) { rechargeDiscount.value = 0; return; }
+  const c = rechargeCoupons.value.find(cu => cu.coupon_usage_id === id);
+  if (!c) return;
+  const amt = rechargeAmount.value || 0;
+  let d = 0;
+  if (c.type === 1) d = Math.min(Number(c.value), amt);
+  else if (c.type === 2) d = amt * Number(c.value) / 100;
+  else if (c.type === 3) d = amt;
+  rechargeDiscount.value = d;
+};
+
+const onRechargeAmountChange = () => {
+  if (rechargeCouponId.value) onRechargeCouponChange(rechargeCouponId.value);
+};
+
+const doRecharge = async () => {
+  if (rechargeAmount.value <= 0) { message("请输入充值金额", { type: "warning" }); return; }
+  rechargeLoading.value = true;
+  try {
+    const r = await rechargeWallet({
+      customersId: props.customerId!,
+      amount: rechargeAmount.value,
+      couponUsageId: rechargeCouponId.value,
+      paymentMethod: "other",
+      remark: rechargeCouponId.value ? `充值¥${rechargeAmount.value}（优惠抵扣¥${rechargeDiscount.value}）` : `充值¥${rechargeAmount.value}`
+    });
+    if (r?.success) {
+      message("充值成功", { type: "success" });
+      rechargeVisible.value = false;
+      await loadAll();
+    } else {
+      message(r?.msg || "充值失败", { type: "warning" });
+    }
+  } catch {
+    message("网络异常", { type: "error" });
+  } finally {
+    rechargeLoading.value = false;
+  }
 };
 
 const adjPoints = () => {
@@ -255,7 +319,7 @@ const purchaseStatusMap: Record<number, string> = {
           </div>
         </div>
         <div class="flex gap-2">
-          <el-button size="small" type="primary" @click="adjWallet(1)"
+          <el-button size="small" type="primary" @click="openRecharge"
             >充值</el-button
           >
           <el-button size="small" type="warning" plain @click="adjWallet(4)"
@@ -393,6 +457,42 @@ const purchaseStatusMap: Record<number, string> = {
           />
         </el-tab-pane>
       </el-tabs>
+
+      <!-- 充值弹窗 -->
+      <el-dialog v-model="rechargeVisible" title="钱包充值" width="480px" :close-on-click-modal="false">
+        <el-form label-width="100px">
+          <el-form-item label="充值金额">
+            <el-input-number v-model="rechargeAmount" :min="0" :precision="2" style="width: 100%" @change="onRechargeAmountChange" />
+          </el-form-item>
+          <el-form-item v-if="rechargeCoupons.length > 0" label="优惠券">
+            <el-select v-model="rechargeCouponId" clearable placeholder="不使用优惠券" style="width: 100%" @change="onRechargeCouponChange">
+              <el-option
+                v-for="cu in rechargeCoupons"
+                :key="cu.coupon_usage_id"
+                :label="cu.name + ' (抵¥' + (cu.type === 1 ? cu.value : cu.type === 2 ? (rechargeAmount * Number(cu.value) / 100).toFixed(2) : rechargeAmount.toFixed(2)) + ')'"
+                :value="cu.coupon_usage_id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-divider />
+          <el-descriptions :column="1" size="small" border>
+            <el-descriptions-item label="充值金额">¥{{ rechargeAmount.toFixed(2) }}</el-descriptions-item>
+            <el-descriptions-item v-if="rechargeDiscount > 0" label="优惠抵扣">
+              <span style="color: var(--el-color-danger); font-weight: 700">-¥{{ rechargeDiscount.toFixed(2) }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="实收金额">
+              <span style="font-weight: 700; font-size: 16px">¥{{ (rechargeAmount - rechargeDiscount).toFixed(2) }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="钱包到账">
+              <span style="color: var(--el-color-success); font-weight: 700; font-size: 16px">¥{{ rechargeAmount.toFixed(2) }}</span>
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-form>
+        <template #footer>
+          <el-button @click="rechargeVisible = false">取消</el-button>
+          <el-button type="primary" :loading="rechargeLoading" @click="doRecharge">确认充值</el-button>
+        </template>
+      </el-dialog>
     </template>
   </el-drawer>
 </template>

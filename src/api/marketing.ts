@@ -129,6 +129,7 @@ export interface CouponFormParams {
   name: string;
   description?: string;
   type: number;
+  useScene?: string;
   value: number | string;
   minOrderAmount: number | string;
   totalStock: number;
@@ -145,9 +146,15 @@ export interface CouponStatusParams {
 
 // 优惠券使用记录查询参数
 export interface CouponUsageQueryParams {
-  couponId: number;
+  couponId?: number;
   page?: number;
   size?: number;
+  customerKeyword?: string;
+  status?: number;
+  receivedStart?: string;
+  receivedEnd?: string;
+  usedStart?: string;
+  usedEnd?: string;
 }
 
 // 优惠券使用记录列表响应
@@ -203,6 +210,53 @@ export const grantCoupon = (data: GrantCouponParams) => {
   return http.request<ApiResult>("post", "/couponUsagesGrant", { data });
 };
 
+// 按条件批量发放参数
+export interface BatchGrantParams {
+  couponId: number;
+  tags?: string;
+  source?: string;
+  customerIds?: string;
+}
+
+// 批量发放响应
+export interface BatchGrantResult {
+  success: boolean;
+  code: number;
+  msg: string;
+  data: {
+    total: number;
+    granted: number;
+    skipped: number;
+  };
+  timestamp: number;
+}
+
+/** 按条件批量发放优惠券 */
+export const grantCouponBatch = (data: BatchGrantParams) => {
+  return http.request<BatchGrantResult>("post", "/couponUsagesGrantBatch", { data });
+};
+
+// 预览匹配顾客
+export interface PreviewCustomer {
+  id: number;
+  nickname: string;
+  phone: string;
+  tags: string;
+  alreadyCount: number;
+  canGrant: boolean;
+}
+
+export interface GrantPreviewParams {
+  couponId: number;
+  tags?: string;
+  source?: string;
+}
+
+/** 预览符合条件可发放的顾客 */
+export const getGrantPreview = (params: GrantPreviewParams) => {
+  return http.request<ApiResult<PreviewCustomer[]>>("get", "/couponsGrantPreview", { params });
+};
+
 /** 删除优惠券 */
 export const deleteCoupon = (couponId: number) => {
   return http.request<ApiResult>("delete", "/couponsDelete", { params: { couponId } });
@@ -224,6 +278,7 @@ export interface AvailableCoupon {
 export interface AvailableCouponQueryParams {
   customerId: number;
   packageId?: number;
+  scene?: string;
 }
 
 /** 查询顾客当前可用的优惠券 */

@@ -40,6 +40,9 @@ const form = reactive<CustomerFormParams & { source?: string }>({
 const tagList = ref<string[]>([]);
 
 const rules: FormRules = {
+  nickname: [
+    { required: true, message: "请输入昵称", trigger: "blur" }
+  ],
   phone: [
     { required: true, message: "请输入手机号", trigger: "blur" },
     { pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号格式", trigger: "blur" }
@@ -117,7 +120,7 @@ defineExpose({ reloadTags });
     @update:model-value="handleClose"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-      <el-form-item label="昵称">
+      <el-form-item label="昵称" prop="nickname">
         <el-input v-model="form.nickname" placeholder="请输入昵称" maxlength="50" />
       </el-form-item>
       <el-form-item label="手机号" prop="phone">

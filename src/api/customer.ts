@@ -129,6 +129,20 @@ export const adjustWallet = (data: WalletAdjustParams) => {
   return http.request<ApiResult>("post", "/customers/walletAdjust", { data });
 };
 
+// 充值参数（支持优惠券）
+export interface RechargeParams {
+  customersId: number;
+  amount: number;
+  paymentMethod?: string;
+  couponUsageId?: number;
+  remark?: string;
+}
+
+/** 钱包充值（支持优惠券抵扣） */
+export const rechargeWallet = (data: RechargeParams) => {
+  return http.request<ApiResult>("post", "/customers/walletRecharge", { data });
+};
+
 /** 积分调整 */
 export const adjustPoints = (data: PointsAdjustParams) => {
   return http.request<ApiResult>("put", "/customers/pointsAdjust", { data });
