@@ -97,12 +97,15 @@ export interface DailySnapshotListResult {
   msg: string;
   data: {
     list: Array<{
+      id: number;
       snapshot_date: string;
       sales_total: number;
       revenue_confirmed: number;
+      expense_total: number;
       new_customers: number;
       active_sessions: number;
       average_duration: number;
+      inventory_warns?: string;
     }>;
     total: number;
   };
@@ -117,4 +120,16 @@ export const getDailySnapshots = (params?: DailySnapshotQueryParams) => {
   return http.request<DailySnapshotListResult>("get", "/dailySnapshots", {
     params
   });
+};
+
+export interface ShopRevenueTrendResult {
+  success: boolean;
+  data: {
+    revenues: TrendItem[];
+    expenses: TrendItem[];
+  };
+}
+
+export const getShopRevenueTrend = (params: { startDate: string; endDate: string }) => {
+  return http.request<ShopRevenueTrendResult>("get", "/dashboard/revenue", { params });
 };

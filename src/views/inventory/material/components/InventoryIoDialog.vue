@@ -42,6 +42,10 @@ const doIo = async () => {
     message(`出库数量不能大于当前库存(${currentStock.value})`, { type: "warning" });
     return;
   }
+  if (ioType.value === 2 && !ioForm.remark?.trim()) {
+    message("出库请填写备注（原因/用途）", { type: "warning" });
+    return;
+  }
   const fn = ioType.value === 1 ? inventoryInbound : inventoryOutbound;
   const r = await fn(ioForm);
   if (r?.success) {
@@ -85,8 +89,8 @@ defineExpose({ open });
           style="width: 100%"
         />
       </el-form-item>
-      <el-form-item label="备注">
-        <el-input v-model="ioForm.remark" placeholder="可选备注" />
+      <el-form-item :label="ioType === 1 ? '备注' : '出库原因'" :required="ioType === 2">
+        <el-input v-model="ioForm.remark" :placeholder="ioType === 1 ? '可选备注' : '请填写出库原因/用途'" />
       </el-form-item>
     </el-form>
     <template #footer>

@@ -4,10 +4,14 @@ import { ref, PropType, nextTick } from "vue";
 import { useNav } from "@/layout/hooks/useNav";
 import { deviceDetection } from "@pureadmin/utils";
 
-defineProps({
+const props = defineProps({
   noticeItem: {
     type: Object as PropType<ListItem>,
     default: () => {}
+  },
+  onRead: {
+    type: Function as PropType<(id: string) => void>,
+    default: undefined
   }
 });
 
@@ -27,7 +31,6 @@ function hoverTitle() {
 }
 
 function hoverDescription(event, description) {
-  // currentWidth 为文本在页面中所占的宽度，创建标签，加入到页面，获取currentWidth ,最后在移除
   const tempTag = document.createElement("span");
   tempTag.innerText = description;
   tempTag.className = "getDescriptionWidth";
@@ -37,10 +40,7 @@ function hoverDescription(event, description) {
   ).offsetWidth;
   document.querySelector(".getDescriptionWidth").remove();
 
-  // cellWidth为容器的宽度
   const cellWidth = event.target.offsetWidth;
-
-  // 当文本宽度大于容器宽度两倍时，代表文本显示超过两行
   currentWidth > 2 * cellWidth
     ? (descriptionTooltip.value = true)
     : (descriptionTooltip.value = false);
@@ -48,9 +48,7 @@ function hoverDescription(event, description) {
 </script>
 
 <template>
-  <div
-    class="notice-container border-0 border-b-[1px] border-solid border-[#f0f0f0] dark:border-[#303030]"
-  >
+  <div class="notice-container border-0 border-b-[1px] border-solid border-[#f0f0f0] dark:border-[#303030]">
     <el-avatar
       v-if="noticeItem.avatar"
       :size="30"
@@ -67,21 +65,17 @@ function hoverDescription(event, description) {
           placement="top-start"
           :enterable="!isMobile"
         >
-          <div
-            ref="titleRef"
-            class="notice-title-content"
-            @mouseover="hoverTitle"
-          >
+          <div ref="titleRef" class="notice-title-content" @mouseover="hoverTitle">
             {{ noticeItem.title }}
           </div>
         </el-tooltip>
         <el-tag
-          v-if="noticeItem?.extra"
-          :type="noticeItem?.status"
+          v-if="(noticeItem as any).unread"
+          type="danger"
           size="small"
           class="notice-title-extra"
         >
-          {{ noticeItem?.extra }}
+          未读
         </el-tag>
       </div>
 
@@ -102,6 +96,12 @@ function hoverDescription(event, description) {
       </el-tooltip>
       <div class="notice-text-datetime text-[#00000073] dark:text-white">
         {{ noticeItem.datetime }}
+        <el-button
+          v-if="(noticeItem as any).unread && onRead"
+          link type="primary" size="small"
+          style="margin-left:8px"
+          @click="onRead(noticeItem.id!)"
+        >标为已读</el-button>
       </div>
     </div>
   </div>
@@ -118,8 +118,6 @@ function hoverDescription(event, description) {
   align-items: flex-start;
   justify-content: space-between;
   padding: 12px 0;
-
-  // border-bottom: 1px solid #f0f0f0;
 
   .notice-container-avatar {
     margin-right: 16px;

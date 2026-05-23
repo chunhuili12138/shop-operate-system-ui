@@ -1,7 +1,7 @@
 ﻿<script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
 import { useUserStoreHook } from "@/store/modules/user";
-import { getDashboardToday, type PlatformDashboardData, type ShopDashboardData } from "@/api/dashboard";
+import { getDashboardToday, getShopRevenueTrend, type PlatformDashboardData, type ShopDashboardData, type TrendItem } from "@/api/dashboard";
 import StatCard from "./components/StatCard.vue";
 import PlatformOverviewCards from "./components/PlatformOverviewCards.vue";
 import RevenueTrendChart from "./components/RevenueTrendChart.vue";
@@ -10,6 +10,7 @@ import ShopGrowthChart from "./components/ShopGrowthChart.vue";
 import ExpiringSeatsPanel from "./components/ExpiringSeatsPanel.vue";
 import SubscriptionPieChart from "./components/SubscriptionPieChart.vue";
 import SubscriptionDetail from "./components/SubscriptionDetail.vue";
+import ShopRevenueTrend from "./components/ShopRevenueTrend.vue";
 
 defineOptions({ name: "Welcome" });
 
@@ -19,6 +20,8 @@ const isPlatform = ref(isSuper.value);
 
 const platformData = ref<PlatformDashboardData | null>(null);
 const shopStats = ref<ShopDashboardData>({});
+const shopRevenues = ref<TrendItem[]>([]);
+const shopExpenses = ref<TrendItem[]>([]);
 
 const shopCards = computed(() => [
   { label: "今日收现", key: "todaySales", prefix: "¥", color: "#667eea" },
@@ -39,11 +42,22 @@ const load = async () => {
       } else {
         isPlatform.value = false;
         shopStats.value = (r.data as ShopDashboardData) || {};
+        loadTrend();
       }
     }
-  } finally {
-    loading.value = false;
-  }
+  } finally { loading.value = false; }
+};
+
+const loadTrend = async () => {
+  const end = new Date().toISOString().slice(0, 10);
+  const start = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+  try {
+    const r = await getShopRevenueTrend({ startDate: start, endDate: end });
+    if (r?.success) {
+      shopRevenues.value = r.data.revenues || [];
+      shopExpenses.value = r.data.expenses || [];
+    }
+  } catch { /* ignore */ }
 };
 
 onMounted(load);
@@ -110,9 +124,9 @@ onMounted(load);
           :loading="loading"
         />
       </div>
-      <div class="shop-placeholder">
-        <span>经营趋势</span>
-        <el-empty description="图表功能开发中" :image-size="60" />
+      <div class="shop-trend">
+        <div class="chart-label">近7日收入支出趋势</div>
+        <ShopRevenueTrend :revenues="shopRevenues" :expenses="shopExpenses" />
       </div>
     </template>
   </div>
@@ -195,19 +209,10 @@ onMounted(load);
   }
 }
 
-.shop-placeholder {
+.shop-trend {
   background: #fff;
   border-radius: 6px;
   border: 1px solid #ebeef5;
-  padding: 16px;
-  text-align: center;
-
-  span {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 12px;
-  }
+  padding: 10px 14px;
 }
 </style>

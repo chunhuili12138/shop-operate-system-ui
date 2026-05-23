@@ -11,13 +11,17 @@ defineProps({
   emptyText: {
     type: String,
     default: ""
+  },
+  onRead: {
+    type: Function as PropType<(id: string) => void>,
+    default: undefined
   }
 });
 </script>
 
 <template>
   <div v-if="list.length">
-    <NoticeItem v-for="(item, index) in list" :key="index" :noticeItem="item" />
+    <NoticeItem v-for="(item, index) in list" :key="index" :noticeItem="item" :on-read="onRead" />
   </div>
   <el-empty v-else :description="emptyText" />
 </template>

@@ -293,6 +293,11 @@ export const getNotificationList = (params?: NotificationQueryParams) => {
   });
 };
 
+/** 获取未读通知数量 */
+export const getUnreadCount = () => {
+  return http.request<ApiResult>("get", "/notifications/unreadCount");
+};
+
 /** 标记通知为已读 */
 export const markNotificationsRead = (data: MarkNotificationsReadParams) => {
   return http.request<ApiResult>("put", "/notificationsRead", { data });

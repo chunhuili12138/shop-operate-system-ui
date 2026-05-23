@@ -1,6 +1,7 @@
 import { reactive } from "vue";
 
 export interface ListItem {
+  id?: string;
   avatar?: string;
   title: string;
   datetime: string;
@@ -8,6 +9,7 @@ export interface ListItem {
   description: string;
   status?: "primary" | "success" | "warning" | "info" | "danger";
   extra?: string;
+  channel?: number;
 }
 
 export interface TabItem {
@@ -30,6 +32,14 @@ export const noticesData = reactive<TabItem[]>([
 ]);
 
 export const setNotifications = (items: ListItem[]) => {
-  const tab = noticesData.find(v => v.key === "1");
-  if (tab) tab.list = items;
+  const noticeTab = noticesData.find(v => v.key === "1");
+  const messageTab = noticesData.find(v => v.key === "2");
+  if (noticeTab) noticeTab.list = items.filter(v => v.channel !== 4);
+  if (messageTab) messageTab.list = items.filter(v => v.channel === 4);
+};
+
+export const removeNotification = (id: string) => {
+  noticesData.forEach(tab => {
+    tab.list = tab.list.filter(item => item.id !== id);
+  });
 };
