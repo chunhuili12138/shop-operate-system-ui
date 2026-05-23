@@ -15,7 +15,11 @@ const page = ref(1);
 const size = ref(20);
 const total = ref(0);
 
-const query = reactive({ keyword: "" });
+const query = reactive({
+  keyword: "",
+  type: undefined as number | undefined,
+  status: undefined as number | undefined
+});
 
 const formVisible = ref(false);
 const editRow = ref<any>(null);
@@ -56,6 +60,8 @@ const loadDicts = async () => {
 
 const reset = () => {
   query.keyword = "";
+  query.type = undefined;
+  query.status = undefined;
   page.value = 1;
   load();
 };
@@ -116,14 +122,19 @@ onMounted(() => {
   <div class="page-container">
     <div class="page-header">
       <el-form :model="query" inline>
-        <el-form-item label="关键词">
-          <el-input
-            v-model="query.keyword"
-            clearable
-            placeholder="优惠券名称"
-            style="width: 200px"
-            @keyup.enter="load"
-          />
+        <el-form-item label="名称">
+          <el-input v-model="query.keyword" clearable placeholder="优惠券名称" style="width: 160px" @keyup.enter="load" />
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select v-model="query.type" clearable placeholder="全部" style="width: 120px">
+            <el-option v-for="s in typeOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="query.status" clearable placeholder="全部" style="width: 100px">
+            <el-option label="启用" :value="1" />
+            <el-option label="禁用" :value="0" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
@@ -139,16 +150,22 @@ onMounted(() => {
 
     <div class="page-table">
       <el-table v-loading="loading" :data="tableData" style="width: 100%">
-        <el-table-column prop="name" label="名称" min-width="120" />
-        <el-table-column label="类型" width="90" align="center">
+        <el-table-column prop="name" label="名称" min-width="140" />
+        <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.description || "-" }}
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="100" align="center">
           <template #default="{ row }">
             {{ typeLabel(row.type) }}
           </template>
         </el-table-column>
-        <el-table-column prop="value" label="面值" width="80" align="center" />
-        <el-table-column prop="total_stock" label="库存" width="60" align="center" />
-        <el-table-column prop="remain_stock" label="剩余" width="60" align="center" />
-        <el-table-column label="状态" width="70" align="center">
+        <el-table-column prop="value" label="面值" width="100" align="center" />
+        <el-table-column prop="per_user_limit" label="限领" width="70" align="center" />
+        <el-table-column prop="total_stock" label="库存" width="70" align="center" />
+        <el-table-column prop="remain_stock" label="剩余" width="70" align="center" />
+        <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.is_active ? 'success' : 'info'" size="small">
               {{ row.is_active ? "启用" : "禁用" }}

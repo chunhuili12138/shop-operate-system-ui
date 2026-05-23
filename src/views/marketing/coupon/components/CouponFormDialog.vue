@@ -20,9 +20,10 @@ const typeOptions = ref<{ dict_key: number; dict_value: string; dict_label: stri
 const form = reactive({
   couponId: null as number | null,
   name: "",
+  description: "",
   type: 1,
-  value: "",
-  minOrderAmount: "0",
+  value: 0,
+  minOrderAmount: 0,
   totalStock: 0,
   perUserLimit: 1,
   validDays: 30,
@@ -34,8 +35,7 @@ const rules: FormRules = {
   value: [
     { required: true, message: "请输入面值", trigger: "blur" },
     {
-      validator: (_r, v, cb) =>
-        v !== "" && Number(v) >= 0 ? cb() : cb(new Error("面值不能为负")),
+      validator: (_r, v, cb) => (v !== null && v !== undefined && Number(v) >= 0 ? cb() : cb(new Error("面值不能为负"))),
       trigger: "blur"
     }
   ],
@@ -55,9 +55,10 @@ function resetForm() {
   Object.assign(form, {
     couponId: null,
     name: "",
+    description: "",
     type: 1,
-    value: "",
-    minOrderAmount: "0",
+    value: 0,
+    minOrderAmount: 0,
     totalStock: 0,
     perUserLimit: 1,
     validDays: 30,
@@ -74,9 +75,10 @@ watch(
         Object.assign(form, {
           couponId: props.editRow.id,
           name: props.editRow.name,
+          description: props.editRow.description ?? "",
           type: props.editRow.type,
-          value: props.editRow.value,
-          minOrderAmount: props.editRow.min_order_amount,
+          value: Number(props.editRow.value) || 0,
+          minOrderAmount: Number(props.editRow.min_order_amount) || 0,
           totalStock: props.editRow.total_stock,
           perUserLimit: props.editRow.per_user_limit ?? 1,
           validDays: props.editRow.valid_days,
@@ -133,33 +135,30 @@ onMounted(loadDicts);
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="名称" prop="name">
-        <el-input v-model="form.name" maxlength="100" show-word-limit />
+        <el-input v-model="form.name" maxlength="100" show-word-limit placeholder="请输入优惠券名称" />
+      </el-form-item>
+      <el-form-item label="描述">
+        <el-input v-model="form.description" type="textarea" maxlength="500" show-word-limit placeholder="优惠券使用说明（选填）" />
       </el-form-item>
       <el-form-item label="类型">
-        <el-select v-model="form.type" style="width: 100%">
-          <el-option
-            v-for="s in typeOptions"
-            :key="s.dict_key"
-            :label="s.dict_value"
-            :value="s.dict_key"
-          />
+        <el-select v-model="form.type" style="width: 100%" placeholder="请选择优惠券类型">
+          <el-option v-for="s in typeOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_key" />
         </el-select>
       </el-form-item>
       <el-form-item label="面值" prop="value">
-        <el-input v-model="form.value" placeholder="金额/百分比/兑换值" />
+        <el-input-number v-model="form.value" :min="0" :precision="2" style="width: 100%" placeholder="固定金额/百分比/兑换值" />
       </el-form-item>
       <el-form-item label="最低消费">
-        <el-input v-model="form.minOrderAmount" placeholder="0表示无门槛" />
+        <el-input-number v-model="form.minOrderAmount" :min="0" :precision="2" style="width: 100%" placeholder="0表示无门槛" />
       </el-form-item>
       <el-form-item label="库存">
-        <el-input-number v-model="form.totalStock" :min="0" style="width: 100%" />
+        <el-input-number v-model="form.totalStock" :min="0" style="width: 100%" placeholder="可发放总数量" />
       </el-form-item>
       <el-form-item label="每人限领">
-        <el-input-number v-model="form.perUserLimit" :min="0" style="width: 100%" />
-        <span style="font-size:12px;color:#909399;margin-left:8px">0=不限</span>
+        <el-input-number v-model="form.perUserLimit" :min="0" style="width: 100%" placeholder="0=不限" />
       </el-form-item>
       <el-form-item label="有效期(天)" prop="validDays">
-        <el-input-number v-model="form.validDays" :min="1" style="width: 100%" />
+        <el-input-number v-model="form.validDays" :min="1" style="width: 100%" placeholder="领取后有效天数" />
       </el-form-item>
       <el-form-item label="新人注册发券">
         <el-switch v-model="form.autoGrantOnRegister" :active-value="1" :inactive-value="0" />

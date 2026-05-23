@@ -127,9 +127,10 @@ export interface CouponListResult {
 export interface CouponFormParams {
   couponId?: number | null;
   name: string;
+  description?: string;
   type: number;
-  value: string;
-  minOrderAmount: string;
+  value: number | string;
+  minOrderAmount: number | string;
   totalStock: number;
   perUserLimit?: number;
   validDays: number;
