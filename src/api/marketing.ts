@@ -283,5 +283,5 @@ export interface AvailableCouponQueryParams {
 
 /** 查询顾客当前可用的优惠券 */
 export const getAvailableCoupons = (params: AvailableCouponQueryParams) => {
-  return http.request<ApiResult<AvailableCoupon[]>>("get", "/coupons/available", { params });
+  return http.request<ApiResult<AvailableCoupon[]>>("get", "/couponsAvailable", { params });
 };

@@ -48,17 +48,40 @@ const pageSize = 20;
 const sourceOptions = ref<
   { dict_key: number; dict_value: string; dict_label: string }[]
 >([]);
+const channelOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
+const payMethodOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 const sourceLabel = (key: string) => {
   const found = sourceOptions.value.find(s => s.dict_label === key);
   return found?.dict_value || key || "-";
 };
+const channelLabel = (key: string) => {
+  const found = channelOptions.value.find(s => s.dict_label === key);
+  return found?.dict_value || key || "-";
+};
+const payMethodLabel = (key: string) => {
+  const found = payMethodOptions.value.find(s => s.dict_label === key);
+  return found?.dict_value || key || "-";
+};
+const purchaseTypeLabel = (key: string) => {
+  return key === "recharge" ? "充值" : "购买套餐";
+};
 
 onMounted(async () => {
-  const r = await getDictData({ dictCode: "customer_source" });
-  if (r?.success && Array.isArray(r.data)) {
-    sourceOptions.value = r.data;
-  }
+  const [srcR, chR, pmR] = await Promise.all([
+    getDictData({ dictCode: "customer_source" }),
+    getDictData({ dictCode: "purchase_channel" }),
+    getDictData({ dictCode: "payment_method" })
+  ]);
+  if (srcR?.success && Array.isArray(srcR.data))
+    sourceOptions.value = srcR.data;
+  if (chR?.success && Array.isArray(chR.data)) channelOptions.value = chR.data;
+  if (pmR?.success && Array.isArray(pmR.data))
+    payMethodOptions.value = pmR.data;
 });
 
 watch(
@@ -156,29 +179,68 @@ const openRecharge = async () => {
   rechargeVisible.value = true;
   // 加载该顾客可用的充值券
   try {
-    const r = await getAvailableCoupons({ customerId: props.customerId!, scene: "recharge" } as any);
-    if (r?.success && Array.isArray(r.data)) rechargeCoupons.value = r.data as any;
-  } catch { /* ignore */ }
+    const r = await getAvailableCoupons({
+      customerId: props.customerId!,
+      scene: "recharge"
+    } as any);
+    if (r?.success && Array.isArray(r.data))
+      rechargeCoupons.value = r.data as any;
+  } catch {
+    /* ignore */
+  }
 };
 
 const onRechargeCouponChange = (id: number | undefined) => {
-  if (!id) { rechargeDiscount.value = 0; return; }
+  if (!id) {
+    rechargeDiscount.value = 0;
+    return;
+  }
   const c = rechargeCoupons.value.find(cu => cu.coupon_usage_id === id);
   if (!c) return;
   const amt = rechargeAmount.value || 0;
   let d = 0;
   if (c.type === 1) d = Math.min(Number(c.value), amt);
-  else if (c.type === 2) d = amt * Number(c.value) / 100;
+  else if (c.type === 2) d = (amt * Number(c.value)) / 100;
   else if (c.type === 3) d = amt;
   rechargeDiscount.value = d;
 };
 
 const onRechargeAmountChange = () => {
-  if (rechargeCouponId.value) onRechargeCouponChange(rechargeCouponId.value);
+  // 金额变化后，检查已选券是否仍满足最低消费
+  if (rechargeCouponId.value) {
+    const c = rechargeCoupons.value.find(
+      cu => cu.coupon_usage_id === rechargeCouponId.value
+    );
+    const min = Number(c?.min_order_amount) || 0;
+    if (min > 0 && rechargeAmount.value < min) {
+      rechargeCouponId.value = undefined;
+      rechargeDiscount.value = 0;
+    } else {
+      onRechargeCouponChange(rechargeCouponId.value);
+    }
+  }
 };
 
 const doRecharge = async () => {
-  if (rechargeAmount.value <= 0) { message("请输入充值金额", { type: "warning" }); return; }
+  if (rechargeAmount.value <= 0) {
+    message("请输入充值金额", { type: "warning" });
+    return;
+  }
+  // 前端校验：选券时检查最低消费
+  if (rechargeCouponId.value) {
+    const c = rechargeCoupons.value.find(
+      cu => cu.coupon_usage_id === rechargeCouponId.value
+    );
+    if (c) {
+      const min = Number(c.min_order_amount) || 0;
+      if (min > 0 && rechargeAmount.value < min) {
+        message(`充值金额不满足优惠券最低消费要求（需≥${min}元）`, {
+          type: "warning"
+        });
+        return;
+      }
+    }
+  }
   rechargeLoading.value = true;
   try {
     const r = await rechargeWallet({
@@ -186,7 +248,9 @@ const doRecharge = async () => {
       amount: rechargeAmount.value,
       couponUsageId: rechargeCouponId.value,
       paymentMethod: "other",
-      remark: rechargeCouponId.value ? `充值¥${rechargeAmount.value}（优惠抵扣¥${rechargeDiscount.value}）` : `充值¥${rechargeAmount.value}`
+      remark: rechargeCouponId.value
+        ? `充值¥${rechargeAmount.value}（优惠抵扣¥${rechargeDiscount.value}）`
+        : `充值¥${rechargeAmount.value}`
     });
     if (r?.success) {
       message("充值成功", { type: "success" });
@@ -240,7 +304,7 @@ const purchaseStatusMap: Record<number, string> = {
   <el-drawer
     :model-value="visible"
     title="顾客详情"
-    size="720px"
+    size="1000px"
     @update:model-value="emit('update:visible', $event)"
   >
     <template v-if="customer">
@@ -333,13 +397,51 @@ const purchaseStatusMap: Record<number, string> = {
         <!-- 购买记录 Tab -->
         <el-tab-pane label="购买记录" name="purchases">
           <el-table v-if="purchases.length" :data="purchases" size="small">
-            <el-table-column prop="package_name" label="套餐" min-width="120" />
-            <el-table-column prop="total_amount" label="金额" width="100">
+            <el-table-column label="类型" width="80" align="center">
+              <template #default="{ row }">{{
+                purchaseTypeLabel(row.purchase_type)
+              }}</template>
+            </el-table-column>
+            <el-table-column prop="package_name" label="套餐" min-width="100">
+              <template #default="{ row }">{{
+                row.package_name || "-"
+              }}</template>
+            </el-table-column>
+            <el-table-column
+              prop="total_amount"
+              label="金额"
+              width="90"
+              align="right"
+            >
               <template #default="{ row }">¥{{ row.total_amount }}</template>
             </el-table-column>
-            <el-table-column prop="channel" label="渠道" width="80" />
-            <el-table-column prop="created_at" label="时间" width="160" />
-            <el-table-column label="状态" width="80">
+            <el-table-column label="优惠" width="80" align="right">
+              <template #default="{ row }">
+                <span
+                  v-if="row.coupon_discount > 0"
+                  style="color: var(--el-color-danger)"
+                  >-¥{{ row.coupon_discount }}</span
+                >
+                <span v-else style="color: #909399">-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="实付" width="90" align="right">
+              <template #default="{ row }">
+                <span style="font-weight: 600">¥{{ row.paid_amount }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="支付方式" width="90" align="center">
+              <template #default="{ row }">{{
+                payMethodLabel(row.payment_method)
+              }}</template>
+            </el-table-column>
+            <el-table-column label="渠道" width="80" align="center">
+              <template #default="{ row }">{{
+                channelLabel(row.channel)
+              }}</template>
+            </el-table-column>
+            <el-table-column prop="created_at" label="时间" width="155" />
+            <el-table-column label="状态" width="70" align="center">
               <template #default="{ row }">
                 <el-tag
                   :type="
@@ -459,38 +561,89 @@ const purchaseStatusMap: Record<number, string> = {
       </el-tabs>
 
       <!-- 充值弹窗 -->
-      <el-dialog v-model="rechargeVisible" title="钱包充值" width="480px" :close-on-click-modal="false">
+      <el-dialog
+        v-model="rechargeVisible"
+        title="钱包充值"
+        width="480px"
+        :close-on-click-modal="false"
+      >
         <el-form label-width="100px">
           <el-form-item label="充值金额">
-            <el-input-number v-model="rechargeAmount" :min="0" :precision="2" style="width: 100%" @change="onRechargeAmountChange" />
+            <el-input-number
+              v-model="rechargeAmount"
+              :min="0"
+              :precision="2"
+              style="width: 100%"
+              @change="onRechargeAmountChange"
+            />
           </el-form-item>
           <el-form-item v-if="rechargeCoupons.length > 0" label="优惠券">
-            <el-select v-model="rechargeCouponId" clearable placeholder="不使用优惠券" style="width: 100%" @change="onRechargeCouponChange">
+            <el-select
+              v-model="rechargeCouponId"
+              clearable
+              placeholder="不使用优惠券"
+              style="width: 100%"
+              @change="onRechargeCouponChange"
+            >
               <el-option
                 v-for="cu in rechargeCoupons"
                 :key="cu.coupon_usage_id"
-                :label="cu.name + ' (抵¥' + (cu.type === 1 ? cu.value : cu.type === 2 ? (rechargeAmount * Number(cu.value) / 100).toFixed(2) : rechargeAmount.toFixed(2)) + ')'"
+                :label="
+                  cu.name +
+                  ' (抵¥' +
+                  (cu.type === 1
+                    ? cu.value
+                    : cu.type === 2
+                      ? ((rechargeAmount * Number(cu.value)) / 100).toFixed(2)
+                      : rechargeAmount.toFixed(2)) +
+                  (Number(cu.min_order_amount) > 0
+                    ? ', 满¥' + cu.min_order_amount
+                    : '') +
+                  ')'
+                "
                 :value="cu.coupon_usage_id"
+                :disabled="
+                  Number(cu.min_order_amount) > 0 &&
+                  rechargeAmount < Number(cu.min_order_amount)
+                "
               />
             </el-select>
           </el-form-item>
           <el-divider />
           <el-descriptions :column="1" size="small" border>
-            <el-descriptions-item label="充值金额">¥{{ rechargeAmount.toFixed(2) }}</el-descriptions-item>
+            <el-descriptions-item label="充值金额"
+              >¥{{ rechargeAmount.toFixed(2) }}</el-descriptions-item
+            >
             <el-descriptions-item v-if="rechargeDiscount > 0" label="优惠抵扣">
-              <span style="color: var(--el-color-danger); font-weight: 700">-¥{{ rechargeDiscount.toFixed(2) }}</span>
+              <span style="color: var(--el-color-danger); font-weight: 700"
+                >-¥{{ rechargeDiscount.toFixed(2) }}</span
+              >
             </el-descriptions-item>
             <el-descriptions-item label="实收金额">
-              <span style="font-weight: 700; font-size: 16px">¥{{ (rechargeAmount - rechargeDiscount).toFixed(2) }}</span>
+              <span style="font-weight: 700; font-size: 16px"
+                >¥{{ (rechargeAmount - rechargeDiscount).toFixed(2) }}</span
+              >
             </el-descriptions-item>
             <el-descriptions-item label="钱包到账">
-              <span style="color: var(--el-color-success); font-weight: 700; font-size: 16px">¥{{ rechargeAmount.toFixed(2) }}</span>
+              <span
+                style="
+                  color: var(--el-color-success);
+                  font-weight: 700;
+                  font-size: 16px;
+                "
+                >¥{{ rechargeAmount.toFixed(2) }}</span
+              >
             </el-descriptions-item>
           </el-descriptions>
         </el-form>
         <template #footer>
           <el-button @click="rechargeVisible = false">取消</el-button>
-          <el-button type="primary" :loading="rechargeLoading" @click="doRecharge">确认充值</el-button>
+          <el-button
+            type="primary"
+            :loading="rechargeLoading"
+            @click="doRecharge"
+            >确认充值</el-button
+          >
         </template>
       </el-dialog>
     </template>
