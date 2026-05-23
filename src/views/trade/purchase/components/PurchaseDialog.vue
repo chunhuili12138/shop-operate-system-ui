@@ -169,7 +169,7 @@ const handleSave = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
 
-  if (form.paymentType === "wallet" && walletInfo.value && walletInfo.value.balance < form.totalAmount) {
+  if (form.paymentType === "wallet" && walletInfo.value && walletInfo.value.balance < (form.totalAmount - couponDiscount.value)) {
     message("钱包余额不足", { type: "warning" });
     return;
   }
