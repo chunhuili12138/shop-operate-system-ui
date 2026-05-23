@@ -74,6 +74,29 @@ export interface ShopDashboardData {
   todayOrders?: number;
   todayCheckins?: number;
   todayNewCustomers?: number;
+  todayExpense?: number;
+  monthRevenue?: number;
+  monthExpense?: number;
+  monthCheckins?: number;
+  seatEndDate?: string;
+  seatRemainingDays?: number;
+  pendingRefunds?: number;
+  pendingFeedbacks?: number;
+  activeSessions?: number;
+  todayQueue?: number;
+  warnings?: Array<{ material_name: string; quantity: number; min_stock: number }>;
+  totalCustomers?: number;
+  activeCustomers?: number;
+  walletBalance?: number;
+  channels?: Array<{ channel: string; cnt: number; amount: number }>;
+  topPackages?: Array<{ name: string; type: number; cnt: number }>;
+  trendRevenues?: TrendItem[];
+  trendExpenses?: TrendItem[];
+  staffCheckins?: Array<{ name: string; cnt: number }>;
+  todayAttendCount?: number;
+  avgCustomerPrice?: number;
+  refundRate?: number;
+  returnRate?: number;
 }
 
 export interface DashboardTodayResult {
@@ -114,6 +137,10 @@ export interface DailySnapshotListResult {
 
 export const getDashboardToday = () => {
   return http.request<DashboardTodayResult>("get", "/dashboard/today");
+};
+
+export const getShopDashboard = () => {
+  return http.request<{ success: boolean; data: ShopDashboardData }>("get", "/dashboard/shop");
 };
 
 export const getDailySnapshots = (params?: DailySnapshotQueryParams) => {
