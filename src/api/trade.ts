@@ -91,6 +91,7 @@ export const getGameSessions = (params?: {
   status?: string;
   startDate?: string;
   endDate?: string;
+  keyword?: string;
   page?: number;
   size?: number;
 }) => {
