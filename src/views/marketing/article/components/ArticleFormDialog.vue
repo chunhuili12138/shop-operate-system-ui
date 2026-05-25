@@ -218,6 +218,14 @@ const save = async () => {
     message("请输入文章标题", { type: "warning" });
     return;
   }
+  if (!form.categoryId) {
+    message("请选择文章分类", { type: "warning" });
+    return;
+  }
+  if (!form.coverImage && !coverPendingFile.value) {
+    message("请上传封面图", { type: "warning" });
+    return;
+  }
   saving.value = true;
   try {
     let coverImage = form.coverImage;
@@ -397,11 +405,10 @@ const handleClose = () => {
               <el-form-item label="标题" required>
                 <el-input v-model="form.title" placeholder="请输入文章标题" />
               </el-form-item>
-              <el-form-item label="分类">
+              <el-form-item label="分类" required>
                 <el-select
                   v-model="form.categoryId"
                   placeholder="请选择分类"
-                  clearable
                   style="width: 100%"
                 >
                   <el-option
@@ -419,7 +426,7 @@ const handleClose = () => {
                   <el-option label="视频" :value="2" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="封面图">
+              <el-form-item label="封面图" required>
                 <el-upload
                   ref="coverUploadRef"
                   v-model:file-list="coverFileList"
