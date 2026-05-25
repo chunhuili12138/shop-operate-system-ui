@@ -111,7 +111,6 @@ const openAdd = () => {
 
 const openEdit = async (row: any) => {
   isEdit.value = true;
-  formDialogVisible.value = true;
   currentFormData.value = null;
   loading.value = true;
   try {
@@ -128,13 +127,12 @@ const openEdit = async (row: any) => {
         imageUrls: r.data.image_urls || "",
         videoUrl: r.data.video_url || ""
       };
+      formDialogVisible.value = true;
     } else {
       message(r?.msg || "获取文章详情失败", { type: "warning" });
-      formDialogVisible.value = false;
     }
   } catch {
     message("获取文章详情失败", { type: "error" });
-    formDialogVisible.value = false;
   } finally {
     loading.value = false;
   }

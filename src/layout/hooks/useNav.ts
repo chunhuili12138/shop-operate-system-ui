@@ -39,9 +39,9 @@ export function useNav() {
 
   /** 头像（如果头像为空则使用 src/assets/user.jpg ） */
   const userAvatar = computed(() => {
-    return isAllEmpty(useUserStoreHook()?.avatar)
-      ? Avatar
-      : useUserStoreHook()?.avatar;
+    const av = useUserStoreHook()?.avatar;
+    if (isAllEmpty(av)) return Avatar;
+    return `/api/file/image?name=${encodeURIComponent(av)}`;
   });
 
   /** 昵称（如果昵称为空则显示用户名） */

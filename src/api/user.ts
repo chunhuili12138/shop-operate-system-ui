@@ -73,3 +73,13 @@ export const changeOwnPassword = (data: {
 }) => {
   return http.request<ApiResult>("put", "/auth/password", { data });
 };
+
+/** 上传用户头像 */
+export const uploadUserAvatar = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return http.request<ApiResult<string>>("post", "/file/uploadAvatar", {
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+};
