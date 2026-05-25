@@ -134,7 +134,7 @@ const save = async () => {
             v-for="d in ruleTypeDict"
             :key="d.dict_key"
             :label="d.dict_value"
-            :value="d.dict_key"
+            :value="d.dict_label"
           />
         </el-select>
       </el-form-item>

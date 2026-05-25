@@ -160,7 +160,7 @@ defineExpose({ form });
                 v-for="t in typeOptions"
                 :key="t.dict_key"
                 :label="t.dict_value"
-                :value="t.dict_key"
+                :value="t.dict_label"
               />
             </el-select>
           </el-form-item>

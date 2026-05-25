@@ -61,7 +61,7 @@ onMounted(load);
           <div class="card-left">
             <div class="sign-photo">
               <img
-                v-if="shop.sign_photo"
+                v-if="shop?.sign_photo"
                 :src="`/api/file/image?name=${encodeURIComponent(shop.sign_photo)}`"
                 alt="招牌照片"
               />
@@ -151,20 +151,20 @@ onMounted(load);
 
 <style scoped lang="scss">
 .shop-my {
-  padding: 24px;
   min-height: 100%;
+  padding: 24px;
   background: #f5f6fa;
 }
 
 .shop-card {
-  width: fit-content;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: fit-content;
+  padding: 28px;
   background: #fff;
   border-radius: 10px;
-  padding: 28px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 6%);
 }
 
 /* ---- 上部分：图片+信息 ---- */
@@ -180,14 +180,14 @@ onMounted(load);
 }
 
 .sign-photo {
-  width: 350px;
-  aspect-ratio: 4 / 3;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f0f2f5;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 350px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #f0f2f5;
+  border-radius: 8px;
 
   img {
     width: 100%;
@@ -202,8 +202,8 @@ onMounted(load);
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: #bbb;
   font-size: 14px;
+  color: #bbb;
 }
 
 .created-time {
@@ -227,8 +227,8 @@ onMounted(load);
 
 .info-header {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -259,13 +259,13 @@ onMounted(load);
 .info-label {
   flex-shrink: 0;
   width: 80px;
-  color: #86909c;
   font-size: 14px;
+  color: #86909c;
 }
 
 .info-value {
-  color: #1d2129;
   font-size: 14px;
+  color: #1d2129;
   word-break: break-all;
 }
 
@@ -276,8 +276,8 @@ onMounted(load);
 /* ---- 下部分：时间+按钮 ---- */
 .card-bottom {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding-top: 20px;
   border-top: 1px solid #f0f0f0;
 }
@@ -285,7 +285,7 @@ onMounted(load);
 /* ---- 底部操作按钮 ---- */
 .card-actions {
   display: flex;
-  justify-content: flex-end;
   gap: 10px;
+  justify-content: flex-end;
 }
 </style>

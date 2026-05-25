@@ -624,12 +624,12 @@ const purchaseStatusMap: Record<number, string> = {
               >¥{{ rechargeAmount.toFixed(2) }}</el-descriptions-item
             >
             <el-descriptions-item v-if="rechargeDiscount > 0" label="优惠抵扣">
-              <span style=" font-weight: 700;color: var(--el-color-danger)"
+              <span style="font-weight: 700; color: var(--el-color-danger)"
                 >-¥{{ rechargeDiscount.toFixed(2) }}</span
               >
             </el-descriptions-item>
             <el-descriptions-item label="实收金额">
-              <span style=" font-size: 16px;font-weight: 700"
+              <span style="font-size: 16px; font-weight: 700"
                 >¥{{ (rechargeAmount - rechargeDiscount).toFixed(2) }}</span
               >
             </el-descriptions-item>

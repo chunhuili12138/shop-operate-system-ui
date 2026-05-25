@@ -176,7 +176,7 @@ onMounted(() => {
               v-for="s in typeOptions"
               :key="s.dict_key"
               :label="s.dict_value"
-              :value="s.dict_key"
+              :value="s.dict_label"
             />
           </el-select>
         </el-form-item>

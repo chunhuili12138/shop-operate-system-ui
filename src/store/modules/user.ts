@@ -95,7 +95,7 @@ export const useUserStore = defineStore("pure-user", {
       return new Promise<any>((resolve, reject) => {
         getLogin(data)
           .then(res => {
-            if (res?.success === true) {
+            if (res?.success === true && res.data) {
               const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
               setToken({
                 accessToken: res.data.token,
@@ -138,7 +138,7 @@ export const useUserStore = defineStore("pure-user", {
       return new Promise<any>((resolve, reject) => {
         getUserInfo()
           .then(res => {
-            if (res?.success === true) {
+            if (res?.success === true && res.data) {
               const info = res.data;
               this.SET_USERNAME(info.username);
               this.SET_NICKNAME(info.nickname);

@@ -221,7 +221,7 @@ onMounted(load);
             detailData.average_duration ?? "-"
           }}</el-descriptions-item>
         </el-descriptions>
-        <div v-if="detailData.inventory_warns" style="margin-top: 16px">
+        <div v-if="detailData?.inventory_warns" style="margin-top: 16px">
           <div class="font-medium mb-2">库存预警</div>
           <el-table :data="JSON.parse(detailData.inventory_warns)" size="small">
             <el-table-column prop="name" label="物料" />

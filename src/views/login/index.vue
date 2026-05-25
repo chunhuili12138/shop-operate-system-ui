@@ -86,7 +86,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           captchaValue: ruleForm.captchaValue
         })
         .then(res => {
-          if (res?.success === true) {
+          if (res?.success === true && res.data) {
             return useUserStoreHook()
               .getUserInfoAction()
               .then(() => {
