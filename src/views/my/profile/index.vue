@@ -364,10 +364,13 @@ const savePwd = async () => {
 
 .avatar-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
   cursor: pointer;
   border: 3px solid #e4e7ed;
-  border-radius: 50%;
+  border-radius: 100px;
   transition: border-color 0.2s;
 
   &:hover {
