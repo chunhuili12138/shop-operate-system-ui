@@ -60,3 +60,16 @@ export const refreshTokenApi = (data?: object) => {
 export const getUserInfo = () => {
   return http.request<ApiResult>("get", "/auth/info");
 };
+
+/** 更新个人信息 */
+export const updateProfile = (data: { name?: string; phone?: string }) => {
+  return http.request<ApiResult>("put", "/auth/profile", { data });
+};
+
+/** 修改密码 */
+export const changeOwnPassword = (data: {
+  oldPassword: string;
+  newPassword: string;
+}) => {
+  return http.request<ApiResult>("put", "/auth/password", { data });
+};

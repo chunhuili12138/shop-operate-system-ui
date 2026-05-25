@@ -9,12 +9,15 @@ import { getParentPaths, findRouteByPath } from "@/router/utils";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import LaySidebarExtraIcon from "../lay-sidebar/components/SidebarExtraIcon.vue";
 import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
+import ProfileDialog from "@/components/ProfileDialog/index.vue";
 
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
+import EpUser from "~icons/ep/user";
 
 const menuRef = ref();
 const defaultActive = ref(null);
+const profileVisible = ref(false);
 
 const {
   route,
@@ -105,6 +108,10 @@ watch(
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
+            <el-dropdown-item @click="profileVisible = true">
+              <IconifyIconOffline :icon="EpUser" style="margin: 5px" />
+              个人中心
+            </el-dropdown-item>
             <el-dropdown-item @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
@@ -123,6 +130,8 @@ watch(
         <IconifyIconOffline :icon="Setting" />
       </span>
     </div>
+
+    <ProfileDialog v-model:visible="profileVisible" />
   </div>
 </template>
 

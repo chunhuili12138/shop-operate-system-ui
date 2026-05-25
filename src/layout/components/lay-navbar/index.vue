@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useNav } from "@/layout/hooks/useNav";
 import LaySearch from "../lay-search/index.vue";
 import LayNotice from "../lay-notice/index.vue";
@@ -7,10 +7,12 @@ import LayNavMix from "../lay-sidebar/NavMix.vue";
 import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
 import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vue";
 import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
+import ProfileDialog from "@/components/ProfileDialog/index.vue";
 
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
 import ShopIcon from "~icons/ri/store-2-line";
+import EpUser from "~icons/ep/user";
 import { useUserStoreHook } from "@/store/modules/user";
 
 const {
@@ -26,6 +28,7 @@ const {
 } = useNav();
 
 const userStore = useUserStoreHook();
+const profileVisible = ref(false);
 const currentShopName = computed(() => {
   const shop = userStore.shops?.find(
     (s: any) => s.id === userStore.currentShopId
@@ -91,6 +94,10 @@ const currentShopName = computed(() => {
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
+            <el-dropdown-item @click="profileVisible = true">
+              <IconifyIconOffline :icon="EpUser" style="margin: 5px" />
+              个人中心
+            </el-dropdown-item>
             <el-dropdown-item @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
@@ -109,6 +116,9 @@ const currentShopName = computed(() => {
         <IconifyIconOffline :icon="Setting" />
       </span>
     </div>
+
+    <!-- 个人中心 -->
+    <ProfileDialog v-model:visible="profileVisible" />
   </div>
 </template>
 

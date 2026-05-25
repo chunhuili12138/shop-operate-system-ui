@@ -23,6 +23,7 @@ export const useUserStore = defineStore("pure-user", {
     avatar: storageLocal().getItem<DataInfo<number>>(userKey)?.avatar ?? "",
     username: storageLocal().getItem<DataInfo<number>>(userKey)?.username ?? "",
     nickname: storageLocal().getItem<DataInfo<number>>(userKey)?.nickname ?? "",
+    phone: storageLocal().getItem<DataInfo<number>>(userKey)?.phone ?? "",
     roles: storageLocal().getItem<DataInfo<number>>(userKey)?.roles ?? [],
     permissions:
       storageLocal().getItem<DataInfo<number>>(userKey)?.permissions ?? [],
@@ -44,6 +45,9 @@ export const useUserStore = defineStore("pure-user", {
     },
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
+    },
+    SET_PHONE(phone: string) {
+      this.phone = phone;
     },
     SET_ROLES(roles: Array<string>) {
       this.roles = roles;
@@ -123,6 +127,7 @@ export const useUserStore = defineStore("pure-user", {
               this.SET_USERNAME(info.username);
               this.SET_NICKNAME(info.nickname);
               this.SET_AVATAR(info.avatar || "");
+              this.SET_PHONE(info.phone || "");
               this.SET_ROLES(info.roles || []);
               this.SET_PERMS(info.buttons || []);
               this.SET_SHOPS(info.shops || []);
@@ -135,6 +140,7 @@ export const useUserStore = defineStore("pure-user", {
               saved.avatar = info.avatar || "";
               saved.username = info.username;
               saved.nickname = info.nickname;
+              saved.phone = info.phone || "";
               saved.roles = info.roles || [];
               saved.permissions = info.buttons || [];
               saved.shops = info.shops || [];
