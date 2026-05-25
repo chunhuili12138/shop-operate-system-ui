@@ -7,7 +7,9 @@ import {
   updateCustomer,
   type CustomerFormParams
 } from "@/api/customer";
+import { uploadUserAvatar } from "@/api/user";
 import { getDictData } from "@/api/system";
+import EpPlus from "~icons/ep/plus";
 
 const props = defineProps<{
   visible: boolean;
@@ -42,6 +44,37 @@ const form = reactive<CustomerFormParams & { source?: string }>({
 });
 
 const tagList = ref<string[]>([]);
+
+// ---- 头像 ----
+const avatarUploadRef = ref();
+const avatarPending = ref<File | null>(null);
+const avatarList = ref<any[]>([]);
+const avatarUrl = ref("");
+
+const handleAvatarChange = (uploadFile: any, uploadFiles: any[]) => {
+  const raw = uploadFile.raw as File;
+  if (!raw) return;
+  if (
+    !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(raw.type)
+  ) {
+    message("仅支持 jpg/png/gif/webp 格式", { type: "warning" });
+    avatarUploadRef.value?.clearFiles();
+    return;
+  }
+  if (raw.size / 1024 / 1024 > 5) {
+    message("头像大小不能超过 5MB", { type: "warning" });
+    avatarUploadRef.value?.clearFiles();
+    return;
+  }
+  avatarPending.value = raw;
+  avatarList.value = uploadFiles;
+};
+
+const handleAvatarRemove = () => {
+  avatarPending.value = null;
+  avatarList.value = [];
+  avatarUrl.value = "";
+};
 
 const rules: FormRules = {
   nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
@@ -86,6 +119,15 @@ watch(
         tagList.value = props.data.tags
           ? props.data.tags.split(",").filter(t => t.trim())
           : [];
+        avatarUrl.value = props.data.avatar_url || "";
+        avatarList.value = avatarUrl.value
+          ? [
+              {
+                name: avatarUrl.value,
+                url: `/api/file/image?name=${encodeURIComponent(avatarUrl.value)}`
+              }
+            ]
+          : [];
       } else {
         Object.assign(form, {
           customersId: null,
@@ -98,6 +140,9 @@ watch(
           source: "offline"
         });
         tagList.value = [];
+        avatarUrl.value = "";
+        avatarList.value = [];
+        avatarPending.value = null;
       }
       formRef.value?.clearValidate();
     }
@@ -111,13 +156,24 @@ const handleSubmit = async () => {
   if (!valid) return;
   loading.value = true;
   try {
+    let av = avatarUrl.value;
+    if (avatarPending.value) {
+      const up: any = await uploadUserAvatar(avatarPending.value);
+      if (up?.success && up.data) av = up.data;
+      else {
+        message(up?.msg || "头像上传失败", { type: "warning" });
+        return;
+      }
+    }
     const submitData = {
       ...form,
-      tags: tagList.value.join(",")
+      tags: tagList.value.join(","),
+      avatarUrl: av || undefined
     } as CustomerFormParams;
     const api = props.mode === "add" ? addCustomer : updateCustomer;
     const r = await api(submitData);
     if (r?.success) {
+      avatarPending.value = null;
       message(props.mode === "add" ? "新增成功" : "编辑成功", {
         type: "success"
       });
@@ -143,6 +199,22 @@ defineExpose({ reloadTags });
     @update:model-value="handleClose"
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+      <el-form-item label="头像">
+        <el-upload
+          ref="avatarUploadRef"
+          v-model:file-list="avatarList"
+          list-type="picture-card"
+          :limit="1"
+          :auto-upload="false"
+          :on-change="handleAvatarChange"
+          :on-remove="handleAvatarRemove"
+          :on-exceed="() => message('最多1张头像', { type: 'warning' })"
+          :class="{ hideUploadBtn: avatarList.length >= 1 }"
+          accept="image/*"
+        >
+          <EpPlus />
+        </el-upload>
+      </el-form-item>
       <el-form-item label="昵称" prop="nickname">
         <el-input
           v-model="form.nickname"
@@ -228,3 +300,9 @@ defineExpose({ reloadTags });
     </template>
   </el-dialog>
 </template>
+
+<style scoped lang="scss">
+:deep(.hideUploadBtn .el-upload--picture-card) {
+  display: none;
+}
+</style>

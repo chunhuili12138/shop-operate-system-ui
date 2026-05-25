@@ -44,6 +44,7 @@ export interface CustomerFormParams {
   customersId?: number | null;
   nickname: string;
   phone: string;
+  avatarUrl?: string;
   gender?: number | null;
   birthday?: string;
   source?: string;

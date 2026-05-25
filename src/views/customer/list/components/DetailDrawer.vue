@@ -310,7 +310,16 @@ const purchaseStatusMap: Record<number, string> = {
     <template v-if="customer">
       <!-- 基本信息区 -->
       <div class="mb-4 flex items-start gap-4">
-        <el-avatar :size="56" :src="customer.avatar_url" />
+        <el-avatar
+          :size="56"
+          :src="
+            customer.avatar_url
+              ? customer.avatar_url.startsWith('http')
+                ? customer.avatar_url
+                : `/api/file/image?name=${encodeURIComponent(customer.avatar_url)}`
+              : undefined
+          "
+        />
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-lg font-semibold">{{
@@ -615,21 +624,21 @@ const purchaseStatusMap: Record<number, string> = {
               >¥{{ rechargeAmount.toFixed(2) }}</el-descriptions-item
             >
             <el-descriptions-item v-if="rechargeDiscount > 0" label="优惠抵扣">
-              <span style="color: var(--el-color-danger); font-weight: 700"
+              <span style=" font-weight: 700;color: var(--el-color-danger)"
                 >-¥{{ rechargeDiscount.toFixed(2) }}</span
               >
             </el-descriptions-item>
             <el-descriptions-item label="实收金额">
-              <span style="font-weight: 700; font-size: 16px"
+              <span style=" font-size: 16px;font-weight: 700"
                 >¥{{ (rechargeAmount - rechargeDiscount).toFixed(2) }}</span
               >
             </el-descriptions-item>
             <el-descriptions-item label="钱包到账">
               <span
                 style="
-                  color: var(--el-color-success);
-                  font-weight: 700;
                   font-size: 16px;
+                  font-weight: 700;
+                  color: var(--el-color-success);
                 "
                 >¥{{ rechargeAmount.toFixed(2) }}</span
               >

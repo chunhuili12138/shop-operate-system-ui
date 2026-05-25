@@ -198,6 +198,20 @@ onMounted(() => {
         <template #empty>
           <el-empty description="暂无顾客数据" :image-size="80" />
         </template>
+        <el-table-column label="头像" width="60" align="center">
+          <template #default="{ row }">
+            <el-avatar
+              :size="36"
+              :src="
+                row.avatar_url
+                  ? row.avatar_url.startsWith('http')
+                    ? row.avatar_url
+                    : `/api/file/image?name=${encodeURIComponent(row.avatar_url)}`
+                  : undefined
+              "
+            />
+          </template>
+        </el-table-column>
         <el-table-column prop="nickname" label="昵称" width="200">
           <template #default="{ row }">
             <el-button link type="primary" @click="openDetail(row)">
