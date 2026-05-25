@@ -259,13 +259,17 @@ onMounted(() => {
         />
         <el-table-column label="价格" width="130" align="right">
           <template #default="{ row }">
-            <template v-if="row.original_price && row.original_price > row.price">
-              <span class="text-xs text-dim line-through">¥{{ Number(row.original_price).toFixed(2) }}</span>
-              <span class="ml-1" style="color: var(--el-color-danger)">¥{{ Number(row.price).toFixed(2) }}</span>
+            <template
+              v-if="row.original_price && row.original_price > row.price"
+            >
+              <span class="text-xs text-dim line-through"
+                >¥{{ Number(row.original_price).toFixed(2) }}</span
+              >
+              <span class="ml-1" style="color: var(--el-color-danger)"
+                >¥{{ Number(row.price).toFixed(2) }}</span
+              >
             </template>
-            <template v-else>
-              ¥{{ Number(row.price).toFixed(2) }}
-            </template>
+            <template v-else> ¥{{ Number(row.price).toFixed(2) }} </template>
           </template>
         </el-table-column>
         <el-table-column

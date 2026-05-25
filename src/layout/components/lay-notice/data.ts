@@ -20,8 +20,18 @@ export interface TabItem {
 }
 
 const staticTabs = {
-  notice: { key: "1", name: "通知", list: [] as ListItem[], emptyText: "暂无通知" },
-  message: { key: "2", name: "消息", list: [] as ListItem[], emptyText: "暂无消息" }
+  notice: {
+    key: "1",
+    name: "通知",
+    list: [] as ListItem[],
+    emptyText: "暂无通知"
+  },
+  message: {
+    key: "2",
+    name: "消息",
+    list: [] as ListItem[],
+    emptyText: "暂无消息"
+  }
 };
 
 const deepClone = (obj: any) => JSON.parse(JSON.stringify(obj));

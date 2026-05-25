@@ -27,7 +27,9 @@ const {
 
 const userStore = useUserStoreHook();
 const currentShopName = computed(() => {
-  const shop = userStore.shops?.find((s: any) => s.id === userStore.currentShopId);
+  const shop = userStore.shops?.find(
+    (s: any) => s.id === userStore.currentShopId
+  );
   return shop?.name || "";
 });
 </script>
@@ -50,15 +52,28 @@ const currentShopName = computed(() => {
 
     <div v-if="layout === 'vertical'" class="vertical-header-right">
       <!-- 店铺切换（非超管且有多个店铺时显示） -->
-      <el-dropdown v-if="!userStore.superAdmin && userStore.shops?.length > 1" trigger="click" @command="(id:number)=>userStore.switchShop(id)">
-        <span class="navbar-bg-hover flex items-center gap-1 px-2 cursor-pointer text-sm">
+      <el-dropdown
+        v-if="!userStore.superAdmin && userStore.shops?.length > 1"
+        trigger="click"
+        @command="(id: number) => userStore.switchShop(id)"
+      >
+        <span
+          class="navbar-bg-hover flex items-center gap-1 px-2 cursor-pointer text-sm"
+        >
           <IconifyIconOffline :icon="ShopIcon" />
-          <span>{{currentShopName || '选择店铺'}}</span>
+          <span>{{ currentShopName || "选择店铺" }}</span>
         </span>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item v-for="s in userStore.shops" :key="s.id" :command="s.id"
-              :class="{'font-bold text-primary': s.id === userStore.currentShopId}">{{s.name}}</el-dropdown-item>
+            <el-dropdown-item
+              v-for="s in userStore.shops"
+              :key="s.id"
+              :command="s.id"
+              :class="{
+                'font-bold text-primary': s.id === userStore.currentShopId
+              }"
+              >{{ s.name }}</el-dropdown-item
+            >
           </el-dropdown-menu>
         </template>
       </el-dropdown>

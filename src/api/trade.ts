@@ -49,7 +49,11 @@ export interface AddPurchaseParams {
 }
 
 export const getPurchaseList = (params?: PurchaseQueryParams) => {
-  return http.request<ApiResult<PageResult<PurchaseRecord>>>("get", "/purchases", { params });
+  return http.request<ApiResult<PageResult<PurchaseRecord>>>(
+    "get",
+    "/purchases",
+    { params }
+  );
 };
 
 export const addPurchase = (data: AddPurchaseParams) => {
@@ -90,13 +94,21 @@ export const getGameSessions = (params?: {
   page?: number;
   size?: number;
 }) => {
-  return http.request<ApiResult<PageResult<GameSession>>>("get", "/gameSessions/list", { params });
+  return http.request<ApiResult<PageResult<GameSession>>>(
+    "get",
+    "/gameSessions/list",
+    { params }
+  );
 };
 
 export const getAvailableSessions = (customersId: number) => {
-  return http.request<ApiResult<AvailableSession[]>>("get", "/gameSessions/available", {
-    params: { customersId }
-  });
+  return http.request<ApiResult<AvailableSession[]>>(
+    "get",
+    "/gameSessions/available",
+    {
+      params: { customersId }
+    }
+  );
 };
 
 export const getGameSessionInfo = (gameSessionId: number) => {
@@ -105,12 +117,17 @@ export const getGameSessionInfo = (gameSessionId: number) => {
   });
 };
 
-export const checkin = (data: { customersId: number; customerSessionId: number }) => {
+export const checkin = (data: {
+  customersId: number;
+  customerSessionId: number;
+}) => {
   return http.request<ApiResult>("post", "/gameSessionsCheckin", { data });
 };
 
 export const finishGameSession = (gameSessionId: number) => {
-  return http.request<ApiResult>("put", "/gameSessionsFinish", { data: { gameSessionId } });
+  return http.request<ApiResult>("put", "/gameSessionsFinish", {
+    data: { gameSessionId }
+  });
 };
 
 // ============= 退款管理 =============
@@ -154,16 +171,28 @@ export const getRefundList = (params?: {
   startDate?: string;
   endDate?: string;
 }) => {
-  return http.request<ApiResult<PageResult<RefundRecord>>>("get", "/purchasesRefunds", { params });
+  return http.request<ApiResult<PageResult<RefundRecord>>>(
+    "get",
+    "/purchasesRefunds",
+    { params }
+  );
 };
 
 export const getRefundPreview = (purchaseId: number) => {
-  return http.request<ApiResult<RefundPreview>>("get", "/purchasesRefundsPreview", {
-    params: { purchaseId }
-  });
+  return http.request<ApiResult<RefundPreview>>(
+    "get",
+    "/purchasesRefundsPreview",
+    {
+      params: { purchaseId }
+    }
+  );
 };
 
-export const applyRefund = (purchaseId: number, reason: string, refundAmount: number) => {
+export const applyRefund = (
+  purchaseId: number,
+  reason: string,
+  refundAmount: number
+) => {
   return http.request<ApiResult>("post", "/purchasesRefundsApply", {
     data: { purchaseId, reason, refundAmount: refundAmount.toFixed(2) }
   });
@@ -193,7 +222,11 @@ export interface CustomerSessionDetail {
 }
 
 export const getPurchaseSessions = (purchaseId: number) => {
-  return http.request<ApiResult<CustomerSessionDetail[]>>("get", "/gameSessions/sessions", {
-    params: { purchaseId }
-  });
+  return http.request<ApiResult<CustomerSessionDetail[]>>(
+    "get",
+    "/gameSessions/sessions",
+    {
+      params: { purchaseId }
+    }
+  );
 };

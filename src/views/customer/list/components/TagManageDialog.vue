@@ -29,7 +29,10 @@ const form = ref({
 const loadData = async () => {
   loading.value = true;
   try {
-    const r = await getDictData({ dictCode: "customer_tag", shopId: props.shopId });
+    const r = await getDictData({
+      dictCode: "customer_tag",
+      shopId: props.shopId
+    });
     if (r?.success) {
       const allTags = r.data || [];
       // 优先展示本店标签，后台 GET /system/dict/data 已按 shop_id=0 OR shop_id=?
@@ -46,7 +49,12 @@ const loadData = async () => {
   }
 };
 
-watch(() => props.visible, v => { if (v) loadData(); });
+watch(
+  () => props.visible,
+  v => {
+    if (v) loadData();
+  }
+);
 
 const openAdd = () => {
   isEdit.value = false;
@@ -56,13 +64,19 @@ const openAdd = () => {
 
 const openEdit = (row: any) => {
   isEdit.value = true;
-  form.value = { id: row.id, dictLabel: row.dict_label, dictValue: row.dict_value };
+  form.value = {
+    id: row.id,
+    dictLabel: row.dict_label,
+    dictValue: row.dict_value
+  };
   dialogVisible.value = true;
 };
 
 const handleDelete = async (row: any) => {
   try {
-    await ElMessageBox.confirm(`确认删除标签"${row.dict_value}"？`, "提示", { type: "warning" });
+    await ElMessageBox.confirm(`确认删除标签"${row.dict_value}"？`, "提示", {
+      type: "warning"
+    });
   } catch {
     return;
   }
@@ -84,19 +98,28 @@ const handleSave = async () => {
   }
   // 前端校验同 dict_code + shop_id 下不重复
   const dup = tableData.value.find(
-    (t: any) => t.id !== id && (t.dict_label === dictLabel.trim() || t.dict_value === dictValue.trim())
+    (t: any) =>
+      t.id !== id &&
+      (t.dict_label === dictLabel.trim() || t.dict_value === dictValue.trim())
   );
   if (dup) {
-    if (dup.dict_label === dictLabel.trim()) message("该编码已存在", { type: "warning" });
+    if (dup.dict_label === dictLabel.trim())
+      message("该编码已存在", { type: "warning" });
     else message("该名称已存在", { type: "warning" });
     return;
   }
   let r: any;
   if (isEdit.value) {
-    r = await updateDict({ id: id!, dictLabel: dictLabel.trim(), dictValue: dictValue.trim() } as any);
+    r = await updateDict({
+      id: id!,
+      dictLabel: dictLabel.trim(),
+      dictValue: dictValue.trim()
+    } as any);
   } else {
-    const maxKey = tableData.value.length > 0
-      ? Math.max(...tableData.value.map((t: any) => t.dict_key)) : 0;
+    const maxKey =
+      tableData.value.length > 0
+        ? Math.max(...tableData.value.map((t: any) => t.dict_key))
+        : 0;
     r = await addDict({
       dictCode: "customer_tag",
       dictKey: maxKey + 1,
@@ -125,9 +148,16 @@ const handleSave = async () => {
     @update:model-value="emit('update:visible', $event)"
   >
     <div class="mb-3">
-      <el-button type="primary" size="small" @click="openAdd">+ 新增标签</el-button>
+      <el-button type="primary" size="small" @click="openAdd"
+        >+ 新增标签</el-button
+      >
     </div>
-    <el-table v-loading="loading" :data="tableData" size="small" max-height="400">
+    <el-table
+      v-loading="loading"
+      :data="tableData"
+      size="small"
+      max-height="400"
+    >
       <template #empty>
         <el-empty description="暂无标签" :image-size="60" />
       </template>
@@ -148,15 +178,22 @@ const handleSave = async () => {
             type="primary"
             size="small"
             @click="openEdit(row)"
-          >编辑</el-button>
-          <span v-else class="text-xs" style="color: var(--el-text-color-placeholder)">全局</span>
+            >编辑</el-button
+          >
+          <span
+            v-else
+            class="text-xs"
+            style="color: var(--el-text-color-placeholder)"
+            >全局</span
+          >
           <el-button
             v-if="row.shop_id !== 0"
             link
             type="danger"
             size="small"
             @click="handleDelete(row)"
-          >删除</el-button>
+            >删除</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
@@ -170,10 +207,18 @@ const handleSave = async () => {
     >
       <el-form :model="form" label-width="80px">
         <el-form-item label="编码">
-          <el-input v-model="form.dictLabel" placeholder="如 vip" maxlength="30" />
+          <el-input
+            v-model="form.dictLabel"
+            placeholder="如 vip"
+            maxlength="30"
+          />
         </el-form-item>
         <el-form-item label="名称">
-          <el-input v-model="form.dictValue" placeholder="如 VIP" maxlength="30" />
+          <el-input
+            v-model="form.dictValue"
+            placeholder="如 VIP"
+            maxlength="30"
+          />
         </el-form-item>
       </el-form>
       <template #footer>

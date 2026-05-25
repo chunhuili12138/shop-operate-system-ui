@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 // ========== 库存管理相关 ==========
 
@@ -63,7 +63,9 @@ export interface InventoryTransactionListResult {
 
 /** 获取库存列表 */
 export const getInventoryList = (params?: InventoryQueryParams) => {
-  return http.request<InventoryListResult>("get", "/inventory/page", { params });
+  return http.request<InventoryListResult>("get", "/inventory/page", {
+    params
+  });
 };
 
 /** 获取库存预警列表 */
@@ -82,8 +84,14 @@ export const inventoryOutbound = (data: InventoryIoParams) => {
 };
 
 /** 获取库存流水 */
-export const getInventoryTransactions = (params?: InventoryTransactionQueryParams) => {
-  return http.request<InventoryTransactionListResult>("get", "/inventoryTransactions", { params });
+export const getInventoryTransactions = (
+  params?: InventoryTransactionQueryParams
+) => {
+  return http.request<InventoryTransactionListResult>(
+    "get",
+    "/inventoryTransactions",
+    { params }
+  );
 };
 
 // ========== 物料管理相关 ==========
@@ -148,8 +156,8 @@ export const updateMaterial = (data: MaterialFormParams) => {
 
 /** 删除物料 */
 export const deleteMaterial = (materialId: number) => {
-  return http.request<ApiResult>("delete", "/materialsDelete", { 
-    params: { materialId } 
+  return http.request<ApiResult>("delete", "/materialsDelete", {
+    params: { materialId }
   });
 };
 
@@ -257,13 +265,15 @@ export interface PurchaseOrderItemListResult {
 
 /** 获取采购单列表 */
 export const getPurchaseOrderList = (params?: PurchaseOrderQueryParams) => {
-  return http.request<PurchaseOrderListResult>("get", "/purchaseOrders", { params });
+  return http.request<PurchaseOrderListResult>("get", "/purchaseOrders", {
+    params
+  });
 };
 
 /** 获取供应商列表 */
 export const getSupplierList = (page = 1, size = 999) => {
-  return http.request<SupplierListResult>("get", "/suppliers", { 
-    params: { page, size } 
+  return http.request<SupplierListResult>("get", "/suppliers", {
+    params: { page, size }
   });
 };
 
@@ -290,15 +300,21 @@ export const addPurchaseOrder = (data: PurchaseOrderFormParams) => {
 };
 
 /** 更新采购单状态 */
-export const updatePurchaseOrderStatus = (data: UpdatePurchaseOrderStatusParams) => {
+export const updatePurchaseOrderStatus = (
+  data: UpdatePurchaseOrderStatusParams
+) => {
   return http.request<ApiResult>("put", "/purchaseOrdersStatus", { data });
 };
 
 /** 获取采购明细 */
 export const getPurchaseOrderItems = (orderId: number) => {
-  return http.request<PurchaseOrderItemListResult>("get", "/purchaseOrdersItems", { 
-    params: { orderId } 
-  });
+  return http.request<PurchaseOrderItemListResult>(
+    "get",
+    "/purchaseOrdersItems",
+    {
+      params: { orderId }
+    }
+  );
 };
 
 /** 采购单付款 */

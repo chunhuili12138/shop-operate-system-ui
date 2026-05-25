@@ -3,12 +3,7 @@ import { ref, onMounted, reactive, watch } from "vue";
 import { message } from "@/utils/message";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessageBox } from "element-plus";
-import {
-  getDictList,
-  addDict,
-  updateDict,
-  deleteDict
-} from "@/api/system";
+import { getDictList, addDict, updateDict, deleteDict } from "@/api/system";
 
 defineOptions({ name: "SystemDict" });
 
@@ -93,9 +88,7 @@ const save = async () => {
   await formRef.value.validate(async valid => {
     if (!valid) return;
 
-    const r = isEdit.value
-      ? await updateDict(form)
-      : await addDict(form);
+    const r = isEdit.value ? await updateDict(form) : await addDict(form);
     if (r?.success) {
       message("保存成功", { type: "success" });
       dialogVisible.value = false;
@@ -236,14 +229,16 @@ onMounted(loadCodes);
 .page-container {
   height: 100%;
 }
+
 .page-split-sidebar {
   height: 100%;
   overflow: hidden;
 }
+
 .page-card {
-  height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 </style>

@@ -3,7 +3,10 @@ import type { SubscriptionDistribution } from "@/api/dashboard";
 
 const props = defineProps<{ data: SubscriptionDistribution }>();
 
-const fmt = (v: number) => (v >= 10000 ? `¥${(v / 10000).toFixed(1)}万` : `¥${Number(v).toLocaleString()}`);
+const fmt = (v: number) =>
+  v >= 10000
+    ? `¥${(v / 10000).toFixed(1)}万`
+    : `¥${Number(v).toLocaleString()}`;
 </script>
 
 <template>
@@ -28,22 +31,34 @@ const fmt = (v: number) => (v >= 10000 ? `¥${(v / 10000).toFixed(1)}万` : `¥$
 }
 
 .sub-item {
-  flex: 1;
-  padding: 8px 10px;
-  border-radius: 4px;
-  background: #fafafa;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 2px;
-  &.monthly { border-left: 2px solid #667eea; }
-  &.yearly { border-left: 2px solid #4facfe; }
+  padding: 8px 10px;
+  background: #fafafa;
+  border-radius: 4px;
+
+  &.monthly {
+    border-left: 2px solid #667eea;
+  }
+
+  &.yearly {
+    border-left: 2px solid #4facfe;
+  }
 }
 
 .sub-tag {
   font-size: 11px;
   font-weight: 600;
-  .monthly & { color: #667eea; }
-  .yearly & { color: #4facfe; }
+
+  .monthly & {
+    color: #667eea;
+  }
+
+  .yearly & {
+    color: #4facfe;
+  }
 }
 
 .sub-num {

@@ -84,7 +84,11 @@ export interface ShopDashboardData {
   pendingFeedbacks?: number;
   activeSessions?: number;
   todayQueue?: number;
-  warnings?: Array<{ material_name: string; quantity: number; min_stock: number }>;
+  warnings?: Array<{
+    material_name: string;
+    quantity: number;
+    min_stock: number;
+  }>;
   totalCustomers?: number;
   activeCustomers?: number;
   walletBalance?: number;
@@ -140,7 +144,10 @@ export const getDashboardToday = () => {
 };
 
 export const getShopDashboard = () => {
-  return http.request<{ success: boolean; data: ShopDashboardData }>("get", "/dashboard/shop");
+  return http.request<{ success: boolean; data: ShopDashboardData }>(
+    "get",
+    "/dashboard/shop"
+  );
 };
 
 export const getDailySnapshots = (params?: DailySnapshotQueryParams) => {
@@ -157,6 +164,11 @@ export interface ShopRevenueTrendResult {
   };
 }
 
-export const getShopRevenueTrend = (params: { startDate: string; endDate: string }) => {
-  return http.request<ShopRevenueTrendResult>("get", "/dashboard/revenue", { params });
+export const getShopRevenueTrend = (params: {
+  startDate: string;
+  endDate: string;
+}) => {
+  return http.request<ShopRevenueTrendResult>("get", "/dashboard/revenue", {
+    params
+  });
 };

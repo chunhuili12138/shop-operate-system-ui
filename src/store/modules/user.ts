@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import {
-  type userType,
   store,
   router,
   resetRouter,
@@ -32,8 +31,7 @@ export const useUserStore = defineStore("pure-user", {
     superAdmin:
       storageLocal().getItem<DataInfo<number>>(userKey)?.superAdmin ?? false,
     userId: null as number | null,
-    shops:
-      storageLocal().getItem<DataInfo<number>>(userKey)?.shops ?? [],
+    shops: storageLocal().getItem<DataInfo<number>>(userKey)?.shops ?? [],
     /** 当前选中的店铺ID（超管为null） */
     currentShopId: getCurrentShopId()
   }),

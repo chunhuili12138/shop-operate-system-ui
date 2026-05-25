@@ -23,7 +23,12 @@ const ioForm = reactive<InventoryIoParams & { materialName?: string }>({
 });
 
 // 打开出入库弹窗
-const open = (type: number, materialId: string, materialName: string, stock: number) => {
+const open = (
+  type: number,
+  materialId: string,
+  materialName: string,
+  stock: number
+) => {
   ioType.value = type;
   currentStock.value = stock;
   ioForm.materialId = materialId;
@@ -39,7 +44,9 @@ const doIo = async () => {
     return;
   }
   if (ioType.value === 2 && ioForm.quantity > currentStock.value) {
-    message(`出库数量不能大于当前库存(${currentStock.value})`, { type: "warning" });
+    message(`出库数量不能大于当前库存(${currentStock.value})`, {
+      type: "warning"
+    });
     return;
   }
   if (ioType.value === 2 && !ioForm.remark?.trim()) {
@@ -89,8 +96,14 @@ defineExpose({ open });
           style="width: 100%"
         />
       </el-form-item>
-      <el-form-item :label="ioType === 1 ? '备注' : '出库原因'" :required="ioType === 2">
-        <el-input v-model="ioForm.remark" :placeholder="ioType === 1 ? '可选备注' : '请填写出库原因/用途'" />
+      <el-form-item
+        :label="ioType === 1 ? '备注' : '出库原因'"
+        :required="ioType === 2"
+      >
+        <el-input
+          v-model="ioForm.remark"
+          :placeholder="ioType === 1 ? '可选备注' : '请填写出库原因/用途'"
+        />
       </el-form-item>
     </el-form>
     <template #footer>

@@ -11,12 +11,19 @@ const props = defineProps<{
   visible: boolean;
   editRow: any | null;
 }>();
-const emit = defineEmits<{ (e: "update:visible", v: boolean): void; (e: "submit"): void }>();
+const emit = defineEmits<{
+  (e: "update:visible", v: boolean): void;
+  (e: "submit"): void;
+}>();
 
 const formRef = ref<FormInstance>();
 const loading = ref(false);
-const typeOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
-const sceneOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const typeOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
+const sceneOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 const form = reactive({
   couponId: null as number | null,
@@ -37,14 +44,18 @@ const rules: FormRules = {
   value: [
     { required: true, message: "请输入面值", trigger: "blur" },
     {
-      validator: (_r, v, cb) => (v !== null && v !== undefined && Number(v) >= 0 ? cb() : cb(new Error("面值不能为负"))),
+      validator: (_r, v, cb) =>
+        v !== null && v !== undefined && Number(v) >= 0
+          ? cb()
+          : cb(new Error("面值不能为负")),
       trigger: "blur"
     }
   ],
   validDays: [
     { required: true, message: "请输入有效期", trigger: "blur" },
     {
-      validator: (_r, v, cb) => (v > 0 ? cb() : cb(new Error("有效期必须大于0"))),
+      validator: (_r, v, cb) =>
+        v > 0 ? cb() : cb(new Error("有效期必须大于0")),
       trigger: "blur"
     }
   ]
@@ -143,44 +154,108 @@ onMounted(loadDicts);
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="120px">
       <el-form-item label="名称" prop="name">
-        <el-input v-model="form.name" maxlength="100" show-word-limit placeholder="请输入优惠券名称" />
+        <el-input
+          v-model="form.name"
+          maxlength="100"
+          show-word-limit
+          placeholder="请输入优惠券名称"
+        />
       </el-form-item>
       <el-form-item label="描述">
-        <el-input v-model="form.description" type="textarea" maxlength="500" show-word-limit placeholder="优惠券使用说明（选填）" />
+        <el-input
+          v-model="form.description"
+          type="textarea"
+          maxlength="500"
+          show-word-limit
+          placeholder="优惠券使用说明（选填）"
+        />
       </el-form-item>
       <el-form-item label="类型">
-        <el-select v-model="form.type" style="width: 100%" placeholder="请选择优惠券类型">
-          <el-option v-for="s in typeOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_key" />
+        <el-select
+          v-model="form.type"
+          style="width: 100%"
+          placeholder="请选择优惠券类型"
+        >
+          <el-option
+            v-for="s in typeOptions"
+            :key="s.dict_key"
+            :label="s.dict_value"
+            :value="s.dict_key"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="使用场景">
-        <el-select v-model="form.useScene" style="width: 100%" placeholder="请选择使用场景">
-          <el-option v-for="s in sceneOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_label" />
+        <el-select
+          v-model="form.useScene"
+          style="width: 100%"
+          placeholder="请选择使用场景"
+        >
+          <el-option
+            v-for="s in sceneOptions"
+            :key="s.dict_key"
+            :label="s.dict_value"
+            :value="s.dict_label"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="面值" prop="value">
-        <el-input-number v-model="form.value" :min="0" :precision="2" style="width: 100%" placeholder="固定金额/百分比/兑换值" />
+        <el-input-number
+          v-model="form.value"
+          :min="0"
+          :precision="2"
+          style="width: 100%"
+          placeholder="固定金额/百分比/兑换值"
+        />
       </el-form-item>
       <el-form-item label="最低消费">
-        <el-input-number v-model="form.minOrderAmount" :min="0" :precision="2" style="width: 100%" placeholder="0表示无门槛" />
+        <el-input-number
+          v-model="form.minOrderAmount"
+          :min="0"
+          :precision="2"
+          style="width: 100%"
+          placeholder="0表示无门槛"
+        />
       </el-form-item>
       <el-form-item label="库存">
-        <el-input-number v-model="form.totalStock" :min="0" style="width: 100%" placeholder="可发放总数量" />
+        <el-input-number
+          v-model="form.totalStock"
+          :min="0"
+          style="width: 100%"
+          placeholder="可发放总数量"
+        />
       </el-form-item>
       <el-form-item label="每人限领">
-        <el-input-number v-model="form.perUserLimit" :min="0" style="width: 100%" placeholder="0=不限" />
+        <el-input-number
+          v-model="form.perUserLimit"
+          :min="0"
+          style="width: 100%"
+          placeholder="0=不限"
+        />
       </el-form-item>
       <el-form-item label="有效期(天)" prop="validDays">
-        <el-input-number v-model="form.validDays" :min="1" style="width: 100%" placeholder="领取后有效天数" />
+        <el-input-number
+          v-model="form.validDays"
+          :min="1"
+          style="width: 100%"
+          placeholder="领取后有效天数"
+        />
       </el-form-item>
       <el-form-item label="新人注册发券">
-        <el-switch v-model="form.autoGrantOnRegister" :active-value="1" :inactive-value="0" />
-        <span style="font-size:12px;color:#909399;margin-left:8px">绑手机号后自动发放</span>
+        <el-switch
+          v-model="form.autoGrantOnRegister"
+          :active-value="1"
+          :inactive-value="0"
+        />
+        <span style=" margin-left: 8px;font-size: 12px; color: #909399"
+          >绑手机号后自动发放</span
+        >
       </el-form-item>
     </el-form>
     <template #footer>
       <el-button @click="emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" :loading="loading" @click="save">保存</el-button>
+      <el-button type="primary" :loading="loading" @click="save"
+        >保存</el-button
+      >
     </template>
   </el-dialog>
 </template>

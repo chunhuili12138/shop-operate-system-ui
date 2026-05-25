@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 // 租户列表查询参数
 export interface TenantQueryParams {
@@ -54,13 +54,15 @@ export interface BanStatusParams {
 
 /** 获取租户列表 */
 export const getTenantList = (params?: TenantQueryParams) => {
-  return http.request<TenantListResult>("get", "/admin/tenants/page", { params });
+  return http.request<TenantListResult>("get", "/admin/tenants/page", {
+    params
+  });
 };
 
 /** 删除租户 */
 export const deleteTenant = (staffId: number) => {
-  return http.request<ApiResult>("delete", "/admin/tenants/delete", { 
-    params: { staffId } 
+  return http.request<ApiResult>("delete", "/admin/tenants/delete", {
+    params: { staffId }
   });
 };
 
@@ -81,8 +83,8 @@ export const updateTenant = (data: TenantFormParams) => {
 
 /** 重置租户密码 */
 export const resetTenantPassword = (staffId: number, newPassword: string) => {
-  return http.request<ApiResult>("post", "/admin/tenants/password", { 
-    data: { staffId, newPassword } 
+  return http.request<ApiResult>("post", "/admin/tenants/password", {
+    data: { staffId, newPassword }
   });
 };
 
@@ -139,15 +141,15 @@ export interface SeatRenewParams {
 
 /** 获取席位列表 */
 export const getSeatList = (staffId: number) => {
-  return http.request<SeatListResult>("get", "/admin/tenants/seatList", { 
-    params: { staffId } 
+  return http.request<SeatListResult>("get", "/admin/tenants/seatList", {
+    params: { staffId }
   });
 };
 
 /** 获取未绑定店铺的席位 */
 export const getUnboundSeats = (staffId?: number) => {
-  return http.request<UnboundSeatResult>("get", "/admin/tenants/unboundSeats", { 
-    params: staffId ? { staffId } : {} 
+  return http.request<UnboundSeatResult>("get", "/admin/tenants/unboundSeats", {
+    params: staffId ? { staffId } : {}
   });
 };
 
@@ -163,8 +165,8 @@ export const renewSeat = (data: SeatRenewParams) => {
 
 /** 删除席位 */
 export const deleteSeat = (seatId: number) => {
-  return http.request<ApiResult>("delete", "/admin/tenants/seatDelete", { 
-    params: { seatId } 
+  return http.request<ApiResult>("delete", "/admin/tenants/seatDelete", {
+    params: { seatId }
   });
 };
 
@@ -198,12 +200,20 @@ export interface RefundParams {
 
 /** 获取席位流水列表 */
 export const getTransactionList = (staffId: number) => {
-  return http.request<TransactionListResult>("get", "/admin/tenants/subscriptionTransactionList", { 
-    params: { staffId } 
-  });
+  return http.request<TransactionListResult>(
+    "get",
+    "/admin/tenants/subscriptionTransactionList",
+    {
+      params: { staffId }
+    }
+  );
 };
 
 /** 席位流水退款 */
 export const refundTransaction = (data: RefundParams) => {
-  return http.request<ApiResult>("put", "/admin/tenants/subscriptionTransactionRefund", { data });
+  return http.request<ApiResult>(
+    "put",
+    "/admin/tenants/subscriptionTransactionRefund",
+    { data }
+  );
 };

@@ -49,9 +49,7 @@ const openEdit = (row: any) => {
 };
 
 const save = async () => {
-  const r = isEdit.value 
-    ? await updateRole(form)
-    : await addRole(form);
+  const r = isEdit.value ? await updateRole(form) : await addRole(form);
   if (r?.success) {
     message("保存成功", { type: "success" });
     formDialog.value = false;
@@ -63,10 +61,7 @@ const save = async () => {
 
 const openPerms = async (role: any) => {
   currentRole.value = role;
-  const [r1, r2] = await Promise.all([
-    getPermissionList(),
-    getRoleList()
-  ]);
+  const [r1, r2] = await Promise.all([getPermissionList(), getRoleList()]);
   if (r1?.success) permTree.value = r1.data;
   if (r2?.success) {
     const info = r2.data.find((x: any) => x.id === role.id);
@@ -97,9 +92,7 @@ onMounted(loadData);
     <div class="page-header">
       <div class="page-header-actions">
         <div>
-          <el-button type="primary" @click="openAdd">
-            + 新增角色
-          </el-button>
+          <el-button type="primary" @click="openAdd"> + 新增角色 </el-button>
         </div>
         <div />
       </div>
@@ -107,7 +100,7 @@ onMounted(loadData);
 
     <!-- 表格区 -->
     <div class="page-table">
-      <el-table :data="tableData"  style="width: 100%">
+      <el-table :data="tableData" style="width: 100%">
         <el-table-column prop="name" label="角色名" width="180" />
         <el-table-column prop="description" label="描述" min-width="200">
           <template #default="{ row }">
@@ -116,7 +109,12 @@ onMounted(loadData);
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="perm_count" label="权限数" width="80" align="center" />
+        <el-table-column
+          prop="perm_count"
+          label="权限数"
+          width="80"
+          align="center"
+        />
         <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">

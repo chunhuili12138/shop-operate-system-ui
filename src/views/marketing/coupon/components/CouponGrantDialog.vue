@@ -2,7 +2,11 @@
 import { ref, watch, computed, nextTick } from "vue";
 import { ElMessageBox } from "element-plus";
 import { message } from "@/utils/message";
-import { grantCoupon, grantCouponBatch, getGrantPreview } from "@/api/marketing";
+import {
+  grantCoupon,
+  grantCouponBatch,
+  getGrantPreview
+} from "@/api/marketing";
 import { getCustomerList } from "@/api/customer";
 import { getDictData } from "@/api/dict";
 
@@ -17,7 +21,10 @@ const props = defineProps<{
   remainStock: number;
   perUserLimit: number;
 }>();
-const emit = defineEmits<{ (e: "update:visible", v: boolean): void; (e: "submit"): void }>();
+const emit = defineEmits<{
+  (e: "update:visible", v: boolean): void;
+  (e: "submit"): void;
+}>();
 
 // ===== 通用 =====
 const mode = ref<"manual" | "batch">("manual");
@@ -34,12 +41,18 @@ const manualTotal = ref(0);
 const selectedMap = ref<Record<number, any>>({});
 const selectedCount = computed(() => Object.keys(selectedMap.value).length);
 
-const typeLabel = computed(() => ["", "固定金额", "百分比", "兑换券"][props.couponType] || "");
+const typeLabel = computed(
+  () => ["", "固定金额", "百分比", "兑换券"][props.couponType] || ""
+);
 
 const loadCustomers = async () => {
   tableLoading.value = true;
   try {
-    const r = await getCustomerList({ page: manualPage.value, size: manualSize.value, keyword: keyword.value || undefined });
+    const r = await getCustomerList({
+      page: manualPage.value,
+      size: manualSize.value,
+      keyword: keyword.value || undefined
+    });
     if (r?.success) {
       customers.value = r.data?.list || [];
       manualTotal.value = r.data?.total || 0;
@@ -52,7 +65,9 @@ const loadCustomers = async () => {
 const handleSelect = (rows: any[]) => {
   // 增量更新 selectedMap，保留跨页已选
   const newMap: Record<number, any> = {};
-  rows.forEach(r => { newMap[r.id] = r; });
+  rows.forEach(r => {
+    newMap[r.id] = r;
+  });
   // 当前页不在 rows 中的，从 map 移除
   const currentPageIds = new Set(customers.value.map((c: any) => c.id));
   Object.keys(selectedMap.value).forEach(id => {
@@ -76,7 +91,11 @@ const doManualGrant = async () => {
       await ElMessageBox.confirm(
         `当前优惠券每人限领 ${props.perUserLimit} 张，确定发放给 ${ids.length} 位顾客吗？`,
         "温馨提示",
-        { confirmButtonText: "继续发放", cancelButtonText: "取消", type: "warning" }
+        {
+          confirmButtonText: "继续发放",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
       );
     } catch {
       return;
@@ -84,7 +103,10 @@ const doManualGrant = async () => {
   }
   loading.value = true;
   try {
-    const r = await grantCoupon({ couponId: props.couponId, customerIds: ids.join(",") });
+    const r = await grantCoupon({
+      couponId: props.couponId,
+      customerIds: ids.join(",")
+    });
     if (r?.success) {
       message("已发放 " + ids.length + " 张", { type: "success" });
       emit("update:visible", false);
@@ -102,13 +124,19 @@ const doManualGrant = async () => {
 // ===== 按条件发放模式 =====
 const batchTags = ref<string[]>([]);
 const batchSource = ref("");
-const tagOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
-const sourceOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const tagOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
+const sourceOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 const previewList = ref<any[]>([]);
 const previewLoading = ref(false);
 const batchTableRef = ref<any>();
 const batchSelectedMap = ref<Record<number, any>>({});
-const batchSelectedCount = computed(() => Object.keys(batchSelectedMap.value).length);
+const batchSelectedCount = computed(
+  () => Object.keys(batchSelectedMap.value).length
+);
 
 const loadDicts = async () => {
   try {
@@ -118,7 +146,9 @@ const loadDicts = async () => {
     ]);
     if (tR?.success && Array.isArray(tR.data)) tagOptions.value = tR.data;
     if (sR?.success && Array.isArray(sR.data)) sourceOptions.value = sR.data;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 };
 
 loadDicts();
@@ -151,7 +181,9 @@ const doPreview = async () => {
 
 const handleBatchSelect = (rows: any[]) => {
   const newMap: Record<number, any> = {};
-  rows.forEach(r => { newMap[r.id] = r; });
+  rows.forEach(r => {
+    newMap[r.id] = r;
+  });
   batchSelectedMap.value = newMap;
 };
 
@@ -174,9 +206,15 @@ const doBatchGrant = async () => {
       await ElMessageBox.confirm(
         `当前优惠券每人限领 ${props.perUserLimit} 张，确定发放给 ${ids.length} 位顾客吗？`,
         "温馨提示",
-        { confirmButtonText: "继续发放", cancelButtonText: "取消", type: "warning" }
+        {
+          confirmButtonText: "继续发放",
+          cancelButtonText: "取消",
+          type: "warning"
+        }
       );
-    } catch { return; }
+    } catch {
+      return;
+    }
   }
   loading.value = true;
   try {
@@ -186,7 +224,9 @@ const doBatchGrant = async () => {
     });
     if (r?.success) {
       const d = r.data;
-      message(`发放完成：成功 ${d.granted} 人，跳过 ${d.skipped} 人`, { type: "success" });
+      message(`发放完成：成功 ${d.granted} 人，跳过 ${d.skipped} 人`, {
+        type: "success"
+      });
       emit("update:visible", false);
       emit("submit");
     } else {
@@ -228,14 +268,33 @@ watch(
     <!-- 优惠券信息 -->
     <div class="coupon-info">
       <el-descriptions :column="3" size="small" border>
-        <el-descriptions-item label="优惠券">{{ couponName }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ typeLabel }}</el-descriptions-item>
-        <el-descriptions-item label="面值">{{ couponType === 2 ? couponValue + '%' : '¥' + couponValue }}</el-descriptions-item>
-        <el-descriptions-item label="每人限领">{{ perUserLimit === 0 ? '不限' : perUserLimit + '张' }}</el-descriptions-item>
+        <el-descriptions-item label="优惠券">{{
+          couponName
+        }}</el-descriptions-item>
+        <el-descriptions-item label="类型">{{
+          typeLabel
+        }}</el-descriptions-item>
+        <el-descriptions-item label="面值">{{
+          couponType === 2 ? couponValue + "%" : "¥" + couponValue
+        }}</el-descriptions-item>
+        <el-descriptions-item label="每人限领">{{
+          perUserLimit === 0 ? "不限" : perUserLimit + "张"
+        }}</el-descriptions-item>
         <el-descriptions-item label="剩余库存">
-          <span :style="{ color: remainStock === 0 ? '#f56c6c' : '#67c23a', fontWeight: 700 }">{{ remainStock }}</span>
+          <span
+            :style="{
+              color: remainStock === 0 ? '#f56c6c' : '#67c23a',
+              fontWeight: 700
+            }"
+            >{{ remainStock }}</span
+          >
         </el-descriptions-item>
-        <el-descriptions-item label="有效期">{{ '领取后' + (couponType === 0 ? '' : '') }} 天</el-descriptions-item>
+        <el-descriptions-item label="有效期"
+          >{{
+            "领取后" + (couponType === 0 ? "" : "")
+          }}
+          天</el-descriptions-item
+        >
       </el-descriptions>
     </div>
 
@@ -249,7 +308,9 @@ watch(
     <template v-if="mode === 'manual'">
       <!-- 已选标签区 -->
       <div v-if="selectedCount > 0" class="selected-area">
-        <span style="font-size:13px;color:#606266;margin-right:8px">已选 {{ selectedCount }} 人</span>
+        <span style=" margin-right: 8px;font-size: 13px; color: #606266"
+          >已选 {{ selectedCount }} 人</span
+        >
         <el-tag
           v-for="(item, id) in selectedMap"
           :key="id"
@@ -260,16 +321,34 @@ watch(
         >
           {{ item.nickname || item.phone || id }}
         </el-tag>
-        <el-button link type="danger" size="small" @click="clearSelected">清空</el-button>
+        <el-button link type="danger" size="small" @click="clearSelected"
+          >清空</el-button
+        >
       </div>
 
       <!-- 搜索栏 -->
       <el-form inline>
         <el-form-item>
-          <el-input v-model="keyword" clearable placeholder="搜索姓名/手机号" style="width: 200px" @keyup.enter="manualPage = 1; loadCustomers()" />
+          <el-input
+            v-model="keyword"
+            clearable
+            placeholder="搜索姓名/手机号"
+            style="width: 200px"
+            @keyup.enter="
+              manualPage = 1;
+              loadCustomers();
+            "
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="manualPage = 1; loadCustomers()">查询</el-button>
+          <el-button
+            type="primary"
+            @click="
+              manualPage = 1;
+              loadCustomers();
+            "
+            >查询</el-button
+          >
         </el-form-item>
       </el-form>
 
@@ -283,7 +362,11 @@ watch(
         row-key="id"
         @selection-change="handleSelect"
       >
-        <el-table-column type="selection" width="40" :reserve-selection="true" />
+        <el-table-column
+          type="selection"
+          width="40"
+          :reserve-selection="true"
+        />
         <el-table-column prop="nickname" label="姓名" min-width="100">
           <template #default="{ row }">{{ row.nickname || "-" }}</template>
         </el-table-column>
@@ -302,7 +385,7 @@ watch(
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
         size="small"
-        style="margin-top: 8px; justify-content: flex-end"
+        style=" justify-content: flex-end;margin-top: 8px"
         @size-change="loadCustomers"
         @current-change="loadCustomers"
       />
@@ -312,17 +395,44 @@ watch(
     <template v-if="mode === 'batch'">
       <el-form label-width="80px" style="margin-top: 4px">
         <el-form-item label="顾客标签">
-          <el-select v-model="batchTags" multiple filterable placeholder="选择标签（可多选）" style="width: 100%" collapse-tags>
-            <el-option v-for="t in tagOptions" :key="t.dict_key" :label="t.dict_value" :value="t.dict_value" />
+          <el-select
+            v-model="batchTags"
+            multiple
+            filterable
+            placeholder="选择标签（可多选）"
+            style="width: 100%"
+            collapse-tags
+          >
+            <el-option
+              v-for="t in tagOptions"
+              :key="t.dict_key"
+              :label="t.dict_value"
+              :value="t.dict_value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="顾客来源">
-          <el-select v-model="batchSource" clearable placeholder="不限来源" style="width: 100%">
-            <el-option v-for="s in sourceOptions" :key="s.dict_key" :label="s.dict_value" :value="s.dict_label" />
+          <el-select
+            v-model="batchSource"
+            clearable
+            placeholder="不限来源"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="s in sourceOptions"
+              :key="s.dict_key"
+              :label="s.dict_value"
+              :value="s.dict_label"
+            />
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :disabled="batchTags.length === 0 && !batchSource" :loading="previewLoading" @click="doPreview">
+          <el-button
+            type="primary"
+            :disabled="batchTags.length === 0 && !batchSource"
+            :loading="previewLoading"
+            @click="doPreview"
+          >
             查询顾客
           </el-button>
         </el-form-item>
@@ -331,13 +441,15 @@ watch(
       <!-- 预览结果 -->
       <template v-if="previewList.length > 0">
         <div class="selected-area">
-          <span style="font-size:13px;color:#606266;margin-right:8px">待发放 {{ batchSelectedCount }} 人</span>
+          <span style=" margin-right: 8px;font-size: 13px; color: #606266"
+            >待发放 {{ batchSelectedCount }} 人</span
+          >
           <el-tag
             v-for="(item, id) in batchSelectedMap"
             :key="id"
             closable
             size="small"
-            style="margin:2px 4px"
+            style="margin: 2px 4px"
             @close="removeBatch(Number(id))"
           >
             {{ item.nickname || item.phone || id }}
@@ -351,7 +463,11 @@ watch(
           row-key="id"
           @selection-change="handleBatchSelect"
         >
-          <el-table-column type="selection" width="40" :selectable="(row: any) => row.canGrant" />
+          <el-table-column
+            type="selection"
+            width="40"
+            :selectable="(row: any) => row.canGrant"
+          />
           <el-table-column prop="nickname" label="姓名" min-width="100">
             <template #default="{ row }">{{ row.nickname || "-" }}</template>
           </el-table-column>
@@ -364,7 +480,7 @@ watch(
           <el-table-column label="可发放" width="70" align="center">
             <template #default="{ row }">
               <el-tag :type="row.canGrant ? 'success' : 'warning'" size="small">
-                {{ row.canGrant ? '可' : '已满' }}
+                {{ row.canGrant ? "可" : "已满" }}
               </el-tag>
             </template>
           </el-table-column>
@@ -401,15 +517,16 @@ watch(
 .coupon-info {
   margin-bottom: 4px;
 }
+
 .selected-area {
-  padding: 8px 12px;
-  background: #f5f7fa;
-  border-radius: 4px;
-  margin-bottom: 12px;
-  min-height: 32px;
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
   gap: 2px;
+  align-items: center;
+  min-height: 32px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  background: #f5f7fa;
+  border-radius: 4px;
 }
 </style>

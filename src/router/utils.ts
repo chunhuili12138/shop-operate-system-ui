@@ -357,8 +357,10 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
         }
       } else if (v.component === "") {
         // 如果没有 component，则根据 path 查找（注意：null 不触发，避免给目录路由错误分配组件）
-        const index = modulesRoutesKeys.findIndex(ev =>
-          ev.includes(v.path) && (ev.endsWith("/index.vue") || ev.endsWith("/index.tsx"))
+        const index = modulesRoutesKeys.findIndex(
+          ev =>
+            ev.includes(v.path) &&
+            (ev.endsWith("/index.vue") || ev.endsWith("/index.tsx"))
         );
         if (index >= 0) {
           v.component = modulesRoutes[modulesRoutesKeys[index]];

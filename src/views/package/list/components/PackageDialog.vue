@@ -89,7 +89,11 @@ watch(
     if (v) {
       loadMaterials();
       if (props.formData) {
-        Object.assign(form, { ...props.formData, originalPrice: props.formData.original_price ?? null, bom: [] as BomItem[] });
+        Object.assign(form, {
+          ...props.formData,
+          originalPrice: props.formData.original_price ?? null,
+          bom: [] as BomItem[]
+        });
         if (props.isEdit && props.formData.packageId) {
           loadBom(props.formData.packageId);
         }

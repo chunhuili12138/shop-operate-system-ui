@@ -20,7 +20,13 @@ const emit = defineEmits<{
 const isEdit = computed(() => !!props.ruleData);
 const ruleTypeDict = ref<any[]>([]);
 const roleList = ref<any[]>([]);
-const form = reactive({ ruleId: 0, roleId: "", ruleType: 1, value: 0, description: "" });
+const form = reactive({
+  ruleId: 0,
+  roleId: "",
+  ruleType: 1,
+  value: 0,
+  description: ""
+});
 
 const valuePlaceholder = computed(() => {
   if (form.ruleType === 1) return "每场提成金额，如 10 = 每场提成 10 元";
@@ -29,8 +35,10 @@ const valuePlaceholder = computed(() => {
 });
 
 const valueTip = computed(() => {
-  if (form.ruleType === 1) return "每核销一场提成该金额，如填 10 则每场得 10 元";
-  if (form.ruleType === 2) return "按核销流水收入百分比提成，如填 5 则提流水的 5%";
+  if (form.ruleType === 1)
+    return "每核销一场提成该金额，如填 10 则每场得 10 元";
+  if (form.ruleType === 2)
+    return "按核销流水收入百分比提成，如填 5 则提流水的 5%";
   return "每月固定金额提成，与核销次数无关";
 });
 
@@ -38,34 +46,52 @@ const loadDicts = async () => {
   try {
     const r = await getDictData("commission_rule_type");
     if (r?.success && Array.isArray(r.data)) ruleTypeDict.value = r.data;
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   try {
     const rl = await getRoleList();
     if (rl?.success && Array.isArray(rl.data)) {
       roleList.value = rl.data.filter((r: any) => r.id !== 2 && r.id !== 3);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 };
 
-watch(() => props.visible, (v) => {
-  if (v) {
-    if (!ruleTypeDict.value.length || !roleList.value.length) loadDicts();
-    if (props.ruleData) {
-      Object.assign(form, {
-        ruleId: props.ruleData.id,
-        roleId: String(props.ruleData.role_id || ""),
-        ruleType: props.ruleData.rule_type,
-        value: Number(props.ruleData.value || 0),
-        description: props.ruleData.description || ""
-      });
-    } else {
-      Object.assign(form, { ruleId: 0, roleId: "", ruleType: 1, value: 0, description: "" });
+watch(
+  () => props.visible,
+  v => {
+    if (v) {
+      if (!ruleTypeDict.value.length || !roleList.value.length) loadDicts();
+      if (props.ruleData) {
+        Object.assign(form, {
+          ruleId: props.ruleData.id,
+          roleId: String(props.ruleData.role_id || ""),
+          ruleType: props.ruleData.rule_type,
+          value: Number(props.ruleData.value || 0),
+          description: props.ruleData.description || ""
+        });
+      } else {
+        Object.assign(form, {
+          ruleId: 0,
+          roleId: "",
+          ruleType: 1,
+          value: 0,
+          description: ""
+        });
+      }
     }
   }
-});
+);
 
 const save = async () => {
-  const data: any = { ruleId: form.ruleId, ruleType: form.ruleType, value: form.value, description: form.description };
+  const data: any = {
+    ruleId: form.ruleId,
+    ruleType: form.ruleType,
+    value: form.value,
+    description: form.description
+  };
   const r = isEdit.value
     ? await updateCommissionRule(data)
     : await addCommissionRule({ roleId: form.roleId, ...data } as any);
@@ -89,21 +115,43 @@ const save = async () => {
   >
     <el-form :model="form" label-width="100px">
       <el-form-item v-if="!isEdit" label="角色" required>
-        <el-select v-model="form.roleId" placeholder="选择角色" style="width:100%">
-          <el-option v-for="r in roleList" :key="r.id" :label="r.name" :value="r.id" />
+        <el-select
+          v-model="form.roleId"
+          placeholder="选择角色"
+          style="width: 100%"
+        >
+          <el-option
+            v-for="r in roleList"
+            :key="r.id"
+            :label="r.name"
+            :value="r.id"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="类型" required>
-        <el-select v-model="form.ruleType" style="width:100%">
-          <el-option v-for="d in ruleTypeDict" :key="d.dict_key" :label="d.dict_value" :value="d.dict_key" />
+        <el-select v-model="form.ruleType" style="width: 100%">
+          <el-option
+            v-for="d in ruleTypeDict"
+            :key="d.dict_key"
+            :label="d.dict_value"
+            :value="d.dict_key"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="值" required>
         <el-input-number
-          v-model="form.value" :min="0" :precision="2"
-          :placeholder="valuePlaceholder" style="width:100%"
+          v-model="form.value"
+          :min="0"
+          :precision="2"
+          :placeholder="valuePlaceholder"
+          style="width: 100%"
         />
-        <el-text type="info" size="small" style="margin-top:4px;display:block">{{ valueTip }}</el-text>
+        <el-text
+          type="info"
+          size="small"
+          style="display: block; margin-top: 4px"
+          >{{ valueTip }}</el-text
+        >
       </el-form-item>
       <el-form-item label="描述">
         <el-input v-model="form.description" placeholder="备注说明" />

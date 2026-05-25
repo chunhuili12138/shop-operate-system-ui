@@ -37,7 +37,6 @@ export const TokenKey = "authorized-token";
  * */
 export const multipleTabsKey = "multiple-tabs";
 
-
 /** 获取`token` */
 export function getToken(): DataInfo<number> | null {
   const cookieStr = Cookies.get(TokenKey);
@@ -76,7 +75,14 @@ export function setToken(data: DataInfo<Date>) {
       : {}
   );
 
-  function setUserKey({ avatar, username, nickname, roles, permissions, shops }) {
+  function setUserKey({
+    avatar,
+    username,
+    nickname,
+    roles,
+    permissions,
+    shops
+  }) {
     useUserStoreHook().SET_AVATAR(avatar);
     useUserStoreHook().SET_USERNAME(username);
     useUserStoreHook().SET_NICKNAME(nickname);
@@ -139,7 +145,10 @@ export function removeToken() {
  *  - 超管/无店铺: "Bearer {token}"（空格分隔）
  *  - 有店铺:     "Bearer-{shopId}-{token}"（横线分隔，后端TokenInterceptor解析）
  */
-export const formatToken = (token: string, shopId?: number | string): string => {
+export const formatToken = (
+  token: string,
+  shopId?: number | string
+): string => {
   if (shopId) {
     return `Bearer-${shopId}-${token}`;
   }
@@ -169,5 +178,3 @@ export const hasPerms = (value: string | Array<string>): boolean => {
     : isIncludeAllChildren(value, permissions);
   return isAuths ? true : false;
 };
-
-

@@ -23,7 +23,9 @@ export const createDictItem = (data?: any) => {
 };
 
 export const updateDictItem = (id: number | string, data?: any) => {
-  return http.request<Result>("put", "/system/dict/update", { data: { ...data, id } });
+  return http.request<Result>("put", "/system/dict/update", {
+    data: { ...data, id }
+  });
 };
 
 export const deleteDictItem = (id: number | string) => {

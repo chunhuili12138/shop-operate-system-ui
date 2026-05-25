@@ -48,7 +48,9 @@ function hoverDescription(event, description) {
 </script>
 
 <template>
-  <div class="notice-container border-0 border-b-[1px] border-solid border-[#f0f0f0] dark:border-[#303030]">
+  <div
+    class="notice-container border-0 border-b-[1px] border-solid border-[#f0f0f0] dark:border-[#303030]"
+  >
     <el-avatar
       v-if="noticeItem.avatar"
       :size="30"
@@ -65,7 +67,11 @@ function hoverDescription(event, description) {
           placement="top-start"
           :enterable="!isMobile"
         >
-          <div ref="titleRef" class="notice-title-content" @mouseover="hoverTitle">
+          <div
+            ref="titleRef"
+            class="notice-title-content"
+            @mouseover="hoverTitle"
+          >
             {{ noticeItem.title }}
           </div>
         </el-tooltip>
@@ -98,10 +104,13 @@ function hoverDescription(event, description) {
         {{ noticeItem.datetime }}
         <el-button
           v-if="(noticeItem as any).unread && onRead"
-          link type="primary" size="small"
-          style="margin-left:8px"
+          link
+          type="primary"
+          size="small"
+          style="margin-left: 8px"
           @click="onRead(noticeItem.id!)"
-        >标为已读</el-button>
+          >标为已读</el-button
+        >
       </div>
     </div>
   </div>

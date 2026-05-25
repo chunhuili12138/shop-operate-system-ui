@@ -15,6 +15,12 @@ const total = ref(0);
 
 const query = reactive({ keyword: "", isPublished: "" as any });
 
+const contentTypeMap: Record<number, string> = {
+  1: "图片",
+  2: "视频",
+  3: "富文本"
+};
+
 // ---- 文章表单对话框 ----
 const formDialogVisible = ref(false);
 const isEdit = ref(false);
@@ -27,11 +33,15 @@ const load = async () => {
     const r = await getArticleList({
       page: page.value,
       size: size.value,
-      ...query
+      keyword: query.keyword || undefined,
+      isPublished: query.isPublished !== "" ? query.isPublished : undefined
     });
-    if (r?.success) {
-      tableData.value = r.data.list;
-      total.value = r.data.total;
+    if (r?.success && r.data) {
+      tableData.value = r.data.list || [];
+      total.value = r.data.total || 0;
+    } else {
+      tableData.value = [];
+      total.value = 0;
     }
   } catch (error) {
     console.error("加载文章列表失败:", error);
@@ -68,7 +78,8 @@ const openEdit = (row: any) => {
     title: row.title,
     content: row.content,
     coverImage: row.cover_image,
-    contentType: row.content_type
+    contentType: row.content_type,
+    isPublished: row.is_published
   };
   formDialogVisible.value = true;
 };
@@ -127,9 +138,20 @@ onMounted(() => {
           <el-input
             v-model="query.keyword"
             clearable
-            placeholder="请输入关键词"
+            placeholder="标题/内容"
             @keyup.enter="load"
           />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select
+            v-model="query.isPublished"
+            clearable
+            placeholder="全部"
+            style="width: 100px"
+          >
+            <el-option label="已发布" :value="1" />
+            <el-option label="草稿" :value="0" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
@@ -152,16 +174,31 @@ onMounted(() => {
         border
         style="width: 100%"
       >
-        <el-table-column prop="title" label="标题" show-overflow-tooltip />
-        <el-table-column label="发布" width="80">
+        <el-table-column
+          prop="title"
+          label="标题"
+          show-overflow-tooltip
+          min-width="160"
+        />
+        <el-table-column label="分类" width="100">
+          <template #default="{ row }">
+            <span>{{ row.category_name || "-" }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="80">
+          <template #default="{ row }">
+            <el-tag>{{ contentTypeMap[row.content_type] || "富文本" }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="80">
           <template #default="{ row }">
             <el-tag :type="row.is_published ? 'success' : 'info'">
-              {{ row.is_published ? "已发布" : "下架" }}
+              {{ row.is_published ? "已发布" : "草稿" }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="created_at" label="时间" width="170" />
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">
               编辑
@@ -188,9 +225,9 @@ onMounted(() => {
       :total="total"
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper"
+      class="page-pagination"
       @size-change="onSizeChange"
       @current-change="load"
-      class="page-pagination"
     />
 
     <!-- 文章表单对话框 -->

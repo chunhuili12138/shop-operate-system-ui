@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 type UserResult = {
   success: boolean;

@@ -163,7 +163,9 @@ onMounted(() => {
       </el-form>
       <div class="page-header-actions">
         <div>
-          <el-button v-auth="'btn:shop:add'" type="primary" @click="openAdd"> + 新增店铺 </el-button>
+          <el-button v-auth="'btn:shop:add'" type="primary" @click="openAdd">
+            + 新增店铺
+          </el-button>
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>

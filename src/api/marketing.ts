@@ -1,5 +1,5 @@
 import { http } from "@/utils/http";
-import { ApiResult } from "@/types/api";
+import type { ApiResult } from "@/types/api";
 
 // ========== 文章管理相关 ==========
 
@@ -23,11 +23,32 @@ export interface ArticleListResult {
       is_published: number;
       created_at: string;
       category_id: string;
+      category_name: string;
       content: string;
       cover_image: string;
       content_type: number;
     }>;
     total: number;
+  };
+  timestamp: number;
+}
+
+// 文章详情响应
+export interface ArticleDetailResult {
+  success: boolean;
+  code: number;
+  msg: string;
+  data: {
+    id: number;
+    title: string;
+    is_published: number;
+    created_at: string;
+    category_id: string;
+    category_name: string;
+    content: string;
+    cover_image: string;
+    content_type: number;
+    published_at: string;
   };
   timestamp: number;
 }
@@ -40,6 +61,7 @@ export interface ArticleFormParams {
   content: string;
   coverImage: string;
   contentType: number;
+  isPublished?: number;
 }
 
 // 文章分类列表响应
@@ -87,8 +109,19 @@ export const publishArticle = (data: PublishArticleParams) => {
 
 /** 删除文章 */
 export const deleteArticle = (articleId: number) => {
-  return http.request<ApiResult>("delete", "/articlesDelete", { 
-    params: { articleId } 
+  return http.request<ApiResult>("delete", "/articlesDelete", {
+    params: { articleId }
+  });
+};
+
+/** 上传文章图片 */
+export const uploadArticleImage = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("dir", "article");
+  return http.request<ApiResult<string>>("post", "/file/upload", {
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
   });
 };
 
@@ -202,7 +235,9 @@ export const updateCouponStatus = (data: CouponStatusParams) => {
 
 /** 获取优惠券使用记录 */
 export const getCouponUsages = (params?: CouponUsageQueryParams) => {
-  return http.request<CouponUsageListResult>("get", "/couponUsages", { params });
+  return http.request<CouponUsageListResult>("get", "/couponUsages", {
+    params
+  });
 };
 
 /** 发放优惠券 */
@@ -233,7 +268,9 @@ export interface BatchGrantResult {
 
 /** 按条件批量发放优惠券 */
 export const grantCouponBatch = (data: BatchGrantParams) => {
-  return http.request<BatchGrantResult>("post", "/couponUsagesGrantBatch", { data });
+  return http.request<BatchGrantResult>("post", "/couponUsagesGrantBatch", {
+    data
+  });
 };
 
 // 预览匹配顾客
@@ -254,12 +291,18 @@ export interface GrantPreviewParams {
 
 /** 预览符合条件可发放的顾客 */
 export const getGrantPreview = (params: GrantPreviewParams) => {
-  return http.request<ApiResult<PreviewCustomer[]>>("get", "/couponsGrantPreview", { params });
+  return http.request<ApiResult<PreviewCustomer[]>>(
+    "get",
+    "/couponsGrantPreview",
+    { params }
+  );
 };
 
 /** 删除优惠券 */
 export const deleteCoupon = (couponId: number) => {
-  return http.request<ApiResult>("delete", "/couponsDelete", { params: { couponId } });
+  return http.request<ApiResult>("delete", "/couponsDelete", {
+    params: { couponId }
+  });
 };
 
 // 可用优惠券（购买时选择）
@@ -283,5 +326,9 @@ export interface AvailableCouponQueryParams {
 
 /** 查询顾客当前可用的优惠券 */
 export const getAvailableCoupons = (params: AvailableCouponQueryParams) => {
-  return http.request<ApiResult<AvailableCoupon[]>>("get", "/couponsAvailable", { params });
+  return http.request<ApiResult<AvailableCoupon[]>>(
+    "get",
+    "/couponsAvailable",
+    { params }
+  );
 };

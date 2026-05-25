@@ -51,7 +51,12 @@ defineExpose({ open });
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="quantity" label="数量" width="80" align="center" />
+        <el-table-column
+          prop="quantity"
+          label="数量"
+          width="80"
+          align="center"
+        />
         <el-table-column
           prop="balance_after"
           label="变更后"

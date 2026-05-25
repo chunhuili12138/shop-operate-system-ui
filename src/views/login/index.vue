@@ -60,14 +60,17 @@ const loadCaptcha = async () => {
 };
 
 const shopDialogVisible = ref(false);
-const shopOptions = ref<Array<{id:number;name:string}>>([]);
+const shopOptions = ref<Array<{ id: number; name: string }>>([]);
 const selectedShopId = ref<number | null>(null);
 
 const doEnterSystem = () => {
   disabled.value = true;
-  router.push(getTopMenu(true).path).then(() => {
-    message("登录成功", { type: "success" });
-  }).finally(() => (disabled.value = false));
+  router
+    .push(getTopMenu(true).path)
+    .then(() => {
+      message("登录成功", { type: "success" });
+    })
+    .finally(() => (disabled.value = false));
 };
 
 const onLogin = async (formEl: FormInstance | undefined) => {
@@ -257,9 +260,9 @@ onMounted(() => {
                 登录
               </el-button>
             </Motion>
-      </el-form>
+          </el-form>
+        </div>
       </div>
-    </div>
     </div>
   </div>
 
@@ -277,7 +280,10 @@ onMounted(() => {
       <div
         v-for="s in shopOptions"
         :key="s.id"
-        :class="['shop-card', { 'shop-card--selected': selectedShopId === s.id }]"
+        :class="[
+          'shop-card',
+          { 'shop-card--selected': selectedShopId === s.id }
+        ]"
         @click="selectedShopId = s.id"
       >
         <div class="shop-card-icon">
@@ -286,17 +292,29 @@ onMounted(() => {
         <div class="shop-card-body">
           <div class="shop-card-name">{{ s.name }}</div>
           <div v-if="s.address || s.contact_phone" class="shop-card-info">
-            <span v-if="s.address" class="shop-card-addr">📍 {{ s.address }}</span>
-            <span v-if="s.contact_phone" class="shop-card-phone">📞 {{ s.contact_phone }}</span>
+            <span v-if="s.address" class="shop-card-addr"
+              >📍 {{ s.address }}</span
+            >
+            <span v-if="s.contact_phone" class="shop-card-phone"
+              >📞 {{ s.contact_phone }}</span
+            >
           </div>
         </div>
         <div class="shop-card-check">
-          <span v-if="selectedShopId === s.id" class="text-lg text-[var(--el-color-primary)]">✓</span>
+          <span
+            v-if="selectedShopId === s.id"
+            class="text-lg text-[var(--el-color-primary)]"
+            >✓</span
+          >
         </div>
       </div>
     </div>
     <template #footer>
-      <el-button type="primary" :disabled="!selectedShopId" @click="confirmShop">
+      <el-button
+        type="primary"
+        :disabled="!selectedShopId"
+        @click="confirmShop"
+      >
         进入系统
       </el-button>
     </template>
@@ -308,9 +326,9 @@ onMounted(() => {
 
 .captcha-wrapper {
   display: flex;
-  width: 100%;
   gap: 8px;
   align-items: center;
+  width: 100%;
 }
 
 .captcha-input {
@@ -318,10 +336,10 @@ onMounted(() => {
 }
 
 .captcha-image {
+  flex-shrink: 0;
   height: 40px;
   cursor: pointer;
   border-radius: 4px;
-  flex-shrink: 0;
 }
 
 .shop-list {
@@ -334,32 +352,32 @@ onMounted(() => {
 
 .shop-card {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   padding: 14px 16px;
+  cursor: pointer;
   border: 2px solid var(--el-border-color);
   border-radius: 8px;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .shop-card:hover {
-  border-color: var(--el-color-primary-light-5);
   background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary-light-5);
 }
 
 .shop-card--selected {
-  border-color: var(--el-color-primary);
   background: var(--el-color-primary-light-9);
+  border-color: var(--el-color-primary);
 }
 
 .shop-card-icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
   background: var(--el-color-primary-light-9);
   border-radius: 8px;
 }
@@ -370,13 +388,13 @@ onMounted(() => {
 }
 
 .shop-card-name {
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 15px;
   font-weight: 600;
   color: var(--el-text-color-primary);
-  margin-bottom: 4px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .shop-card-info {
@@ -388,10 +406,10 @@ onMounted(() => {
 }
 
 .shop-card-info span {
-  white-space: nowrap;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  white-space: nowrap;
 }
 
 .shop-card-check {

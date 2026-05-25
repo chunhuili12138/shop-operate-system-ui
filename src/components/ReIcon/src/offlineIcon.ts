@@ -72,7 +72,7 @@ const icons = [
   ["ri/file-chart-line", RiFileChartLine],
   ["ri/vip-crown-line", RiVipCrownLine],
   ["ri/admin-line", RiAdminLine],
-  ["ri/shield-check-line", RiShieldCheckLine],
+  ["ri/shield-check-line", RiShieldCheckLine]
 ];
 
 // 本地菜单图标，后端在路由的 icon 中返回对应的图标字符串并且前端在此处使用 addIcon 添加即可渲染菜单图标

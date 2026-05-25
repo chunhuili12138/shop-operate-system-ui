@@ -42,13 +42,23 @@ export const addCommissionRule = (data: CommissionRuleFormParams) => {
 };
 
 /** 编辑提成规则 */
-export const updateCommissionRule = (data: { ruleId: number; ruleType?: number; value?: string; description?: string }) => {
+export const updateCommissionRule = (data: {
+  ruleId: number;
+  ruleType?: number;
+  value?: string;
+  description?: string;
+}) => {
   return http.request<ApiResult>("put", "/commissionRulesUpdate", { data });
 };
 
 /** 启用/禁用提成规则 */
-export const toggleCommissionRuleStatus = (ruleId: number, isActive: number) => {
-  return http.request<ApiResult>("put", "/commissionRulesStatus", { data: { ruleId, isActive } });
+export const toggleCommissionRuleStatus = (
+  ruleId: number,
+  isActive: number
+) => {
+  return http.request<ApiResult>("put", "/commissionRulesStatus", {
+    data: { ruleId, isActive }
+  });
 };
 
 // ========== 结算记录相关 ==========
@@ -156,8 +166,13 @@ export const getExpenseList = (params?: ExpenseQueryParams) => {
 };
 
 /** 获取支出汇总 */
-export const getExpenseSummary = (params?: { startDate?: string; endDate?: string }) => {
-  return http.request<ExpenseSummaryResult>("get", "/expenses/summary", { params });
+export const getExpenseSummary = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return http.request<ExpenseSummaryResult>("get", "/expenses/summary", {
+    params
+  });
 };
 
 /** 获取支出分类列表 */
@@ -167,17 +182,23 @@ export const getExpenseCategories = () => {
 
 /** 新增支出分类 */
 export const addExpenseCategory = (name: string) => {
-  return http.request<ApiResult>("post", "/expenseCategoriesAdd", { data: { name } });
+  return http.request<ApiResult>("post", "/expenseCategoriesAdd", {
+    data: { name }
+  });
 };
 
 /** 编辑支出分类 */
 export const updateExpenseCategory = (categoryId: number, name: string) => {
-  return http.request<ApiResult>("put", "/expenseCategoriesUpdate", { data: { categoryId, name } });
+  return http.request<ApiResult>("put", "/expenseCategoriesUpdate", {
+    data: { categoryId, name }
+  });
 };
 
 /** 删除支出分类 */
 export const deleteExpenseCategory = (categoryId: number) => {
-  return http.request<ApiResult>("delete", "/expenseCategoriesDelete", { params: { categoryId } });
+  return http.request<ApiResult>("delete", "/expenseCategoriesDelete", {
+    params: { categoryId }
+  });
 };
 
 /** 新增支出 */
@@ -242,7 +263,9 @@ export const addInvoice = (data: InvoiceFormParams) => {
 
 /** 删除发票 */
 export const deleteInvoice = (invoiceId: number) => {
-  return http.request<ApiResult>("delete", "/invoicesDelete", { params: { invoiceId } });
+  return http.request<ApiResult>("delete", "/invoicesDelete", {
+    params: { invoiceId }
+  });
 };
 
 /** 上传发票图片 */
@@ -365,8 +388,13 @@ export const getRevenueList = (params?: RevenueQueryParams) => {
 };
 
 /** 获取收入汇总 */
-export const getRevenueSummary = (params?: { startDate?: string; endDate?: string }) => {
-  return http.request<RevenueSummaryResult>("get", "/revenues/summary", { params });
+export const getRevenueSummary = (params?: {
+  startDate?: string;
+  endDate?: string;
+}) => {
+  return http.request<RevenueSummaryResult>("get", "/revenues/summary", {
+    params
+  });
 };
 
 // ========== 收支流水 ==========
@@ -387,7 +415,10 @@ export const getCashFlow = (params?: CashFlowQueryParams) => {
 
 // ========== 考勤管理 ==========
 
-export const getAttendanceRecords = (params?: { page?: number; size?: number }) => {
+export const getAttendanceRecords = (params?: {
+  page?: number;
+  size?: number;
+}) => {
   return http.request<ApiResult>("get", "/attendanceRecords", { params });
 };
 
@@ -396,12 +427,17 @@ export const checkIn = () => {
 };
 
 export const checkOut = (recordId: number) => {
-  return http.request<ApiResult>("put", "/attendanceRecordsCheckOut", { data: { recordId } });
+  return http.request<ApiResult>("put", "/attendanceRecordsCheckOut", {
+    data: { recordId }
+  });
 };
 
 // ========== 排班管理 ==========
 
-export const getStaffSchedules = (params?: { page?: number; size?: number }) => {
+export const getStaffSchedules = (params?: {
+  page?: number;
+  size?: number;
+}) => {
   return http.request<ApiResult>("get", "/staffSchedules", { params });
 };
 
@@ -427,5 +463,7 @@ export const updateStaffSchedule = (data: {
 };
 
 export const deleteStaffSchedule = (scheduleId: number) => {
-  return http.request<ApiResult>("delete", "/staffSchedulesDelete", { params: { scheduleId } });
+  return http.request<ApiResult>("delete", "/staffSchedulesDelete", {
+    params: { scheduleId }
+  });
 };

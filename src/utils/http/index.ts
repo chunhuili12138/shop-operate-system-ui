@@ -147,7 +147,7 @@ class PureHttp {
     instance.interceptors.response.use(
       (response: PureHttpResponse) => {
         const $config = response.config;
-        
+
         // 检查响应体中的 code 字段是否为 401
         const responseData = response.data;
         if (responseData && responseData.code === 401) {
@@ -215,7 +215,7 @@ class PureHttp {
             });
           });
         }
-        
+
         // 优先判断post/get等方法是否传入回调，否则执行初始化设置等回调
         if (typeof $config.beforeResponseCallback === "function") {
           $config.beforeResponseCallback(response);

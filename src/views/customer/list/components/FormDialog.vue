@@ -23,8 +23,12 @@ const emit = defineEmits<{
 
 const formRef = ref<FormInstance>();
 const loading = ref(false);
-const sourceOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
-const tagOptions = ref<{ dict_key: number; dict_value: string; dict_label: string }[]>([]);
+const sourceOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
+const tagOptions = ref<
+  { dict_key: number; dict_value: string; dict_label: string }[]
+>([]);
 
 const form = reactive<CustomerFormParams & { source?: string }>({
   customersId: null,
@@ -40,12 +44,14 @@ const form = reactive<CustomerFormParams & { source?: string }>({
 const tagList = ref<string[]>([]);
 
 const rules: FormRules = {
-  nickname: [
-    { required: true, message: "请输入昵称", trigger: "blur" }
-  ],
+  nickname: [{ required: true, message: "请输入昵称", trigger: "blur" }],
   phone: [
     { required: true, message: "请输入手机号", trigger: "blur" },
-    { pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号格式", trigger: "blur" }
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入正确的手机号格式",
+      trigger: "blur"
+    }
   ]
 };
 
@@ -54,12 +60,16 @@ const loadDicts = async () => {
     getDictData({ dictCode: "customer_source" }),
     getDictData({ dictCode: "customer_tag", shopId: props.shopId })
   ]);
-  if (sourceR?.success && Array.isArray(sourceR.data)) sourceOptions.value = sourceR.data;
+  if (sourceR?.success && Array.isArray(sourceR.data))
+    sourceOptions.value = sourceR.data;
   if (tagR?.success && Array.isArray(tagR.data)) tagOptions.value = tagR.data;
 };
 
 const reloadTags = async () => {
-  const r = await getDictData({ dictCode: "customer_tag", shopId: props.shopId } as any);
+  const r = await getDictData({
+    dictCode: "customer_tag",
+    shopId: props.shopId
+  } as any);
   if (r?.success && Array.isArray(r.data)) tagOptions.value = r.data;
 };
 
@@ -73,11 +83,19 @@ watch(
       reloadTags();
       if (props.mode === "edit" && props.data) {
         Object.assign(form, { source: "offline", ...props.data });
-        tagList.value = props.data.tags ? props.data.tags.split(",").filter(t => t.trim()) : [];
+        tagList.value = props.data.tags
+          ? props.data.tags.split(",").filter(t => t.trim())
+          : [];
       } else {
         Object.assign(form, {
-          customersId: null, nickname: "", phone: "", gender: null,
-          birthday: "", remark: "", tags: "", source: "offline"
+          customersId: null,
+          nickname: "",
+          phone: "",
+          gender: null,
+          birthday: "",
+          remark: "",
+          tags: "",
+          source: "offline"
         });
         tagList.value = [];
       }
@@ -93,11 +111,16 @@ const handleSubmit = async () => {
   if (!valid) return;
   loading.value = true;
   try {
-    const submitData = { ...form, tags: tagList.value.join(",") } as CustomerFormParams;
+    const submitData = {
+      ...form,
+      tags: tagList.value.join(",")
+    } as CustomerFormParams;
     const api = props.mode === "add" ? addCustomer : updateCustomer;
     const r = await api(submitData);
     if (r?.success) {
-      message(props.mode === "add" ? "新增成功" : "编辑成功", { type: "success" });
+      message(props.mode === "add" ? "新增成功" : "编辑成功", {
+        type: "success"
+      });
       emit("update:visible", false);
       emit("submit");
     } else {
@@ -121,19 +144,36 @@ defineExpose({ reloadTags });
   >
     <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
       <el-form-item label="昵称" prop="nickname">
-        <el-input v-model="form.nickname" placeholder="请输入昵称" maxlength="50" />
+        <el-input
+          v-model="form.nickname"
+          placeholder="请输入昵称"
+          maxlength="50"
+        />
       </el-form-item>
       <el-form-item label="手机号" prop="phone">
-        <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" />
+        <el-input
+          v-model="form.phone"
+          placeholder="请输入手机号"
+          maxlength="11"
+        />
       </el-form-item>
       <el-form-item label="性别">
-        <el-select v-model="form.gender" clearable placeholder="请选择" style="width:100%">
+        <el-select
+          v-model="form.gender"
+          clearable
+          placeholder="请选择"
+          style="width: 100%"
+        >
           <el-option label="男" :value="1" />
           <el-option label="女" :value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="来源">
-        <el-select v-model="form.source" placeholder="请选择" style="width:100%">
+        <el-select
+          v-model="form.source"
+          placeholder="请选择"
+          style="width: 100%"
+        >
           <el-option
             v-for="s in sourceOptions"
             :key="s.dict_key"
@@ -148,7 +188,7 @@ defineExpose({ reloadTags });
           type="date"
           placeholder="请选择生日"
           value-format="YYYY-MM-DD"
-          style="width:100%"
+          style="width: 100%"
         />
       </el-form-item>
       <el-form-item label="标签">
@@ -159,7 +199,7 @@ defineExpose({ reloadTags });
           allow-create
           default-first-option
           placeholder="请选择或输入标签"
-          style="width:100%"
+          style="width: 100%"
         >
           <el-option
             v-for="t in tagOptions"

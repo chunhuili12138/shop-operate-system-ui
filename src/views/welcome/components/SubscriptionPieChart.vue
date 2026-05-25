@@ -20,23 +20,31 @@ const updateChart = () => {
   chart.setOption(
     {
       tooltip: { trigger: "item", formatter: "{b}: {c} 个 ({d}%)" },
-      series: [{
-        type: "pie", radius: ["40%", "65%"], center: ["50%", "50%"],
-        itemStyle: { borderRadius: 4, borderColor: "#fff", borderWidth: 2 },
-        label: { show: false },
-        emphasis: { label: { show: true, fontSize: 14 } },
-        color: ["#667eea", "#4facfe"],
-        data: [
-          { value: d?.monthlyCount || 0, name: "月付" },
-          { value: d?.yearlyCount || 0, name: "年付" }
-        ]
-      }]
+      series: [
+        {
+          type: "pie",
+          radius: ["40%", "65%"],
+          center: ["50%", "50%"],
+          itemStyle: { borderRadius: 4, borderColor: "#fff", borderWidth: 2 },
+          label: { show: false },
+          emphasis: { label: { show: true, fontSize: 14 } },
+          color: ["#667eea", "#4facfe"],
+          data: [
+            { value: d?.monthlyCount || 0, name: "月付" },
+            { value: d?.yearlyCount || 0, name: "年付" }
+          ]
+        }
+      ]
     },
     { notMerge: true }
   );
 };
 
-watch(() => props.data, () => updateChart(), { deep: true });
+watch(
+  () => props.data,
+  () => updateChart(),
+  { deep: true }
+);
 onMounted(initChart);
 onUnmounted(() => chart?.dispose());
 const h = () => chart?.resize();
@@ -45,5 +53,5 @@ onUnmounted(() => window.removeEventListener("resize", h));
 </script>
 
 <template>
-  <div ref="chartRef" style="width:100%;height:110px" />
+  <div ref="chartRef" style="width: 100%; height: 110px" />
 </template>

@@ -114,11 +114,7 @@ export const getCustomerPurchases = (
 };
 
 /** 获取顾客积分记录 */
-export const getCustomerPoints = (
-  customersId: number,
-  page = 1,
-  size = 50
-) => {
+export const getCustomerPoints = (customersId: number, page = 1, size = 50) => {
   return http.request<ApiResult>("get", "/customers/points", {
     params: { customersId, page, size }
   });
