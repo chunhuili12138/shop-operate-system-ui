@@ -246,7 +246,7 @@ onMounted(async () => {
         <template #empty>
           <el-empty description="暂无采购单" :image-size="80" />
         </template>
-        <el-table-column prop="order_number" label="单号" width="180" />
+        <el-table-column prop="order_number" label="单号" width="200" />
         <el-table-column prop="supplier_name" label="供应商" width="250" />
         <el-table-column
           prop="material_names"

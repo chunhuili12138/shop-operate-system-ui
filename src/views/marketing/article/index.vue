@@ -2,8 +2,14 @@
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
-import { getArticleList, publishArticle, deleteArticle } from "@/api/marketing";
+import {
+  getArticleList,
+  getArticleDetail,
+  publishArticle,
+  deleteArticle
+} from "@/api/marketing";
 import ArticleFormDialog from "./components/ArticleFormDialog.vue";
+import CategoryManageDialog from "./components/CategoryManageDialog.vue";
 
 defineOptions({ name: "MktArticle" });
 
@@ -26,6 +32,10 @@ const formDialogVisible = ref(false);
 const isEdit = ref(false);
 const currentFormData = ref(null);
 const formDialogRef = ref();
+
+// ---- 分类管理对话框 ----
+const categoryDialogVisible = ref(false);
+const categoryDialogRef = ref();
 
 const load = async () => {
   loading.value = true;
@@ -70,20 +80,35 @@ const openAdd = () => {
   formDialogVisible.value = true;
 };
 
-const openEdit = (row: any) => {
+const openEdit = async (row: any) => {
   isEdit.value = true;
-  currentFormData.value = {
-    articleId: row.id,
-    categoryId: row.category_id,
-    title: row.title,
-    content: row.content || "",
-    coverImage: row.cover_image,
-    contentType: row.content_type,
-    isPublished: row.is_published,
-    imageUrls: row.image_urls || "",
-    videoUrl: row.video_url || ""
-  };
   formDialogVisible.value = true;
+  currentFormData.value = null;
+  loading.value = true;
+  try {
+    const r = await getArticleDetail(row.id);
+    if (r?.success && r.data) {
+      currentFormData.value = {
+        articleId: r.data.id,
+        categoryId: r.data.category_id,
+        title: r.data.title,
+        content: r.data.content || "",
+        coverImage: r.data.cover_image,
+        contentType: r.data.content_type,
+        isPublished: r.data.is_published,
+        imageUrls: r.data.image_urls || "",
+        videoUrl: r.data.video_url || ""
+      };
+    } else {
+      message(r?.msg || "获取文章详情失败", { type: "warning" });
+      formDialogVisible.value = false;
+    }
+  } catch {
+    message("获取文章详情失败", { type: "error" });
+    formDialogVisible.value = false;
+  } finally {
+    loading.value = false;
+  }
 };
 
 const togglePublish = async (id: number, isPublished: number) => {
@@ -159,6 +184,7 @@ onMounted(() => {
       <div class="page-header-actions">
         <div>
           <el-button type="primary" @click="openAdd">新增文章</el-button>
+          <el-button @click="categoryDialogVisible = true">分类管理</el-button>
         </div>
         <div>
           <el-button type="primary" @click="load">查询</el-button>
@@ -238,6 +264,13 @@ onMounted(() => {
       v-model:visible="formDialogVisible"
       :is-edit="isEdit"
       :form-data="currentFormData"
+      @success="load"
+    />
+
+    <!-- 分类管理对话框 -->
+    <CategoryManageDialog
+      ref="categoryDialogRef"
+      v-model:visible="categoryDialogVisible"
       @success="load"
     />
   </div>

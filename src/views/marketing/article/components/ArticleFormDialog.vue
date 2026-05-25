@@ -6,7 +6,8 @@ import {
   addArticle,
   updateArticle,
   getArticleCategories,
-  uploadArticleImage,
+  uploadArticleCover,
+  uploadArticleContentImage,
   uploadArticleVideo
 } from "@/api/marketing";
 import RichTextEditor from "@/components/RichTextEditor/index.vue";
@@ -226,7 +227,7 @@ const save = async () => {
 
     // 上传封面图
     if (coverPendingFile.value) {
-      const up: any = await uploadArticleImage(coverPendingFile.value);
+      const up: any = await uploadArticleCover(coverPendingFile.value);
       if (up?.success && up.data) coverImage = up.data;
       else {
         message(up?.msg || "封面上传失败", { type: "warning" });
@@ -240,7 +241,7 @@ const save = async () => {
       const newFiles = imageFileList.value.filter(f => f.raw instanceof File);
       if (newFiles.length > 0) {
         const uploadPromises = newFiles.map((f: any) =>
-          uploadArticleImage(f.raw)
+          uploadArticleContentImage(f.raw)
         );
         const results = await Promise.all(uploadPromises);
         const newPaths: string[] = [];

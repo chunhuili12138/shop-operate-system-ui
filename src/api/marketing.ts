@@ -94,6 +94,13 @@ export const getArticleCategories = () => {
   return http.request<ArticleCategoryListResult>("get", "/articleCategories");
 };
 
+/** 获取文章详情 */
+export const getArticleDetail = (articleId: number) => {
+  return http.request<ArticleDetailResult>("get", "/articlesInfo", {
+    params: { articleId }
+  });
+};
+
 /** 新增文章 */
 export const addArticle = (data: ArticleFormParams) => {
   return http.request<ApiResult>("post", "/articlesAdd", { data });
@@ -116,12 +123,55 @@ export const deleteArticle = (articleId: number) => {
   });
 };
 
-/** 上传文章图片 */
-export const uploadArticleImage = (file: File) => {
+// 分类排序参数
+export interface SortCategoryItem {
+  id: number;
+  sort: number;
+}
+
+/** 批量更新分类排序 */
+export const sortArticleCategories = (items: SortCategoryItem[]) => {
+  return http.request<ApiResult>("post", "/articleCategoriesSort", {
+    data: { items: JSON.stringify(items) }
+  });
+};
+
+/** 新增分类 */
+export const addCategory = (name: string) => {
+  return http.request<ApiResult>("post", "/articleCategoriesAdd", {
+    data: { name }
+  });
+};
+
+/** 更新分类 */
+export const updateCategory = (categoryId: number, name: string) => {
+  return http.request<ApiResult>("put", "/articleCategoriesUpdate", {
+    data: { categoryId, name }
+  });
+};
+
+/** 删除分类 */
+export const deleteCategory = (categoryId: number) => {
+  return http.request<ApiResult>("delete", "/articleCategoriesDelete", {
+    params: { categoryId }
+  });
+};
+
+/** 上传文章封面图 */
+export const uploadArticleCover = (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("dir", "article");
-  return http.request<ApiResult<string>>("post", "/file/upload", {
+  return http.request<ApiResult<string>>("post", "/file/uploadArticleCover", {
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+};
+
+/** 上传文章内容图片 */
+export const uploadArticleContentImage = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return http.request<ApiResult<string>>("post", "/file/uploadArticleImage", {
     data: formData,
     headers: { "Content-Type": "multipart/form-data" }
   });
@@ -131,8 +181,7 @@ export const uploadArticleImage = (file: File) => {
 export const uploadArticleVideo = (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("dir", "article");
-  return http.request<ApiResult<string>>("post", "/file/upload", {
+  return http.request<ApiResult<string>>("post", "/file/uploadArticleVideo", {
     data: formData,
     headers: { "Content-Type": "multipart/form-data" }
   });

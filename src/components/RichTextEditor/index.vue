@@ -46,10 +46,14 @@ const editorConfig: Partial<IEditorConfig> = {
         const formData = new FormData();
         formData.append("file", file);
         try {
-          const res: any = await http.request("post", "/file/upload", {
-            data: formData,
-            headers: { "Content-Type": "multipart/form-data" }
-          });
+          const res: any = await http.request(
+            "post",
+            "/file/uploadArticleImage",
+            {
+              data: formData,
+              headers: { "Content-Type": "multipart/form-data" }
+            }
+          );
           if (res?.success && res.data) {
             insertFn(`/api/file/image?name=${encodeURIComponent(res.data)}`);
           }
@@ -57,13 +61,32 @@ const editorConfig: Partial<IEditorConfig> = {
           console.error("图片上传失败", e);
         }
       }
+    },
+    uploadVideo: {
+      async customUpload(file: File, insertFn: (url: string) => void) {
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          const res: any = await http.request(
+            "post",
+            "/file/uploadArticleVideo",
+            {
+              data: formData,
+              headers: { "Content-Type": "multipart/form-data" }
+            }
+          );
+          if (res?.success && res.data) {
+            insertFn(`/api/file/image?name=${encodeURIComponent(res.data)}`);
+          }
+        } catch (e) {
+          console.error("视频上传失败", e);
+        }
+      }
     }
   }
 };
 
-const toolbarConfig: Partial<IToolbarConfig> = {
-  excludeKeys: ["group-more-video"]
-};
+const toolbarConfig: Partial<IToolbarConfig> = {};
 
 const handleCreated = (editor: IDomEditor) => {
   editorRef.value = editor;
