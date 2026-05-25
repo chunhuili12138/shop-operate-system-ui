@@ -1,22 +1,102 @@
-node_modules
-.DS_Store
-dist
-dist-ssr
-*.local
-.eslintcache
-report.html
-vite.config.*.timestamp*
+# Dependencies
+node_modules/
+.pnpm-store/
 
-yarn.lock
+# Build outputs
+dist/
+dist-ssr/
+*.local
+
+# Environment variables
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
 npm-debug.log*
-.pnpm-error.log*
-.pnpm-debug.log
-tests/**/coverage/
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Editor directories and files
+.vscode/*
+!.vscode/extensions.json
 .idea
+.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-tsconfig.tsbuildinfo
+*.sw?
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-cache
+cache
+
+# next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+
+# Gatsby files
+.cache/
+
+# Storybook build outputs
+.out
+.storybook-out
+
+# Temporary folders
+tmp/
+temp/
+
+# Vite
+vite.config.*.timestamp*
+
+# Report
+report.html
+
+# Tests
+tests/**/coverage/
