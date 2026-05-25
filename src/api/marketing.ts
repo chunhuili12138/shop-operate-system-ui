@@ -39,6 +39,8 @@ export interface ArticleDetailResult {
   code: number;
   msg: string;
   data: {
+    video_url: string;
+    image_urls: string;
     id: number;
     title: string;
     is_published: number;

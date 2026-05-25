@@ -10,6 +10,7 @@ import {
 } from "@/api/marketing";
 import ArticleFormDialog from "./components/ArticleFormDialog.vue";
 import CategoryManageDialog from "./components/CategoryManageDialog.vue";
+import PreviewDialog from "./components/PreviewDialog.vue";
 
 defineOptions({ name: "MktArticle" });
 
@@ -36,6 +37,16 @@ const formDialogRef = ref();
 // ---- 分类管理对话框 ----
 const categoryDialogVisible = ref(false);
 const categoryDialogRef = ref();
+
+// ---- 预览对话框 ----
+const previewVisible = ref(false);
+const previewArticleId = ref<number | null>(null);
+const previewDialogRef = ref();
+
+const openPreview = (id: number) => {
+  previewArticleId.value = id;
+  previewVisible.value = true;
+};
 
 const load = async () => {
   loading.value = true;
@@ -206,28 +217,33 @@ onMounted(() => {
           prop="title"
           label="标题"
           show-overflow-tooltip
-          min-width="160"
+          min-width="220"
         />
-        <el-table-column label="分类" width="100">
+        <el-table-column label="分类" width="150">
           <template #default="{ row }">
             <span>{{ row.category_name || "-" }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="类型" width="80">
+        <el-table-column label="类型" width="100">
           <template #default="{ row }">
-            <el-tag>{{ contentTypeMap[row.content_type] || "富文本" }}</el-tag>
+            <el-tag size="small">{{
+              contentTypeMap[row.content_type] || "富文本"
+            }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="80">
+        <el-table-column label="状态" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.is_published ? 'success' : 'info'">
+            <el-tag :type="row.is_published ? 'success' : 'info'" size="small">
               {{ row.is_published ? "已发布" : "草稿" }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" label="时间" width="170" />
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column prop="created_at" label="创建时间" width="160" />
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button link type="primary" @click="openPreview(row.id)">
+              预览
+            </el-button>
             <el-button link type="primary" @click="openEdit(row)">
               编辑
             </el-button>
@@ -272,6 +288,13 @@ onMounted(() => {
       ref="categoryDialogRef"
       v-model:visible="categoryDialogVisible"
       @success="load"
+    />
+
+    <!-- 预览对话框 -->
+    <PreviewDialog
+      ref="previewDialogRef"
+      v-model:visible="previewVisible"
+      :article-id="previewArticleId"
     />
   </div>
 </template>

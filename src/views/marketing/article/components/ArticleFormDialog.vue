@@ -314,7 +314,7 @@ const handleClose = () => {
       :close-on-click-modal="false"
       @close="handleClose"
     >
-      <el-form ref="formRef" :model="form">
+      <el-form ref="formRef" :model="form" label-width="80px">
         <el-row :gutter="24">
           <!-- ========== 左侧：内容编辑区 ========== -->
           <el-col :span="15">
