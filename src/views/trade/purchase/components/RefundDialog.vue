@@ -138,7 +138,7 @@ const handleSubmit = async () => {
               :step="1"
               style="width: 100%"
             />
-            <div style=" margin-top: 4px;font-size: 12px; color: #909399">
+            <div style="margin-top: 4px; font-size: 12px; color: #909399">
               上限: 实付金额 ¥{{ maxAmount.toFixed(2) }}
             </div>
           </el-form-item>

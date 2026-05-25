@@ -62,6 +62,8 @@ export interface ArticleFormParams {
   coverImage: string;
   contentType: number;
   isPublished?: number;
+  imageUrls?: string;
+  videoUrl?: string;
 }
 
 // 文章分类列表响应
@@ -116,6 +118,17 @@ export const deleteArticle = (articleId: number) => {
 
 /** 上传文章图片 */
 export const uploadArticleImage = (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("dir", "article");
+  return http.request<ApiResult<string>>("post", "/file/upload", {
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
+  });
+};
+
+/** 上传文章视频 */
+export const uploadArticleVideo = (file: File) => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("dir", "article");

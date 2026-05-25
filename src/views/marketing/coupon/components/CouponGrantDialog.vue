@@ -308,7 +308,7 @@ watch(
     <template v-if="mode === 'manual'">
       <!-- 已选标签区 -->
       <div v-if="selectedCount > 0" class="selected-area">
-        <span style=" margin-right: 8px;font-size: 13px; color: #606266"
+        <span style="margin-right: 8px; font-size: 13px; color: #606266"
           >已选 {{ selectedCount }} 人</span
         >
         <el-tag
@@ -385,7 +385,7 @@ watch(
         :page-sizes="[10, 20, 50]"
         layout="total, sizes, prev, pager, next"
         size="small"
-        style=" justify-content: flex-end;margin-top: 8px"
+        style="justify-content: flex-end; margin-top: 8px"
         @size-change="loadCustomers"
         @current-change="loadCustomers"
       />
@@ -441,7 +441,7 @@ watch(
       <!-- 预览结果 -->
       <template v-if="previewList.length > 0">
         <div class="selected-area">
-          <span style=" margin-right: 8px;font-size: 13px; color: #606266"
+          <span style="margin-right: 8px; font-size: 13px; color: #606266"
             >待发放 {{ batchSelectedCount }} 人</span
           >
           <el-tag

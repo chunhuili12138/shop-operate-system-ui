@@ -246,7 +246,7 @@ onMounted(loadDicts);
           :active-value="1"
           :inactive-value="0"
         />
-        <span style=" margin-left: 8px;font-size: 12px; color: #909399"
+        <span style="margin-left: 8px; font-size: 12px; color: #909399"
           >绑手机号后自动发放</span
         >
       </el-form-item>

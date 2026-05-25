@@ -347,7 +347,7 @@ watch(
             ¥{{ walletInfo.balance.toFixed(2) }}
             <span
               v-if="walletInfo.balance < form.totalAmount"
-              style=" font-size: 12px;color: #f56c6c"
+              style="font-size: 12px; color: #f56c6c"
               >（余额不足）</span
             >
           </span>

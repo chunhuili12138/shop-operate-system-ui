@@ -63,7 +63,7 @@ const confirm = async () => {
         <el-text
           type="info"
           size="small"
-          style=" display: block;margin-top: 4px"
+          style="display: block; margin-top: 4px"
         >
           系统将统计该月内所有已完成的核销场次，匹配生效的提成规则自动计算每个员工的提成金额。
         </el-text>

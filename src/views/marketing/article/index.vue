@@ -76,10 +76,12 @@ const openEdit = (row: any) => {
     articleId: row.id,
     categoryId: row.category_id,
     title: row.title,
-    content: row.content,
+    content: row.content || "",
     coverImage: row.cover_image,
     contentType: row.content_type,
-    isPublished: row.is_published
+    isPublished: row.is_published,
+    imageUrls: row.image_urls || "",
+    videoUrl: row.video_url || ""
   };
   formDialogVisible.value = true;
 };
