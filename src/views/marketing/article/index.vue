@@ -251,8 +251,7 @@ onMounted(() => {
             value-format="YYYY-MM-DD"
             style="width: 135px"
           />
-        </el-form-item>
-        <el-form-item label="至">
+          <span style="margin: 0 5px"> - </span>
           <el-date-picker
             v-model="query.endDate"
             type="date"
