@@ -39,15 +39,31 @@ export const useUserStore = defineStore("pure-user", {
   actions: {
     SET_AVATAR(avatar: string) {
       this.avatar = avatar;
+      const saved =
+        storageLocal().getItem<DataInfo<number>>(userKey) || ({} as any);
+      saved.avatar = avatar;
+      storageLocal().setItem(userKey, saved);
     },
     SET_USERNAME(username: string) {
       this.username = username;
+      const s =
+        storageLocal().getItem<DataInfo<number>>(userKey) || ({} as any);
+      s.username = username;
+      storageLocal().setItem(userKey, s);
     },
     SET_NICKNAME(nickname: string) {
       this.nickname = nickname;
+      const s =
+        storageLocal().getItem<DataInfo<number>>(userKey) || ({} as any);
+      s.nickname = nickname;
+      storageLocal().setItem(userKey, s);
     },
     SET_PHONE(phone: string) {
       this.phone = phone;
+      const s =
+        storageLocal().getItem<DataInfo<number>>(userKey) || ({} as any);
+      s.phone = phone;
+      storageLocal().setItem(userKey, s);
     },
     SET_ROLES(roles: Array<string>) {
       this.roles = roles;
