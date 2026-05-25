@@ -9,6 +9,10 @@ export interface ArticleQueryParams {
   size?: number;
   keyword?: string;
   isPublished?: number | string;
+  categoryId?: number | string;
+  contentType?: number | string;
+  startDate?: string;
+  endDate?: string;
 }
 
 // 文章列表响应

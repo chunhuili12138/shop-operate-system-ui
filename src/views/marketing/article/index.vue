@@ -6,7 +6,8 @@ import {
   getArticleList,
   getArticleDetail,
   publishArticle,
-  deleteArticle
+  deleteArticle,
+  getArticleCategories
 } from "@/api/marketing";
 import ArticleFormDialog from "./components/ArticleFormDialog.vue";
 import CategoryManageDialog from "./components/CategoryManageDialog.vue";
@@ -20,7 +21,16 @@ const page = ref(1);
 const size = ref(20);
 const total = ref(0);
 
-const query = reactive({ keyword: "", isPublished: "" as any });
+const query = reactive({
+  keyword: "",
+  isPublished: "" as any,
+  categoryId: "" as any,
+  contentType: "" as any,
+  startDate: "",
+  endDate: ""
+});
+
+const cats = ref<Array<{ id: string; name: string }>>([]);
 
 const contentTypeMap: Record<number, string> = {
   1: "图片",
@@ -55,7 +65,11 @@ const load = async () => {
       page: page.value,
       size: size.value,
       keyword: query.keyword || undefined,
-      isPublished: query.isPublished !== "" ? query.isPublished : undefined
+      isPublished: query.isPublished !== "" ? query.isPublished : undefined,
+      categoryId: query.categoryId !== "" ? query.categoryId : undefined,
+      contentType: query.contentType !== "" ? query.contentType : undefined,
+      startDate: query.startDate || undefined,
+      endDate: query.endDate || undefined
     });
     if (r?.success && r.data) {
       tableData.value = r.data.list || [];
@@ -75,6 +89,10 @@ const load = async () => {
 const reset = () => {
   query.keyword = "";
   query.isPublished = "";
+  query.categoryId = "";
+  query.contentType = "";
+  query.startDate = "";
+  query.endDate = "";
   page.value = 1;
   load();
 };
@@ -162,8 +180,14 @@ const doDelete = async (id: number) => {
   }
 };
 
+const loadCats = async () => {
+  const r: any = await getArticleCategories();
+  if (r?.success) cats.value = r.data || [];
+};
+
 onMounted(() => {
   load();
+  loadCats();
 });
 </script>
 
@@ -177,8 +201,36 @@ onMounted(() => {
             v-model="query.keyword"
             clearable
             placeholder="标题/内容"
+            style="width: 160px"
             @keyup.enter="load"
           />
+        </el-form-item>
+        <el-form-item label="分类">
+          <el-select
+            v-model="query.categoryId"
+            clearable
+            placeholder="全部分类"
+            style="width: 130px"
+          >
+            <el-option
+              v-for="c in cats"
+              :key="c.id"
+              :label="c.name"
+              :value="c.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select
+            v-model="query.contentType"
+            clearable
+            placeholder="全部类型"
+            style="width: 110px"
+          >
+            <el-option label="富文本" :value="3" />
+            <el-option label="图片" :value="1" />
+            <el-option label="视频" :value="2" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态">
           <el-select
@@ -190,6 +242,24 @@ onMounted(() => {
             <el-option label="已发布" :value="1" />
             <el-option label="草稿" :value="0" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="时间">
+          <el-date-picker
+            v-model="query.startDate"
+            type="date"
+            placeholder="开始日期"
+            value-format="YYYY-MM-DD"
+            style="width: 135px"
+          />
+        </el-form-item>
+        <el-form-item label="至">
+          <el-date-picker
+            v-model="query.endDate"
+            type="date"
+            placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 135px"
+          />
         </el-form-item>
       </el-form>
       <div class="page-header-actions">
