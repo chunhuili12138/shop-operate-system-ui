@@ -101,6 +101,7 @@ const openAdd = () => {
     original_price: null,
     maxPeoplePerSession: 1,
     description: "",
+    image: "",
     bom: []
   });
   dialogVisible.value = true;
@@ -117,6 +118,7 @@ const openEdit = (row: any) => {
     original_price: row.original_price,
     maxPeoplePerSession: row.max_people_per_session,
     description: row.description,
+    image: row.image || "",
     bom: []
   });
   dialogVisible.value = true;

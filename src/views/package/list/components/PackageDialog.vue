@@ -6,6 +6,7 @@ import type { BomItem } from "@/api/package";
 import { getPackageBom } from "@/api/package";
 import { getMaterialList } from "@/api/inventory";
 import { getDictData } from "@/api/system";
+import EpPlus from "~icons/ep/plus";
 import { http } from "@/utils/http";
 
 const props = defineProps<{
@@ -59,6 +60,10 @@ const typeOptions = ref<
 >([]);
 const materialOptions = ref<any[]>([]);
 
+const imageUploadRef = ref();
+const pendingImageFile = ref<File | null>(null);
+const imageFileList = ref<any[]>([]);
+
 const loadDicts = async () => {
   const [typeR] = await Promise.all([
     getDictData({ dictCode: "package_type" })
@@ -90,6 +95,8 @@ watch(
   v => {
     if (v) {
       loadMaterials();
+      pendingImageFile.value = null;
+      imageFileList.value = [];
       if (props.formData) {
         Object.assign(form, {
           ...props.formData,
@@ -99,6 +106,14 @@ watch(
         });
         if (props.isEdit && props.formData.packageId) {
           loadBom(props.formData.packageId);
+        }
+        if (props.formData.image) {
+          imageFileList.value = [
+            {
+              name: "套餐图片",
+              url: `/api/file/image?name=${encodeURIComponent(props.formData.image)}`
+            }
+          ];
         }
       }
       setTimeout(() => formRef.value?.clearValidate(), 0);
@@ -110,6 +125,33 @@ const handleClose = () => {
   emit("update:visible", false);
 };
 
+const handleImgChange = (f: any, fl: any[]) => {
+  const raw = f.raw as File;
+  if (!raw) return;
+  if (
+    !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(raw.type)
+  ) {
+    message("仅支持 jpg/png/gif/webp", { type: "warning" });
+    imageUploadRef.value?.clearFiles();
+    return;
+  }
+  if (raw.size / 1024 / 1024 > 5) {
+    message("图片不超过5MB", { type: "warning" });
+    imageUploadRef.value?.clearFiles();
+    return;
+  }
+  pendingImageFile.value = raw;
+  imageFileList.value = fl;
+};
+const handleImgRemove = () => {
+  pendingImageFile.value = null;
+  imageFileList.value = [];
+  form.image = "";
+};
+const handleExceed = () => {
+  message("最多1张", { type: "warning" });
+};
+
 const handleSave = async () => {
   const valid = await formRef.value?.validate().catch(() => false);
   if (!valid) return;
@@ -119,6 +161,22 @@ const handleSave = async () => {
         message("请为每项物料选择具体物料", { type: "warning" });
         return;
       }
+    }
+  }
+  // 有选中图片则先上传
+  if (pendingImageFile.value) {
+    const fd = new FormData();
+    fd.append("file", pendingImageFile.value);
+    fd.append("dir", "package");
+    const up: any = await http.request("post", "/file/upload", {
+      data: fd,
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    if (up?.success && (up.data || up.path)) {
+      form.image = up.data || up.path;
+    } else {
+      message(up?.msg || "图片上传失败", { type: "warning" });
+      return;
     }
   }
   emit("save");
@@ -222,13 +280,22 @@ defineExpose({ form });
           show-word-limit
         />
       </el-form-item>
-      <el-form-item label="封面图">
-        <el-input
-          v-model="form.image"
-          placeholder="输入图片路径或通过文件管理上传"
-          clearable
-        />
-        <span class="upload-hint">建议尺寸 600x400px，留空则不显示封面图</span>
+      <el-form-item label="套餐图片">
+        <el-upload
+          ref="imageUploadRef"
+          v-model:file-list="imageFileList"
+          list-type="picture-card"
+          :limit="1"
+          :auto-upload="false"
+          :on-change="handleImgChange"
+          :on-remove="handleImgRemove"
+          :on-exceed="handleExceed"
+          :class="{ hideUploadBtn: imageFileList.length >= 1 }"
+          accept="image/*"
+        >
+          <EpPlus />
+        </el-upload>
+        <span class="upload-hint">建议 600px * 400px</span>
       </el-form-item>
       <el-form-item label="物料清单">
         <div class="mb-2">
@@ -277,3 +344,17 @@ defineExpose({ form });
     </template>
   </el-dialog>
 </template>
+
+<style scoped>
+:deep(.hideUploadBtn .el-upload--picture-card) {
+  display: none;
+}
+
+.upload-hint {
+  display: block;
+  padding-left: 5px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #909399;
+}
+</style>
