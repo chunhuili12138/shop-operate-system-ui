@@ -25,13 +25,18 @@ const uploadRef = ref();
 const pendingFile = ref<File | null>(null);
 const fileList = ref<any[]>([]);
 
+const logoUploadRef = ref();
+const pendingLogoFile = ref<File | null>(null);
+const logoFileList = ref<any[]>([]);
+
 const editForm = reactive({
   name: "",
   address: "",
   contactPhone: "",
   maxCapacity: null as number | null,
   description: "",
-  signPhoto: ""
+  signPhoto: "",
+  logo: ""
 });
 
 // 监听modelValue变化
@@ -59,9 +64,10 @@ const openEdit = () => {
   editForm.maxCapacity = props.shopData.max_capacity ?? null;
   editForm.description = props.shopData.description || "";
   editForm.signPhoto = props.shopData.sign_photo || "";
+  editForm.logo = props.shopData.logo || "";
   pendingFile.value = null;
+  pendingLogoFile.value = null;
 
-  // 如果有原图，设置fileList用于显示预览
   if (props.shopData.sign_photo) {
     fileList.value = [
       {
@@ -71,6 +77,17 @@ const openEdit = () => {
     ];
   } else {
     fileList.value = [];
+  }
+
+  if (props.shopData.logo) {
+    logoFileList.value = [
+      {
+        name: props.shopData.logo,
+        url: `/api/file/image?name=${encodeURIComponent(props.shopData.logo)}`
+      }
+    ];
+  } else {
+    logoFileList.value = [];
   }
 };
 
@@ -102,6 +119,47 @@ const handleRemove = () => {
   editForm.signPhoto = "";
 };
 
+const handleLogoChange = (uploadFile: any, uploadFiles: any[]) => {
+  const raw = uploadFile.raw as File;
+  if (!raw) return;
+  if (
+    !["image/jpeg", "image/png", "image/gif", "image/webp"].includes(raw.type)
+  ) {
+    message("仅支持 jpg/png/gif/webp 格式", { type: "warning" });
+    logoUploadRef.value?.clearFiles();
+    return;
+  }
+  if (raw.size / 1024 / 1024 > 5) {
+    message("图片大小不能超过 5MB", { type: "warning" });
+    logoUploadRef.value?.clearFiles();
+    return;
+  }
+  // 检查分辨率
+  const reader = new FileReader();
+  reader.onload = (e: any) => {
+    const img = new Image();
+    img.onload = () => {
+      if (img.width < 300 || img.height < 300) {
+        message("Logo分辨率建议不低于300x300px，推荐400x400px以上正方形", {
+          type: "warning"
+        });
+        logoUploadRef.value?.clearFiles();
+        return;
+      }
+      pendingLogoFile.value = raw;
+      logoFileList.value = uploadFiles;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(raw);
+};
+
+const handleLogoRemove = () => {
+  pendingLogoFile.value = null;
+  logoFileList.value = [];
+  editForm.logo = "";
+};
+
 // 处理超出限制
 const handleExceed = () => {
   message("最多只能上传1张图片", { type: "warning" });
@@ -127,8 +185,8 @@ const doEdit = async () => {
   saving.value = true;
   try {
     let signPhoto: string | undefined = undefined;
+    let logo: string | undefined = undefined;
 
-    // 只有当用户上传了新图片时，才上传并更新signPhoto
     if (pendingFile.value) {
       const up: any = await uploadShopPhoto(pendingFile.value);
       if (up?.success && up.data) {
@@ -138,7 +196,17 @@ const doEdit = async () => {
         return;
       }
     }
-    // 如果没有上传新图片,signPhoto保持undefined,后端会保留原图
+
+    // 上传 logo
+    if (pendingLogoFile.value) {
+      const up: any = await uploadShopPhoto(pendingLogoFile.value);
+      if (up?.success && up.data) {
+        logo = up.data;
+      } else {
+        message(up?.msg || "Logo上传失败", { type: "warning" });
+        return;
+      }
+    }
 
     const r: any = await updateMyShop({
       name: editForm.name,
@@ -146,7 +214,8 @@ const doEdit = async () => {
       contactPhone: editForm.contactPhone,
       maxCapacity: editForm.maxCapacity ?? undefined,
       description: editForm.description,
-      signPhoto // 只有上传了新图片才会传递此字段
+      signPhoto,
+      logo
     });
     if (r?.success) {
       pendingFile.value = null;
@@ -207,6 +276,25 @@ const doEdit = async () => {
           <EpPlus />
         </el-upload>
       </el-form-item>
+      <el-form-item label="店铺Logo">
+        <el-upload
+          ref="logoUploadRef"
+          v-model:file-list="logoFileList"
+          list-type="picture-card"
+          :limit="1"
+          :auto-upload="false"
+          :on-change="handleLogoChange"
+          :on-remove="handleLogoRemove"
+          :on-exceed="handleExceed"
+          :class="{ hideUploadBtn: logoFileList.length >= 1 }"
+          accept="image/*"
+        >
+          <EpPlus />
+        </el-upload>
+        <div class="upload-tip">
+          建议 400x400px 以上正方形，显示在太阳码中心（约 163px 区域）
+        </div>
+      </el-form-item>
       <el-form-item label="描述">
         <el-input
           v-model="editForm.description"
@@ -226,8 +314,14 @@ const doEdit = async () => {
 </template>
 
 <style scoped lang="scss">
-// 隐藏达到数量限制时的上传按钮占位符
 :deep(.hideUploadBtn .el-upload--picture-card) {
   display: none;
+}
+
+.upload-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #909399;
 }
 </style>

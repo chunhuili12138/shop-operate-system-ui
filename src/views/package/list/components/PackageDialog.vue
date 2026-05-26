@@ -6,6 +6,7 @@ import type { BomItem } from "@/api/package";
 import { getPackageBom } from "@/api/package";
 import { getMaterialList } from "@/api/inventory";
 import { getDictData } from "@/api/system";
+import { http } from "@/utils/http";
 
 const props = defineProps<{
   visible: boolean;
@@ -49,6 +50,7 @@ const form = reactive({
   originalPrice: null as number | null,
   maxPeoplePerSession: 1,
   description: "",
+  image: "",
   bom: [] as BomItem[]
 });
 
@@ -92,6 +94,7 @@ watch(
         Object.assign(form, {
           ...props.formData,
           originalPrice: props.formData.original_price ?? null,
+          image: props.formData.image || "",
           bom: [] as BomItem[]
         });
         if (props.isEdit && props.formData.packageId) {
@@ -218,6 +221,14 @@ defineExpose({ form });
           maxlength="200"
           show-word-limit
         />
+      </el-form-item>
+      <el-form-item label="封面图">
+        <el-input
+          v-model="form.image"
+          placeholder="输入图片路径或通过文件管理上传"
+          clearable
+        />
+        <span class="upload-hint">建议尺寸 600x400px，留空则不显示封面图</span>
       </el-form-item>
       <el-form-item label="物料清单">
         <div class="mb-2">

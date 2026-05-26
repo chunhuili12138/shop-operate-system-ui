@@ -106,6 +106,7 @@ export const updateMyShop = (data: {
   maxCapacity?: number;
   description?: string;
   signPhoto?: string;
+  logo?: string;
 }) => {
   return http.request<ApiResult>("put", "/shops/myUpdate", { data });
 };
@@ -126,5 +127,12 @@ export const uploadShopPhoto = (file: File) => {
     headers: {
       "Content-Type": "multipart/form-data"
     }
+  });
+};
+
+/** 生成/刷新店铺太阳码 */
+export const generateShopQrcode = (shopsId: number) => {
+  return http.request<ApiResult>("post", "/shops/qrcode", {
+    data: { shopsId }
   });
 };
