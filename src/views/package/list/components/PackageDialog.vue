@@ -45,7 +45,7 @@ const rules: FormRules = {
 const form = reactive({
   packageId: null as number | null,
   name: "",
-  type: 1,
+  type: "SINGLE",
   durationMinutes: 60,
   price: 0,
   originalPrice: null as number | null,

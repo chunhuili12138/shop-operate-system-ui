@@ -38,7 +38,7 @@ const packageDialogRef = ref<InstanceType<typeof PackageDialog>>();
 const formData = reactive<any>({
   packageId: null,
   name: "",
-  type: 1,
+  type: "SINGLE",
   durationMinutes: 60,
   price: 0,
   original_price: null,
@@ -52,9 +52,9 @@ const loadDicts = async () => {
   if (r?.success && Array.isArray(r.data)) typeOptions.value = r.data;
 };
 
-const typeLabel = (type: number) => {
-  const item = typeOptions.value.find(t => t.dict_key === type);
-  return item?.dict_value || String(type);
+const typeLabel = (type: string) => {
+  const item = typeOptions.value.find(t => t.dict_label === type);
+  return item?.dict_value || type;
 };
 
 const load = async () => {
@@ -95,7 +95,7 @@ const openAdd = () => {
   Object.assign(formData, {
     packageId: null,
     name: "",
-    type: 1,
+    type: "SINGLE",
     durationMinutes: 60,
     price: 0,
     original_price: null,
