@@ -36,6 +36,26 @@ declare global {
     mozRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     oRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     msRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+    // 店铺助手
+    ShopCopilot?: {
+      init: (options: {
+        apiUrl?: string;
+        token?: string;
+        shopId?: number;
+        role?: string;
+        userName?: string;
+      }) => void;
+      show: () => void;
+      hide: () => void;
+      destroy: () => void;
+      update: (options: {
+        apiUrl?: string;
+        token?: string;
+        shopId?: number;
+        role?: string;
+        userName?: string;
+      }) => void;
+    };
   }
 
   /**

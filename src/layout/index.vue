@@ -7,13 +7,17 @@ import { useLayout } from "./hooks/useLayout";
 import { useAppStoreHook } from "@/store/modules/app";
 import { useSettingStoreHook } from "@/store/modules/settings";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import { useUserStoreHook } from "@/store/modules/user";
+import { getToken, getCurrentShopId } from "@/utils/auth";
 import {
   h,
   ref,
   reactive,
   computed,
+  watch,
   onMounted,
   onBeforeMount,
+  onUnmounted,
   defineComponent
 } from "vue";
 import {
@@ -114,11 +118,92 @@ useResizeObserver(appWrapperRef, entries => {
   }
 });
 
+const userStore = useUserStoreHook();
+
 onMounted(() => {
   if (isMobile) {
     toggle("mobile", false);
   }
+
+  // 初始化店铺助手
+  initShopCopilot();
 });
+
+onUnmounted(() => {
+  // 销毁店铺助手
+  if (window.ShopCopilot) {
+    window.ShopCopilot.destroy();
+  }
+});
+
+// 初始化店铺助手
+function initShopCopilot() {
+  console.log("[ShopCopilot] 开始初始化...");
+
+  // 等待 ShopCopilot 加载完成
+  const checkShopCopilot = () => {
+    console.log("[ShopCopilot] 检查 ShopCopilot...", typeof window.ShopCopilot);
+
+    if (window.ShopCopilot) {
+      console.log(
+        "[ShopCopilot] ShopCopilot 已加载:",
+        Object.keys(window.ShopCopilot)
+      );
+
+      if (typeof window.ShopCopilot.init === "function") {
+        const tokenData = getToken();
+        const shopId = getCurrentShopId();
+
+        // 获取店铺名称
+        const shopName =
+          userStore.shops?.find((s: any) => s.id === shopId)?.name || "";
+
+        console.log("[ShopCopilot] 初始化参数:", {
+          shopId: shopId || 0,
+          role: userStore.roles?.[0] || "guest",
+          shopName: shopName
+        });
+
+        window.ShopCopilot.init({
+          apiUrl: import.meta.env.VITE_CHAT_URL || "http://localhost:3000",
+          token: tokenData?.accessToken || "",
+          shopId: shopId || 0,
+          role: userStore.roles?.[0] || "guest",
+          userName: userStore.nickname || userStore.username || "",
+          shopName: shopName
+        });
+      } else {
+        console.error(
+          "[ShopCopilot] init 不是函数:",
+          typeof window.ShopCopilot.init
+        );
+      }
+    } else {
+      // 200ms 后重试，最多重试 50 次（10秒）
+      if (checkCount < 50) {
+        checkCount++;
+        setTimeout(checkShopCopilot, 200);
+      } else {
+        console.error("[ShopCopilot] 加载超时");
+      }
+    }
+  };
+
+  let checkCount = 0;
+  checkShopCopilot();
+}
+
+// 监听店铺切换
+watch(
+  () => userStore.currentShopId,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal && window.ShopCopilot) {
+      window.ShopCopilot.update({
+        shopId: newVal || 0
+      });
+    }
+  }
+);
 
 onBeforeMount(() => {
   useDataThemeChange().dataThemeChange($storage.layout?.overallStyle);
