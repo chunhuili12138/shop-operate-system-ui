@@ -8,6 +8,10 @@ dist-ssr/
 *.local
 
 # Environment variables
+.env
+.env.development
+.env.production
+.env.staging
 .env.local
 .env.*.local
 
