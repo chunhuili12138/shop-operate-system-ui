@@ -10,8 +10,14 @@ import {
 } from "./build/utils";
 
 export default ({ mode }: ConfigEnv): UserConfigExport => {
+  const env = loadEnv(mode, root);
   const { VITE_CDN, VITE_PORT, VITE_COMPRESSION, VITE_PUBLIC_PATH } =
-    wrapperEnv(loadEnv(mode, root));
+    wrapperEnv(env);
+
+  // 获取环境变量
+  const VITE_API_BASE_URL = env.VITE_API_BASE_URL || "/api";
+  const VITE_CHAT_URL = env.VITE_CHAT_URL || "";
+
   return {
     base: VITE_PUBLIC_PATH,
     root,
@@ -60,7 +66,9 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
     },
     define: {
       __INTLIFY_PROD_DEVTOOLS__: false,
-      __APP_INFO__: JSON.stringify(__APP_INFO__)
+      __APP_INFO__: JSON.stringify(__APP_INFO__),
+      "import.meta.env.VITE_API_BASE_URL": JSON.stringify(VITE_API_BASE_URL),
+      "import.meta.env.VITE_CHAT_URL": JSON.stringify(VITE_CHAT_URL)
     }
   };
 };
