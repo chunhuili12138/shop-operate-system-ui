@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import { ElMessageBox } from "element-plus";
 import { formatDate } from "@/utils/date";
 import { useUserStoreHook } from "@/store/modules/user";
@@ -206,7 +207,7 @@ onMounted(() => {
                 row.avatar_url
                   ? row.avatar_url.startsWith('http')
                     ? row.avatar_url
-                    : `/api/file/image?name=${encodeURIComponent(row.avatar_url)}`
+                    : fileUrl(row.avatar_url)
                   : undefined
               "
             />

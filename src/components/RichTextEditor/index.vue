@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { shallowRef, computed, onBeforeUnmount } from "vue";
+import { fileUrl } from "@/utils/file";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import type {
   IDomEditor,
@@ -55,7 +56,7 @@ const editorConfig: Partial<IEditorConfig> = {
             }
           );
           if (res?.success && res.data) {
-            insertFn(`/api/file/image?name=${encodeURIComponent(res.data)}`);
+            insertFn(fileUrl(res.data));
           }
         } catch (e) {
           console.error("图片上传失败", e);
@@ -76,7 +77,7 @@ const editorConfig: Partial<IEditorConfig> = {
             }
           );
           if (res?.success && res.data) {
-            insertFn(`/api/file/image?name=${encodeURIComponent(res.data)}`);
+            insertFn(fileUrl(res.data));
           }
         } catch (e) {
           console.error("视频上传失败", e);

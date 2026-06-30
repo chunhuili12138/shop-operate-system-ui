@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { fileUrl } from "@/utils/file";
 import { getArticleDetail } from "@/api/marketing";
 import { message } from "@/utils/message";
 
@@ -20,18 +21,18 @@ const images = computed(() => {
     .split(",")
     .filter(Boolean)
     .map(
-      (url: string) => `/api/file/image?name=${encodeURIComponent(url.trim())}`
+      (url: string) => fileUrl(url.trim())
     );
 });
 
 const videoUrl = computed(() => {
   if (!detail.value?.video_url) return "";
-  return `/api/file/image?name=${encodeURIComponent(detail.value.video_url)}`;
+  return fileUrl(detail.value.video_url);
 });
 
 const coverUrl = computed(() => {
   if (!detail.value?.cover_image) return "";
-  return `/api/file/image?name=${encodeURIComponent(detail.value.cover_image)}`;
+  return fileUrl(detail.value.cover_image);
 });
 
 const contentTypeLabel = computed(() => {

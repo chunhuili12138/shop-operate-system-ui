@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import type { FormInstance, FormRules } from "element-plus";
 import type { BomItem } from "@/api/package";
 import { getPackageBom } from "@/api/package";
@@ -111,7 +112,7 @@ watch(
           imageFileList.value = [
             {
               name: "套餐图片",
-              url: `/api/file/image?name=${encodeURIComponent(props.formData.image)}`
+              url: fileUrl(props.formData.image)
             }
           ];
         }

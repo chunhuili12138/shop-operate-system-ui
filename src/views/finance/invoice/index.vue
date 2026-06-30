@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import { ElMessageBox } from "element-plus";
 import { getInvoiceList, deleteInvoice } from "@/api/finance";
 import InvoiceFormDialog from "./components/InvoiceFormDialog.vue";
@@ -63,7 +64,7 @@ const onDelete = async (id: number) => {
 };
 
 const imageUrl = (path: string) =>
-  `/api/file/image?name=${encodeURIComponent(path)}`;
+  fileUrl(path);
 const refTypeLabel = (t: string) =>
   t === "purchase" ? "购买记录" : t === "purchase_order" ? "采购订单" : t;
 

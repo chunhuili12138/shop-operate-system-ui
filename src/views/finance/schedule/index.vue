@@ -19,6 +19,12 @@ const size = ref(20);
 const total = ref(0);
 const staffList = ref<any[]>([]);
 
+const query = reactive({
+  keyword: "",
+  dateRange: [] as string[],
+  type: "" as any
+});
+
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const form = reactive({
@@ -34,7 +40,16 @@ const form = reactive({
 const load = async () => {
   loading.value = true;
   try {
-    const r = await getStaffSchedules({ page: page.value, size: size.value });
+    const params: any = { page: page.value, size: size.value };
+    if (query.keyword) params.keyword = query.keyword;
+    if (query.dateRange?.length === 2) {
+      params.startDate = query.dateRange[0];
+      params.endDate = query.dateRange[1];
+    }
+    if (query.type !== "" && query.type !== null && query.type !== undefined) {
+      params.type = query.type;
+    }
+    const r = await getStaffSchedules(params);
     if (r?.success) {
       tableData.value = r.data?.list || [];
       total.value = r.data?.total || 0;
@@ -51,6 +66,19 @@ const loadStaff = async () => {
   } catch {
     /* ignore */
   }
+};
+
+const onSearch = () => {
+  page.value = 1;
+  load();
+};
+
+const onReset = () => {
+  query.keyword = "";
+  query.dateRange = [];
+  query.type = "";
+  page.value = 1;
+  load();
 };
 
 const onSizeChange = (s: number) => {
@@ -100,7 +128,7 @@ const save = async () => {
 
 const onDelete = async (id: number) => {
   try {
-    await ElMessageBox.confirm("确认删除？", "提示", { type: "warning" });
+    await ElMessageBox.confirm("确认删除该排班记录？", "提示", { type: "warning" });
   } catch {
     return;
   }
@@ -120,29 +148,71 @@ onMounted(() => {
 <template>
   <div class="page-container">
     <div class="page-header">
-      <div><el-button type="primary" @click="openAdd">新增排班</el-button></div>
-      <div><el-button @click="load">刷新</el-button></div>
+      <el-form :model="query" inline class="page-search">
+        <el-form-item label="员工姓名">
+          <el-input
+            v-model="query.keyword"
+            placeholder="请输入员工姓名"
+            clearable
+            style="width: 160px"
+            @keyup.enter="onSearch"
+          />
+        </el-form-item>
+        <el-form-item label="排班日期">
+          <el-date-picker
+            v-model="query.dateRange"
+            type="daterange"
+            range-separator="-"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD"
+            style="width: 260px"
+          />
+        </el-form-item>
+        <el-form-item label="类型">
+          <el-select
+            v-model="query.type"
+            clearable
+            placeholder="全部类型"
+            style="width: 120px"
+          >
+            <el-option label="上班" :value="1" />
+            <el-option label="休息" :value="2" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div class="page-header-actions">
+        <div>
+          <el-button type="primary" @click="openAdd">新增排班</el-button>
+        </div>
+        <div>
+          <el-button type="primary" @click="onSearch">查询</el-button>
+          <el-button @click="onReset">重置</el-button>
+        </div>
+      </div>
     </div>
     <div class="page-table">
       <el-table v-loading="loading" :data="tableData" style="width: 100%">
-        <el-table-column prop="staff_name" label="员工" width="100" />
-        <el-table-column prop="schedule_date" label="日期" width="120" />
-        <el-table-column prop="start_time" label="开始" width="80" />
-        <el-table-column prop="end_time" label="结束" width="80" />
-        <el-table-column label="类型" width="70" align="center">
-          <template #default="{ row }">{{
-            row.type === 2 ? "休息" : "上班"
-          }}</template>
-        </el-table-column>
-        <el-table-column prop="remark" label="备注" />
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column prop="staff_name" label="员工姓名" min-width="120" />
+        <el-table-column prop="schedule_date" label="排班日期" min-width="120" />
+        <el-table-column prop="start_time" label="开始时间" min-width="100" />
+        <el-table-column prop="end_time" label="结束时间" min-width="100" />
+        <el-table-column label="类型" width="100" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" size="small" @click="openEdit(row)"
-              >编辑</el-button
-            >
-            <el-button link type="danger" size="small" @click="onDelete(row.id)"
-              >删除</el-button
-            >
+            <el-tag :type="row.type === 2 ? 'info' : 'success'" size="small">
+              {{ row.type === 2 ? "休息" : "上班" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="120" />
+        <el-table-column label="操作" width="150" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="openEdit(row)">
+              编辑
+            </el-button>
+            <el-button link type="danger" size="small" @click="onDelete(row.id)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
         <template #empty><el-empty description="暂无排班记录" /></template>

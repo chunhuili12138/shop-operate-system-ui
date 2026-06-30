@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import { updateProfile, changeOwnPassword, uploadUserAvatar } from "@/api/user";
 import { useUserStoreHook } from "@/store/modules/user";
 import type { FormInstance, FormRules } from "element-plus";
@@ -42,7 +43,7 @@ const handleAvatarRemove = () => {
   avatarPending.value = null;
   avatarList.value = [];
   avatarPreviewUrl.value = userStore.avatar
-    ? `/api/file/image?name=${encodeURIComponent(userStore.avatar)}`
+    ? fileUrl(userStore.avatar)
     : "";
 };
 
@@ -105,7 +106,7 @@ onMounted(() => {
   infoForm.name = userStore.nickname || userStore.username || "";
   infoForm.phone = userStore.phone || "";
   avatarPreviewUrl.value = userStore.avatar
-    ? `/api/file/image?name=${encodeURIComponent(userStore.avatar)}`
+    ? fileUrl(userStore.avatar)
     : "";
 });
 
@@ -136,7 +137,7 @@ const saveInfo = async () => {
       userStore.SET_USERNAME(infoForm.name);
       if (avatar !== userStore.avatar) {
         userStore.SET_AVATAR(avatar);
-        avatarPreviewUrl.value = `/api/file/image?name=${encodeURIComponent(avatar)}`;
+        avatarPreviewUrl.value = fileUrl(avatar);
         avatarList.value = [];
       }
       message("保存成功", { type: "success" });

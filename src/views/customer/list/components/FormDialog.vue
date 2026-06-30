@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import type { FormInstance, FormRules } from "element-plus";
 import {
   addCustomer,
@@ -124,7 +125,7 @@ watch(
           ? [
               {
                 name: avatarUrl.value,
-                url: `/api/file/image?name=${encodeURIComponent(avatarUrl.value)}`
+                url: fileUrl(avatarUrl.value)
               }
             ]
           : [];

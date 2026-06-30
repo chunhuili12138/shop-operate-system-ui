@@ -14,6 +14,11 @@ import EpMoney from "~icons/ep/money?raw";
 import EpDataAnalysis from "~icons/ep/data-analysis?raw";
 import EpTrendCharts from "~icons/ep/trend-charts?raw";
 import EpComment from "~icons/ep/comment?raw";
+import EpShop from "~icons/ep/shop?raw";
+import EpChatDotSquare from "~icons/ep/chat-dot-square?raw";
+import EpCoin from "~icons/ep/coin?raw";
+import EpStopwatch from "~icons/ep/stopwatch?raw";
+import EpCalendar from "~icons/ep/calendar?raw";
 
 // ===== Remix Icons =====
 import RiSearchLine from "~icons/ri/search-line?raw";
@@ -51,6 +56,11 @@ const icons = [
   ["ep/data-analysis", EpDataAnalysis],
   ["ep/trend-charts", EpTrendCharts],
   ["ep/comment", EpComment],
+  ["ep/shop", EpShop],
+  ["ep/chat-dot-square", EpChatDotSquare],
+  ["ep/coin", EpCoin],
+  ["ep/stopwatch", EpStopwatch],
+  ["ep/calendar", EpCalendar],
   // Remix Icons
   ["ri/search-line", RiSearchLine],
   ["ri/information-line", RiInformationLine],

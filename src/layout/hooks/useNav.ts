@@ -1,6 +1,7 @@
 import { storeToRefs } from "pinia";
 import { getConfig } from "@/config";
 import { emitter } from "@/utils/mitt";
+import { fileUrl } from "@/utils/file";
 import Avatar from "@/assets/user.jpg";
 import { getTopMenu } from "@/router/utils";
 import { useFullscreen } from "@vueuse/core";
@@ -41,7 +42,7 @@ export function useNav() {
   const userAvatar = computed(() => {
     const av = useUserStoreHook()?.avatar;
     if (isAllEmpty(av)) return Avatar;
-    return `/api/file/image?name=${encodeURIComponent(av)}`;
+    return fileUrl(av);
   });
 
   /** 昵称（如果昵称为空则显示用户名） */

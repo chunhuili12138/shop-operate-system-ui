@@ -2,6 +2,7 @@
 import { ref, onMounted } from "vue";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
+import { fileUrl } from "@/utils/file";
 import {
   getMyShopInfo,
   updateMyShopStatus,
@@ -62,7 +63,7 @@ const genQrcode = async () => {
     const r: any = await generateShopQrcode(shop.value.id);
     if (r?.success) {
       const path = r?.path || r.data?.path || "";
-      qrcodeUrl.value = `/api/file/image?name=${encodeURIComponent(path)}&_t=${Date.now()}`;
+      qrcodeUrl.value = fileUrl(path) + `&_t=${Date.now()}`;
       message("太阳码已生成", { type: "success" });
     } else {
       message(r?.msg || "生成失败", { type: "warning" });
@@ -75,8 +76,7 @@ const genQrcode = async () => {
 const downloadQrcode = () => {
   const url =
     qrcodeUrl.value ||
-    "/api/file/image?name=" +
-      encodeURIComponent(shop.value?.mp_qrcode_path || "");
+    fileUrl(shop.value?.mp_qrcode_path || "");
   const link = document.createElement("a");
   link.href = url;
   link.download = `太阳码_${shop.value?.name || "店铺"}.png`;
@@ -103,7 +103,7 @@ onMounted(() => {
               <div class="sign-photo">
                 <img
                   v-if="shop?.sign_photo"
-                  :src="`/api/file/image?name=${encodeURIComponent(shop.sign_photo)}`"
+                  :src="fileUrl(shop.sign_photo)"
                   alt="招牌照片"
                 />
                 <div v-else class="photo-placeholder">
@@ -118,7 +118,7 @@ onMounted(() => {
               <div class="info-header">
                 <div v-if="shop.logo" class="shop-logo-sm">
                   <img
-                    :src="`/api/file/image?name=${encodeURIComponent(shop.logo)}`"
+                    :src="fileUrl(shop.logo)"
                     alt="logo"
                   />
                 </div>
@@ -199,10 +199,7 @@ onMounted(() => {
                 v-if="qrcodeUrl || shop.mp_qrcode_path"
                 :src="
                   qrcodeUrl ||
-                  '/api/file/image?name=' +
-                    encodeURIComponent(shop.mp_qrcode_path) +
-                    '&_t=' +
-                    Date.now()
+                  fileUrl(shop.mp_qrcode_path) + '&_t=' + Date.now()
                 "
                 alt="太阳码"
                 class="qrcode-img"

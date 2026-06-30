@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, watch, computed } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import type { FormInstance } from "element-plus";
 import {
   addArticle,
@@ -98,7 +99,7 @@ watch(
         coverFileList.value = [
           {
             name: newData.coverImage,
-            url: `/api/file/image?name=${encodeURIComponent(newData.coverImage)}`
+            url: fileUrl(newData.coverImage)
           }
         ];
       }
@@ -107,7 +108,7 @@ watch(
         const urls = String(newData.imageUrls).split(",").filter(Boolean);
         imageFileList.value = urls.map((url: string) => ({
           name: url.trim(),
-          url: `/api/file/image?name=${encodeURIComponent(url.trim())}`
+          url: fileUrl(url.trim())
         }));
       }
       // 视频类型：回显已有视频
@@ -115,7 +116,7 @@ watch(
         videoFileList.value = [
           {
             name: newData.videoUrl,
-            url: `/api/file/image?name=${encodeURIComponent(newData.videoUrl)}`
+            url: fileUrl(newData.videoUrl)
           }
         ];
       }
@@ -389,7 +390,7 @@ const handleClose = () => {
                     class="video-preview"
                   >
                     <video
-                      :src="`/api/file/image?name=${encodeURIComponent(form.videoUrl)}`"
+                      :src="fileUrl(form.videoUrl)"
                       controls
                       style="width: 100%; max-height: 260px"
                     />

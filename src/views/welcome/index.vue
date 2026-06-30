@@ -196,6 +196,12 @@ onMounted(load);
           <!-- 本月统计 -->
           <div class="mini-row">
             <div class="mini-item">
+              <span class="mini-label">本月营收</span
+              ><span class="mini-val blue">{{
+                fmtMoney(d.monthSales)
+              }}</span>
+            </div>
+            <div class="mini-item">
               <span class="mini-label">本月收入</span
               ><span class="mini-val green">{{
                 fmtMoney(d.monthRevenue)
@@ -608,6 +614,10 @@ onMounted(load);
 
 .mini-val.red {
   color: #f56c6c;
+}
+
+.mini-val.blue {
+  color: #667eea;
 }
 
 /* 区块标题 */

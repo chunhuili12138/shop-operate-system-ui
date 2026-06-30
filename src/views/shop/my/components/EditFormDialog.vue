@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import { updateMyShop, uploadShopPhoto } from "@/api/shop";
 import EpPlus from "~icons/ep/plus";
 
@@ -72,7 +73,7 @@ const openEdit = () => {
     fileList.value = [
       {
         name: props.shopData.sign_photo,
-        url: `/api/file/image?name=${encodeURIComponent(props.shopData.sign_photo)}`
+        url: fileUrl(props.shopData.sign_photo)
       }
     ];
   } else {
@@ -83,7 +84,7 @@ const openEdit = () => {
     logoFileList.value = [
       {
         name: props.shopData.logo,
-        url: `/api/file/image?name=${encodeURIComponent(props.shopData.logo)}`
+        url: fileUrl(props.shopData.logo)
       }
     ];
   } else {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from "vue";
 import { message } from "@/utils/message";
+import { fileUrl } from "@/utils/file";
 import { ElMessageBox } from "element-plus";
 import {
   getCustomerInfo,
@@ -316,7 +317,7 @@ const purchaseStatusMap: Record<number, string> = {
             customer.avatar_url
               ? customer.avatar_url.startsWith('http')
                 ? customer.avatar_url
-                : `/api/file/image?name=${encodeURIComponent(customer.avatar_url)}`
+                : fileUrl(customer.avatar_url)
               : undefined
           "
         />
